@@ -1,0 +1,158 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!-- Colors -->
+    <Color x:Key="DeepGreen">#0c2105</Color>
+    <Color x:Key="LighterGreen">#123307</Color>
+    <Color x:Key="DarkerGreen">#081703</Color>
+    <Color x:Key="LightGray">#9e9e9e</Color>
+
+	<!-- Brushes -->
+	<SolidColorBrush x:Key="DeepGreenBrush" Color="{StaticResource DeepGreen}"/>
+	<SolidColorBrush x:Key="LighterGreenBrush" Color="{StaticResource LighterGreen}"/>
+	<SolidColorBrush x:Key="DarkerGreenBrush" Color="{StaticResource DarkerGreen}"/>
+    <SolidColorBrush x:Key="LightGrayBrush" Color="{StaticResource LightGray}"/>
+
+    <!-- Button Styles -->
+	<Style x:Key="ButtonStyle" TargetType="Button">
+		<Setter Property="Background" Value="{StaticResource DeepGreenBrush}"/>
+		<Setter Property="Foreground" Value="White"/>
+		<Setter Property="BorderBrush" Value="{StaticResource DeepGreenBrush}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="FontSize" Value ="20"/>
+        <Setter Property="FontFamily" Value="Rubik"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="Padding" Value="10"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+						<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter Property="Background" Value="{StaticResource DarkerGreenBrush}"/>
+						</Trigger>
+						<Trigger Property="IsPressed" Value="True">
+							<Setter Property="Background" Value="{StaticResource LighterGreenBrush}"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- Small Square Button Style -->
+	<Style x:Key="SmallSquareButton" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
+		<Setter Property="Width" Value="40"/>
+		<Setter Property="Height" Value="40"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Foreground" Value="{StaticResource DarkerGreenBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{StaticResource LightGrayBrush}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+	<!-- Large Rectangular Button Style -->
+	<Style x:Key="LargeRectangularButton" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
+		<Setter Property="HorizontalAlignment" Value="Stretch"/>
+		<Setter Property="VerticalAlignment" Value="Stretch"/>
+	</Style>
+
+	<!-- ComboBox Style -->
+    <Style x:Key="CustomComboBox" TargetType="ComboBox">
+        <Setter Property="FontFamily" Value="Helvetica"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    
+                    <Border BorderBrush="{StaticResource LightGrayBrush}"
+                            BorderThickness="1"
+                            CornerRadius="5"
+                            Background="{TemplateBinding Background}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ComboBoxItem Style -->
+    <Style x:Key="CustomComboBoxItem" TargetType="ComboBoxItem">
+        <Setter Property="FontFamily" Value="Helvetica"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Padding" Value="5,3"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="LightGray"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{StaticResource DeepGreenBrush}"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--TextBlock Style-->
+    <Style x:Key="Annotation" TargetType="TextBlock">
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="FontFamily" Value="Rubik"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="Padding" Value="0 0 0 5"/>
+        <Setter Property="Foreground" Value="{StaticResource LightGrayBrush}"/>
+    </Style>
+
+	<!-- TextBox Style -->
+	<Style x:Key="CustomTextBox" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="Rubik"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="Background" Value="White"/>
+		<Setter Property="BorderBrush" Value="{StaticResource LightGrayBrush}"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="Padding" Value="5"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="TextBox">
+					<Border x:Name="Border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="5">
+						<Grid>
+							<ScrollViewer x:Name="PART_ContentHost" Margin="0" />
+							<TextBlock x:Name="WatermarkText"
+                                       Text="{TemplateBinding Tag}"
+                                       Visibility="Collapsed"
+                                       Opacity="0.5"
+                                       Margin="6,0,0,0"
+                                       VerticalAlignment="Center"/>
+						</Grid>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsKeyboardFocused" Value="True">
+							<Setter TargetName="Border" Property="Effect">
+								<Setter.Value>
+									<DropShadowEffect ShadowDepth="0" Color="{StaticResource DeepGreen}" Opacity="0.3" BlurRadius="5"/>
+								</Setter.Value>
+							</Setter>
+						</Trigger>
+						<Trigger Property="Text" Value="">
+							<Setter TargetName="WatermarkText" Property="Visibility" Value="Visible"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</ResourceDictionary>
