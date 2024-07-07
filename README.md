@@ -10,11 +10,12 @@ It uses DeepL API to perform quick and precise translations of whole Revit proje
 # How to install
 This is an alpha version. It does not include any executable files to streamline the installation. However, it includes pre-compiled binaries and Revit add-in manifest which you simply need to paste into a designated Revit Addin folder.
 ### Installation steps
-1. Download the ZIP archive that corresponds to a Revit version you need; unzip it
-2. Open Windows' Run command (Win + R) and insert the following path: `%appdata%\Autodesk\Revit\Addins`, click Enter
-3. Open the folder that corresponds to a Revit version you're planning to use the app with
-4. Insert unzipped contents into this folder.
-5. Start Revit; click `Always Load` or `Load Once`.
+1. Go to GitHub Releases (on the right) side of this screen.
+2. Download the ZIP archive that corresponds to a Revit version you need, unzip it.
+3. Open Windows' Run command (Win + R) and insert the following path: `%appdata%\Autodesk\Revit\Addins`, click Enter.
+4. Open (or create) the folder that corresponds to a Revit version you're planning to use.
+5. Insert unzipped contents (`RevitTranslatorAddin` folder and `RevitTranslatorAddin.addin` manifest file) into this folder.
+6. Start Revit; click `Always Load` or `Load Once`.
 
     ![image](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/48934b38-dfbd-4b14-bbfd-de40818c45d5)
 
@@ -34,7 +35,7 @@ In Revit, the app says individual configuration for each computer and each Revit
 
     ![image](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/910ef370-b7b9-4b71-a11e-69cd0c200b6a)
 
-Settings configurations are saved in this path: `%appdata%\Autodesk\Revit\Addins\(Revit Version)\RevitTranslatorAddin\Settings\settings.json`. You can copy this file to another computer or Revit version instead of manually filling translation setup.
+Settings configurations are saved in this path: `%appdata%\Autodesk\Revit\Addins\(RevitVersion)\RevitTranslatorAddin\Settings\settings.json`. You can copy this file to another computer or Revit version instead of manually filling translation setup.
 
 # How to use  
 The app has three modes of translation: current selection, categories and whole model.
