@@ -1,9 +1,4 @@
 ﻿using System.IO;
-using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Newtonsoft.Json.Converters;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using RevitTranslatorAddin.Utils;
 
@@ -16,9 +11,14 @@ public class Settings
     public string TargetLanguage { get; set; } = "Italian";
     public List<string> IgnoreParameters { get; set; } = [];
     public List<string> IgnoreValues { get; set; } = [];
+    public bool IsPaidPlan = false;
     public SortedList<string, string> Languages { get; set; } = DeeplLanguageCodes.LanguageCodes;
     private static string _jsonPath = string.Empty;
 
+    /// <summary>
+    /// Loads the settings from a JSON file.
+    /// </summary>
+    /// <returns>An instance of the Settings class with the loaded settings.</returns>
     public static Settings LoadFromJson()
     {
         if (_jsonPath == string.Empty)
@@ -43,6 +43,10 @@ public class Settings
         File.WriteAllText(_jsonPath, json);
     }
 
+    /// <summary>
+    /// Gets the path of the JSON file with settings, corresponding to an active Revit version.
+    /// </summary>
+    /// <returns>A string representing the full path of the JSON file.</returns>
     internal static string GetJsonPath()
     {
         string revitVersion = RevitUtils.App.VersionNumber;

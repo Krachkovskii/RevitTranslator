@@ -1,11 +1,6 @@
-﻿using Autodesk.Revit.DB;
-using Nice3point.Revit.Toolkit.External;
+﻿using Nice3point.Revit.Toolkit.External;
 using Autodesk.Revit.UI;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using RevitTranslatorAddin.Utils;
-using RevitTranslatorAddin.Models;
-using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace RevitTranslatorAddin.Commands;
 
@@ -26,7 +21,6 @@ public class TranslateSelectionCommand : ExternalCommand
         
         if (!TranslationUtils.CanTranslate(_settings))
         {
-            TaskDialog.Show("Error", "Set up API key and target language.");
             return;
         }
 
@@ -37,12 +31,14 @@ public class TranslateSelectionCommand : ExternalCommand
         _exEvent = ExternalEvent.Create(handler);
 
         List<ElementId> selection = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
-        _utils.StartTranslation(selection);
+        var finished = _utils.StartTranslation(selection);
 
-        if (TranslationUtils.Translations.Count > 0)
+        if (finished && TranslationUtils.Translations.Count > 0)
         {
             _exEvent.Raise();
+            RevitUtils.SetTemporaryFocus();
         }
+
         ProgressWindowUtils.End();
     }
 }

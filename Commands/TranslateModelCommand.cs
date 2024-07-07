@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Utils;
 using Nice3point.Revit.Toolkit.External;
-using System.Windows.Controls;
+using RevitTranslatorAddin.Models;
+using System.Windows;
 
 namespace RevitTranslatorAddin.Commands;
 
@@ -28,22 +23,15 @@ public class TranslateModelCommand : ExternalCommand
 
         if (!TranslationUtils.CanTranslate(_settings))
         {
-            TaskDialog.Show("Error", "Set up API key and target language.");
             return;
         }
 
         // only allow elements of user-visible categories
         List<BuiltInCategory> categoryList = [];
-        var allCategories = RevitUtils.Doc.Settings.Categories;
-        foreach (Category category in allCategories)
+        var categories = CategoriesModel.GetCategories();
+        foreach (Category category in categories)
         {
-            if (category.BuiltInCategory != BuiltInCategory.INVALID
-            && category.IsVisibleInUI
-            && (category.CategoryType != CategoryType.Invalid
-                && category.CategoryType != CategoryType.Internal))
-            {
-                categoryList.Add(category.BuiltInCategory);
-            }
+            categoryList.Add(category.BuiltInCategory);
         }
         var filter = new ElementMulticategoryFilter(categoryList);
 
@@ -59,17 +47,16 @@ public class TranslateModelCommand : ExternalCommand
 
         var rounded = (int)Math.Round((instances.Count + types) / 100d) * 100;
 
-        var td = new TaskDialog("Warning");
-        td.MainInstruction = "Large number of translations!";
-        td.MainContent = $"You're about to translate all text properties of {rounded}+ elements. " +
-            $"It will be time-consuming and you might hit translation limits.\n\n" +
+        var result = MessageBox.Show($"You're about to translate all text properties of {rounded}+ elements. " +
+            $"It can be time-consuming and you might hit translation limits.\n\n" +
+            $"It will also translate elements such as view names or any annotations.\n" +
             $"Consider selecting only necessary categories.\n\n" +
-            $"Are you sure you want to translate the whole model?";
-        td.CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No;
-        td.DefaultButton = TaskDialogResult.No;
+            $"Are you sure you want to translate the whole model?", 
+            "Large number of translations!", 
+            MessageBoxButton.YesNo, 
+            MessageBoxImage.Warning);
 
-        var result = td.Show();
-        if (result == TaskDialogResult.No)
+        if (result == MessageBoxResult.No)
         {
             return;
         }
@@ -79,11 +66,12 @@ public class TranslateModelCommand : ExternalCommand
 
         IExternalEventHandler handler = new RevitElementUpdateHandler();
         _exEvent = ExternalEvent.Create(handler);
-        _utils.StartTranslation(instances);
+        var finished = _utils.StartTranslation(instances);
 
-        if (TranslationUtils.Translations.Count > 0)
+        if (finished && TranslationUtils.Translations.Count > 0)
         {
             _exEvent.Raise();
+            RevitUtils.SetTemporaryFocus();
         }
         ProgressWindowUtils.End();
     }

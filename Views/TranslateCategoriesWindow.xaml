@@ -4,26 +4,31 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RevitTranslatorAddin.Views"
+        xmlns:c="clr-namespace:RevitTranslatorAddin.Views.Converters"
         xmlns:vm="clr-namespace:RevitTranslatorAddin.ViewModels"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="TranslateAllWindow" 
+        Title="TranslateCategoriesWindow" 
         Height="600"
         MinHeight="300"
         Width="500"
-        MinWidth="500"
-        MaxWidth="800">
+        MinWidth="400"
+        MaxWidth="600"
+        Background="White">
 
     <Window.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/RevitTranslatorAddin;component/Resources/ResourceDictionaries/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <c:GroupCheckboxStateConverter x:Key="CheckboxStateConverter"/>
+
             <CollectionViewSource x:Key="GroupedItems" Source="{Binding Categories}">
                 <CollectionViewSource.GroupDescriptions>
                     <PropertyGroupDescription PropertyName="Type"/>
                 </CollectionViewSource.GroupDescriptions>
             </CollectionViewSource>
-            
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/RevitTranslatorAddin;component/Resources/ResourceDictionaries/Styles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -46,24 +51,40 @@
             <RowDefinition Height="10"/>
             <RowDefinition Height="40"/>
             <RowDefinition Height="20"/>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="80"/>
         </Grid.RowDefinitions>
 
         <ListBox ItemsSource="{Binding Source={StaticResource GroupedItems}}" 
                  Grid.Row="1"
+                 Grid.RowSpan="3"
                  Grid.Column="1"
                  Grid.ColumnSpan="3"
-                 SelectionMode="Multiple">
+                 SelectionMode="Extended">
             <ListBox.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.ContainerStyle>
                         <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Margin" Value="0 0 0 10"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="{x:Type GroupItem}">
-                                        <Expander IsExpanded="True">
+                                        <Expander IsExpanded="False">
                                             <Expander.Header>
-                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                                <StackPanel Orientation="Horizontal">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <CheckBox Content="{Binding Name}" 
+                                                                  FontWeight="Bold"
+                                                                  Command="{Binding DataContext.SelectAllInGroupCommand, 
+                                                                    RelativeSource={RelativeSource AncestorType=ListBox}}">
+                                                            <CheckBox.CommandParameter>
+                                                                <MultiBinding Converter="{StaticResource CheckboxStateConverter}">
+                                                                    <Binding Path="IsChecked" RelativeSource="{RelativeSource Self}"/>
+                                                                    <Binding Path="Name"/>
+                                                                </MultiBinding>
+                                                            </CheckBox.CommandParameter>
+                                                        </CheckBox>
+                                                    </StackPanel>
+                                                </StackPanel>
                                             </Expander.Header>
                                             <ItemsPresenter />
                                         </Expander>
@@ -76,32 +97,41 @@
             </ListBox.GroupStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" FontSize="15"/>
+                    <CheckBox Content="{Binding Name}" 
+                      IsChecked="{Binding IsSelected}" 
+                      FontSize="15"
+                      Padding="0"
+                      Margin="10 0 0 0"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
         </ListBox>
-
-        <Button Content="All" 
+        
+        <!--<ui:Button Content="All" 
                 Grid.Column="1"
                 Grid.Row="3"
+                   HorizontalAlignment="Stretch"
                 Command="{Binding SelectAllCommand}"
-                Margin="0,0,5,0"
-                Style="{StaticResource LargeRectangularButton}"/>
-            
-        <Button Content="None" 
+                Margin="0,0,5,0"/>
+
+        <ui:Button Content="None" 
                 Grid.Column="2" 
                 Grid.Row="3"
+                   HorizontalAlignment="Stretch"
                 Command="{Binding SelectNoneCommand}" 
-                HorizontalAlignment="Stretch" 
-                Margin="5,0,5,0"
-                Style="{StaticResource LargeRectangularButton}"/>
+                Margin="5,0,5,0"/>
 
-        <Button Content="Invert" 
+        <ui:Button Content="Invert" 
                 Grid.Column="3" 
                 Grid.Row="3"
+                   HorizontalAlignment="Stretch"
                 Command="{Binding InvertSelectionCommand}" 
-                Margin="5,0,0,0"
-                Style="{StaticResource LargeRectangularButton}"/>
+                Margin="5,0,0,0"/>-->
 
         <Button Content="{Binding TranslateButtonText}"
                 Grid.Column="0"

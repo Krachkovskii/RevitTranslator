@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Documents;
 using System.Windows.Input;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
 using RevitTranslatorAddin.Utils;
 
 namespace RevitTranslatorAddin.ViewModels;
-public class TranslateCategoriesViewModel : ObservableObject
+public class TranslateCategoriesViewModel : INotifyPropertyChanged
 {
 
-    public ObservableCollection<ListItem> Categories { get; } = [];
     private List<ListItem> _selectedCategories = [];
-    private TranslationUtils _utils = null;
+    private readonly TranslationUtils _utils = null;
+    public ObservableCollection<ListItem> Categories { get; } = [];
 
     private int _elementCount
     {
@@ -53,44 +47,34 @@ public class TranslateCategoriesViewModel : ObservableObject
         }
     }
 
-    public ICommand SelectAllCommand { get; }
-    public ICommand SelectNoneCommand { get; }
-    public ICommand InvertSelectionCommand { get; }
-    public ICommand TranslateSelectedCommand { get; }
-
-    private void SelectAll() => SetAllCategoriesSelection(true);
-    private void SelectNone() => SetAllCategoriesSelection(false);
-    private void InvertSelection() => Categories.ToList().ForEach(item => item.IsSelected = !item.IsSelected);
-
-    public TranslateCategoriesViewModel(TranslationUtils utils)
+    public ICommand SelectAllInGroupCommand => new RelayCommand<Tuple<bool, string>>(ExecuteSelectAllInGroup);
+    /// <summary>
+    /// Checks or unchecks all categories in selected Category Type.
+    /// </summary>
+    /// <param name="parameter">
+    /// Passed by GroupCheckboxStateConverter.
+    /// </param>
+    private void ExecuteSelectAllInGroup(Tuple<bool, string> parameter)
     {
-        foreach (Category c in CategoriesModel.AllCategories)
+        if (parameter != null)
         {
-            Categories.Add(new ListItem(c, this));
+            bool isChecked = parameter.Item1;
+            string type = parameter.Item2;
+
+            // Example: Update all items in the group
+            var itemsInGroup = Categories.Where(item => item.Type == type);
+            foreach (var item in itemsInGroup)
+            {
+                item.IsSelected = isChecked;
+            }
         }
-
-        _utils = utils;
-        TranslateButtonText = "Translate";
-
-        SelectAllCommand = new RelayCommand(SelectAll);
-        SelectNoneCommand = new RelayCommand(SelectNone);
-        InvertSelectionCommand = new RelayCommand(InvertSelection);
-        TranslateSelectedCommand = new RelayCommand(TranslateSelected);
     }
 
-    private void SetAllCategoriesSelection(bool isSelected)
-    {
-        foreach (var item in Categories)
-        {
-            item.IsSelected = isSelected;
-        }
-
-        //if (!isSelected)
-        //{
-        //    TranslateButtonText = "Select Categories to translate";
-        //}
-    }
-
+    public ICommand TranslateSelectedCommand => new RelayCommand(TranslateSelected);
+    /// <summary>
+    /// Command for translation of all elements in selected categories. 
+    /// Starts translation process and calls the raise of ExternalEvent to update Revit model.
+    /// </summary>
     private void TranslateSelected()
     {
         var categories = Categories.Where(item => item.IsSelected).Select(c => c.Category.BuiltInCategory).ToList();
@@ -102,14 +86,32 @@ public class TranslateCategoriesViewModel : ObservableObject
         _utils.StartTranslation(elements);
         if (TranslationUtils.Translations.Count > 0)
         {
-            TranslateCategoriesCommand.TranslateCategoriesExtrnalEvent.Raise();
+            TranslateCategoriesCommand.TranslateCategoriesExternalEvent.Raise();
+            RevitUtils.SetTemporaryFocus();
         }
+
         ProgressWindowUtils.End();
+        TranslateCategoriesCommand.Window.Close();
+        TranslateCategoriesCommand.Window = null;
     }
 
+    public TranslateCategoriesViewModel(TranslationUtils utils)
+    {
+
+        foreach (Category c in CategoriesModel.AllCategories)
+        {
+            Categories.Add(new ListItem(c, this));
+        }
+
+        _utils = utils;
+        TranslateButtonText = "Translate";
+    }
+
+    /// <summary>
+    /// Counts the number of elements in selected categories and asynchronously updates the value.
+    /// </summary>
     internal void CountElements()
     {
-        // TODO: Deal with updating UI on the main thread
         Task.Run(() =>
         {
             var categories = Categories.Where(item => item.IsSelected).Select(c => c.Category.BuiltInCategory).ToList();
@@ -126,67 +128,3 @@ public class TranslateCategoriesViewModel : ObservableObject
     }
 }
 
-public class ListItem : INotifyPropertyChanged
-{
-    private readonly TranslateCategoriesViewModel _viewModel;
-    
-    public string Name
-    {
-        get; private set;
-    }
-
-    public string Type
-    {
-        get; private set; 
-    }
-
-    private Category _category;
-    public Category Category
-    {
-        get => _category;
-        set
-        {
-            _category = value;
-            Name = _category.Name;
-            if (_category.CategoryType == CategoryType.AnalyticalModel)
-            {
-                Type = "Analytical Model Categories";
-            }
-            else
-            {
-                Type = _category.CategoryType.ToString() + " Categories";
-            }
-        }
-    }
-
-    private bool _isSelected;
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set
-        {
-            if (_isSelected != value)
-            {
-                _isSelected = value;
-                OnPropertyChanged();
-            }
-
-            // TODO: Implement asynchronous element count
-            //if (_isSelected)
-            //{
-            //    _viewModel.CountElements();
-            //}
-        }
-    }
-    public ListItem(Category category, TranslateCategoriesViewModel viewModel)
-    {
-        _viewModel = viewModel;
-        Category = category;
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-}

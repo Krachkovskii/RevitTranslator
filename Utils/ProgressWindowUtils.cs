@@ -1,9 +1,11 @@
-﻿using System.Threading;
-using System.Windows.Threading;
+﻿using System.Windows.Threading;
 using RevitTranslatorAddin.Views;
 
 namespace RevitTranslatorAddin.Utils;
 
+/// <summary>
+/// This class handles updates, initiation and closing of a progress window.
+/// </summary>
 internal class ProgressWindowUtils
 {
     internal static ProgressWindow PW { get; set; } = null;
@@ -43,5 +45,11 @@ internal class ProgressWindowUtils
             PW.ProgressBar.Maximum = TranslationUtils.TranslationsCount;
             PW.StatusTextBlock.Text = $"Finished {num} out of {TranslationUtils.TranslationsCount} translations to {source}";
         });
+    }
+
+    internal static void RevitUpdate()
+    {
+        PW.Dispatcher.Invoke(() => PW.StatusTextBlock.Text = "Updating Revit Elements");
+        PW.Dispatcher.Invoke(() => PW.ProgressBar.IsIndeterminate = true);
     }
 }

@@ -27,7 +27,7 @@ public class Application : ExternalApplication
             "RevitTranslatorAddin.Commands.SettingsCommand")
         {
             LongDescription = "Set API key, languages to translate to and from, and list of parameters to ignore.",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Settings16.png", UriKind.RelativeOrAbsolute)),
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Settings32.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Settings32.png", UriKind.RelativeOrAbsolute))
         };
 
@@ -37,7 +37,7 @@ public class Application : ExternalApplication
             "RevitTranslatorAddin.Commands.TranslateSelectionCommand")
         {
             LongDescription = "Translate all selected elements, including their family type, if applicable.",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate16.png", UriKind.RelativeOrAbsolute)),
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute))
         };
 
@@ -47,7 +47,7 @@ public class Application : ExternalApplication
             "RevitTranslatorAddin.Commands.TranslateModelCommand")
         {
             LongDescription = "Translate all model elements",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate16.png", UriKind.RelativeOrAbsolute)),
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute))
         };
 
@@ -57,7 +57,7 @@ public class Application : ExternalApplication
             "RevitTranslatorAddin.Commands.TranslateCategoriesCommand")
         {
             LongDescription = "Translate all elements of selected categories",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate16.png", UriKind.RelativeOrAbsolute)),
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute))
         };
 
@@ -66,7 +66,7 @@ public class Application : ExternalApplication
         var pulldownButtonData = new PulldownButtonData("translator", "Revit Translator")
         {
             LongDescription = "Translate elements across Revit",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate16.png", UriKind.RelativeOrAbsolute)),
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute))
         };
         var pulldownButton = panel.AddItem(pulldownButtonData) as PulldownButton;

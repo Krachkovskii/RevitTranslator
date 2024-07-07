@@ -3,6 +3,10 @@ using System.Windows.Controls;
 
 namespace RevitTranslatorAddin.Views;
 
+/// <summary>
+/// Class that describes a ProgressWindow.
+/// See Utils.ProgressWindowUtils for update methods.
+/// </summary>
 public class ProgressWindow : Window
 {
     internal ProgressBar ProgressBar { get; set; }
@@ -32,5 +36,4 @@ public class ProgressWindow : Window
         grid.Children.Add(ProgressBar);
         grid.Children.Add(StatusTextBlock);
     }
-
 }

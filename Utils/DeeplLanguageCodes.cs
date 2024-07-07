@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace RevitTranslatorAddin.Utils;
 internal class DeeplLanguageCodes
 {
+    // Source: https://developers.deepl.com/docs/v/en/resources/supported-languages
     internal static SortedList<string, string> LanguageCodes = new()
     {
         {"Bulgarian", "bg"},

@@ -2,14 +2,32 @@
 using System.ComponentModel;
 using System.Windows.Input;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using RevitTranslatorAddin.Utils;
 
 namespace RevitTranslatorAddin.ViewModels;
 
-public class SettingsViewModel : ObservableObject
+public class SettingsViewModel : INotifyPropertyChanged
 {
     private Models.Settings _settings;
     private int _previousSourceIndex = -1;
     // TODO: Checkbox for paid plan, since it requires different API endpoint
+
+    //TODO: saving state of settings to enable or disable update button if nothing has changed (test below)
+    //private Tuple<string, int, int> _savedState = new(string.Empty, 0, 0);
+    //private Tuple<string, int, int> CurrentState
+    //{
+    //    set => StateDiffers = !value.Equals(_savedState);
+    //}
+    //private bool _stateDiffers = false;
+    //public bool StateDiffers { 
+    //    get => _stateDiffers; 
+    //    set 
+    //    {
+    //        _stateDiffers = value;
+    //        OnPropertyChanged(nameof(StateDiffers));
+    //    } 
+    //}
 
     private string _deeplApiKey;
     public string DeeplApiKey
@@ -19,37 +37,12 @@ public class SettingsViewModel : ObservableObject
         {
             _deeplApiKey = value;
             OnPropertyChanged(nameof(DeeplApiKey));
+            //CurrentState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
         }
     }
-    //private SortedDictionary<string, string> _languages;
+
     private SortedList<string, string> _languages;
     public ObservableCollection<string> Languages { get; private set; } = [];
-
-    private string _selectedSourceLanguage;
-    public string SelectedSourceLanguage
-    {
-        get => _selectedSourceLanguage;
-        set
-        {
-            _selectedSourceLanguage = value;
-            OnPropertyChanged(nameof(SelectedSourceLanguage));
-        }
-    }
-
-    private string _selectedTargetLanguage;
-    public string SelectedTargetLanguage
-    {
-        get => _selectedTargetLanguage;
-        set
-        {
-            if (_selectedTargetLanguage != value)
-            {
-                _selectedTargetLanguage = value;
-                OnPropertyChanged(nameof(SelectedTargetLanguage));
-            }
-        }
-    }
-
 
     private int _selectedSourceLanguageIndex;
     public int SelectedSourceLanguageIndex
@@ -59,6 +52,7 @@ public class SettingsViewModel : ObservableObject
         {
             _selectedSourceLanguageIndex = value;
             OnPropertyChanged(nameof(SelectedSourceLanguageIndex));
+            //CurrentState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
         }
     }
 
@@ -72,35 +66,39 @@ public class SettingsViewModel : ObservableObject
             {
                 _selectedTargetLanguageIndex = value;
                 OnPropertyChanged(nameof(SelectedTargetLanguageIndex));
+                //CurrentState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
             }
         }
     }
 
-
-    public bool IsSourceComboBoxEnabled => !IsAutoDetectChecked;
-
-    private bool _isAutoDetectChecked;
+    private bool _isAutoDetectChecked = true;
     public bool IsAutoDetectChecked
     {
         get => _isAutoDetectChecked;
         set
         {
-            _isAutoDetectChecked = value;
-            OnPropertyChanged(nameof(IsAutoDetectChecked));
-            if ( IsAutoDetectChecked ) 
+            if (_isAutoDetectChecked != value)
             {
-                _previousSourceIndex = SelectedSourceLanguageIndex;
-                SelectedSourceLanguageIndex = -1;
+                _isAutoDetectChecked = value;
+                OnPropertyChanged(nameof(IsSourceComboBoxEnabled));
+                OnPropertyChanged(nameof(IsAutoDetectChecked));
+
+                if (value)
+                {
+                    _previousSourceIndex = SelectedSourceLanguageIndex;
+                    SelectedSourceLanguageIndex = -1;
+                }
+                else
+                {
+                    SelectedSourceLanguageIndex = _previousSourceIndex;
+                }
             }
-            else
-            {
-                SelectedSourceLanguageIndex = _previousSourceIndex;
-            }
-            OnPropertyChanged(nameof(IsSourceComboBoxEnabled));
         }
     }
 
-    private string _updateButtonText = "Click me";
+    public bool IsSourceComboBoxEnabled => !IsAutoDetectChecked;
+
+    private string _updateButtonText;
     public string UpdateButtonText
     {
         get => _updateButtonText;
@@ -108,6 +106,17 @@ public class SettingsViewModel : ObservableObject
         {
             _updateButtonText = value;
             OnPropertyChanged(nameof(UpdateButtonText));
+        }
+    }
+
+    private bool _isPaidPlan;
+    public bool IsPaidPlan
+    {
+        get => _isPaidPlan;
+        set 
+        {
+            _isPaidPlan = value;
+            OnPropertyChanged(nameof(IsPaidPlan));
         }
     }
 
@@ -121,7 +130,7 @@ public class SettingsViewModel : ObservableObject
         SaveCommand = new RelayCommand(SaveSettings);
         SwitchLanguagesCommand = new RelayCommand(SwitchLanguages);
         OpenLinkedinCommand = new RelayCommand<string>(OpenLinkedin);
-        UpdateButtonText = "Update Settings";
+        UpdateButtonText = "Save Settings";
     }
         
     private void LoadSettings()
@@ -130,7 +139,9 @@ public class SettingsViewModel : ObservableObject
         DeeplApiKey = _settings.DeeplApiKey;
         _languages = _settings.Languages;
         Languages = new ObservableCollection<string>(_languages.Keys);
+        IsPaidPlan = _settings.IsPaidPlan;
 
+        // loading source language
         if (_settings.SourceLanguage == null)
         {
             SelectedSourceLanguageIndex = -1;
@@ -153,6 +164,7 @@ public class SettingsViewModel : ObservableObject
             }
         }
 
+        // loading target language
         if (_settings.TargetLanguage == null)
         {
             SelectedTargetLanguageIndex = -1;
@@ -169,15 +181,24 @@ public class SettingsViewModel : ObservableObject
 
     private void SaveSettings()
     {
-        UpdateButtonText = "Settings saved!";
         _settings.DeeplApiKey = DeeplApiKey;
-        _settings.SourceLanguage = SelectedTargetLanguageIndex == -1 ? null : Languages[SelectedTargetLanguageIndex];
+        _settings.SourceLanguage = SelectedSourceLanguageIndex == -1 ? null : Languages[SelectedSourceLanguageIndex];
         _settings.TargetLanguage = Languages[SelectedTargetLanguageIndex];
         _settings.SaveToJson();
+        //_savedState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
 
-        Task.Delay(3000);
+        if (!TranslationUtils.CanTranslate(Models.Settings.LoadFromJson()))
+        {
+            return;
+        }
+        
+        UpdateButtonText = "Settings saved!";
 
-        UpdateButtonText = "Update Settings";
+        Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            UpdateButtonText = "Save settings";
+        });
     }
 
     private void SwitchLanguages()
@@ -190,11 +211,7 @@ public class SettingsViewModel : ObservableObject
         var index2 = SelectedTargetLanguageIndex;
 
         SelectedSourceLanguageIndex = index2;
-        SelectedSourceLanguageIndex = index1;
-
-        //string temp = SelectedSourceLanguage;
-        //SelectedSourceLanguage = SelectedTargetLanguage;
-        //SelectedTargetLanguage = temp;
+        SelectedTargetLanguageIndex = index1;
     }
 
     private void OpenLinkedin(string uri)
@@ -206,8 +223,20 @@ public class SettingsViewModel : ObservableObject
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
-    protected virtual void OnPropertyChanged(string propertyName)
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    protected bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
+    {
+        if (!Equals(field, newValue))
+        {
+            field = newValue;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return true;
+        }
+
+        return false;
     }
 }

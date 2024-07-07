@@ -19,9 +19,7 @@
 		<Setter Property="Foreground" Value="White"/>
 		<Setter Property="BorderBrush" Value="{StaticResource DeepGreenBrush}"/>
 		<Setter Property="BorderThickness" Value="0"/>
-		<Setter Property="FontSize" Value ="20"/>
-        <Setter Property="FontFamily" Value="Rubik"/>
-        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="FontSize" Value ="20"/>
         <Setter Property="Padding" Value="10"/>
 		<Setter Property="Template">
 			<Setter.Value>
@@ -44,7 +42,30 @@
 		</Setter>
 	</Style>
 
-	<!-- Small Square Button Style -->
+    <Style x:Key="CloseButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Width" Value="46"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}">
+                        <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" 
+                                       FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#E81123"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Small Square Button Style -->
 	<Style x:Key="SmallSquareButton" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
 		<Setter Property="Width" Value="40"/>
 		<Setter Property="Height" Value="40"/>
@@ -56,7 +77,10 @@
                     <Border Background="{StaticResource LightGrayBrush}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="5"/>
+                            CornerRadius="5">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -106,8 +130,6 @@
     <!--TextBlock Style-->
     <Style x:Key="Annotation" TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Bottom"/>
-        <Setter Property="FontFamily" Value="Rubik"/>
-        <Setter Property="FontStyle" Value="Normal"/>
         <Setter Property="Padding" Value="0 0 0 5"/>
         <Setter Property="Foreground" Value="{StaticResource LightGrayBrush}"/>
     </Style>

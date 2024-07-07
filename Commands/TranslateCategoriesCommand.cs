@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.UI;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslatorAddin.Models;
 using RevitTranslatorAddin.Utils;
@@ -17,7 +12,9 @@ internal class TranslateCategoriesCommand : ExternalCommand
 {
     private TranslationUtils _utils = null;
     private Models.Settings _settings = null;
-    internal static ExternalEvent TranslateCategoriesExtrnalEvent = null;
+    internal static ExternalEvent TranslateCategoriesExternalEvent = null;
+    internal static IExternalEventHandler TranslateCategoriesHandler = null;
+    internal static TranslateCategoriesWindow Window = null;
     private List<ElementId> _elements = [];
     public override void Execute()
     {
@@ -30,7 +27,6 @@ internal class TranslateCategoriesCommand : ExternalCommand
 
         if (!TranslationUtils.CanTranslate(_settings))
         {
-            TaskDialog.Show("Error", "Set up API key and target language.");
             return;
         }
 
@@ -40,13 +36,18 @@ internal class TranslateCategoriesCommand : ExternalCommand
         // initialising a class to fill static property that contains all categories
         new CategoriesModel();
         var viewModel = new TranslateCategoriesViewModel(utils);
-        var settingsWindow = new TranslateCategoriesWindow(viewModel);
-        settingsWindow.Show();
+        Window = new TranslateCategoriesWindow(viewModel);
+        Window.Show();
 
         IExternalEventHandler handler = new RevitElementUpdateHandler();
-        TranslateCategoriesExtrnalEvent = ExternalEvent.Create(handler);
+        TranslateCategoriesHandler = handler;
+        TranslateCategoriesExternalEvent = ExternalEvent.Create(handler);
 
-        _utils.StartTranslation(_elements);   
+        //var finished = _utils.StartTranslation(_elements);   
+        //if (finished)
+        //{
+        //    TranslateCategoriesExtrnalEvent.Raise();
+        //}
     }
 
     internal static List<ElementId> GetElementsFromCategories(List<BuiltInCategory> categories)
