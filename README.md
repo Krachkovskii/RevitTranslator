@@ -10,12 +10,12 @@ It uses DeepL API to perform quick and precise translations of whole Revit proje
 # How to install
 This is an alpha version. It does not include any executable files to streamline the installation. However, it includes pre-compiled binaries and Revit add-in manifest which you simply need to paste into a designated Revit Addin folder.
 ### Installation steps
-1. Go to GitHub Releases (on the right) side of this screen.
-2. Download the ZIP archive that corresponds to a Revit version you need, unzip it.
+1. Go to GitHub Releases (on the right side of this screen).
+2. Download ZIP archive that corresponds to your Revit version, unzip it.
 3. Open Windows' Run command (Win + R) and insert the following path: `%appdata%\Autodesk\Revit\Addins`, click Enter.
-4. Open (or create) the folder that corresponds to a Revit version you're planning to use.
+4. Open the folder that corresponds to a Revit version you're planning to use. If the folder doesn't exist, you can create it and name with a four-digit Revit version number, e.g. `2024`.
 5. Insert unzipped contents (`RevitTranslatorAddin` folder and `RevitTranslatorAddin.addin` manifest file) into this folder.
-6. Start Revit; click `Always Load` or `Load Once`.
+6. Start Revit, click `Always Load` or `Load Once`.
 
     ![image](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/48934b38-dfbd-4b14-bbfd-de40818c45d5)
 
