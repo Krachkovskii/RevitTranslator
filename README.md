@@ -57,6 +57,9 @@ There are lots of things I would love to improve. Eventually I will deal with so
 
 ## Technical details
 The add-in was tested on Window 10 & 11 and in Revit versions 2022-2023. It should work in all Revit versions from 2020 to 2024.
+
+It uses asynchronous translation methods, so the total number of translations in the progress window that you see at the beginning is not final.
+
 ### Currently, the following elements are translated:
 * Elements, i.e. system and downloadable families, views, etc.: Name of the element, all text-based Instance and Type parameters
 * Dimensions: all override values
