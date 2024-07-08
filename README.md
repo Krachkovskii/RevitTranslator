@@ -9,13 +9,19 @@ It uses DeepL API to perform quick and precise translations of whole Revit proje
 
 # How to install
 This is an alpha version. It does not include any executable files to streamline the installation. However, it includes pre-compiled binaries and Revit add-in manifest which you simply need to paste into a designated Revit Addin folder.
+
+**Important:** main DLL file will be blocked by Windows by default. To fix this, you will need to unblock it manually or to download the source code and build it yourself. This issue fill be fixed in the following release.
 ### Installation steps
 1. Go to GitHub Releases (on the right side of this screen).
 2. Download ZIP archive that corresponds to your Revit version, unzip it.
 3. Open Windows' Run command (Win + R) and insert the following path: `%appdata%\Autodesk\Revit\Addins`, click Enter.
 4. Open the folder that corresponds to a Revit version you're planning to use. If the folder doesn't exist, you can create it and name with a four-digit Revit version number, e.g. `2024`.
 5. Insert unzipped contents (`RevitTranslatorAddin` folder and `RevitTranslatorAddin.addin` manifest file) into this folder.
-6. Start Revit, click `Always Load` or `Load Once`.
+6. Find the file `RevitTranslatorAddin.dll` in the folder `RevitTranslatorAddin`. Open its properties and click "Unblock" at the bottom of the window.
+   
+   ![V4Lco](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/da8e283f-f521-4866-921a-0d686c93fbe8)
+
+7. Start Revit, click `Always Load` or `Load Once`.
 
     ![image](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/48934b38-dfbd-4b14-bbfd-de40818c45d5)
 
@@ -46,15 +52,23 @@ You can select any number of Revit Categories, such as Doors, Text Notes, Floor 
 ### Whole model
 The app collects all user-editable elements in the model and translates them all.
 
+## How to uninstall
+1. Open Windows' Run command (Win + R) and insert the following path: `%appdata%\Autodesk\Revit\Addins`, click Enter.
+2. Open the corresponding Revit version folder.
+3. Make sure Revit is not running.
+4. Remove the folder `RevitTranslatorAddin` and manifest file `RevitTranslatorAddin.addin`.
+
 ## Roadmap
 There are lots of things I would love to improve. Eventually I will deal with some of them in my free time.
 ### UI:
-* Make translations cancellable, in case you decide you don't want to translate anymore;
-* Introduce "Black list" (or is it a white list?) for parameter names and values to prevent their translation;
+* Introduce "Black list" (or is it a white list?) for parameter names and values to prevent their translation.
 * Add glossaries.
 * Minor UI cleanups.
 ### Revit:
 * Increase number of translatable element types.
+### Application:
+* Add at least primitive logging.
+* Make translations cancellable, in case you decide you don't want to translate anymore.
 
 ## Technical details
 The add-in was tested on Window 10 & 11 and in Revit versions 2022-2023. It should work in all Revit versions from 2020 to 2024.
