@@ -1,11 +1,12 @@
 ﻿<RevitAddIns>
     <AddIn Type="Application">
-        <Name>RevitTranslatorAddin</Name>
+        <Name>Revit Translator</Name>
+		<Description>Add-in for machine translation of model text via DeepL API.</Description>
+		<VisibilityMode>NotVisibleWhenNoActiveDocument</VisibilityMode>
         <Assembly>RevitTranslatorAddin/RevitTranslatorAddin.dll</Assembly>
         <AddInId>77C2A51D-29E8-4854-A6C5-A3B4EC1A08E2</AddInId>
         <FullClassName>RevitTranslatorAddin.Application</FullClassName>
         <VendorId>Development</VendorId>
-        <VendorDescription></VendorDescription>
-        <VendorEmail></VendorEmail>
+        <VendorDescription>Ilia Krachkovskii. Independent BIM Developer. Connect with me on LinkedIn: https://linkedin.com/in/ilia-krachkovskii</VendorDescription>
     </AddIn>
 </RevitAddIns>

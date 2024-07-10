@@ -18,8 +18,11 @@ public partial class SettingsWindow : FluentWindow
         InitializeComponent();
         DataContext = viewModel;
         ApplicationThemeManager.Apply(this);
-        //if (Environment.OSVersion.Version >= new Version(10, 0, 22000))
-        if (false)
+
+        // Can't set Acrylic (or any sort of backdrop, in that case) in Windows 10.
+        // Seems like the best way to check for the system version is via build number
+        if (Environment.OSVersion.Version >= new Version(10, 0, 22000))
+        //if (false)
         {
             WindowBackdropType = WindowBackdropType.Acrylic;
         }
