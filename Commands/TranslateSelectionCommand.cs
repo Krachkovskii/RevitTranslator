@@ -34,12 +34,20 @@ public class TranslateSelectionCommand : ExternalCommand
         List<ElementId> selection = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
         var finished = _utils.StartTranslation(selection);
 
-        if (finished && TranslationUtils.Translations.Count > 0)
+        if (TranslationUtils.Translations.Count > 0)
         {
             _exEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
+        else
+        {
+            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
+            ProgressWindowUtils.End();
+        }
 
-        ProgressWindowUtils.End();
+        // instead, ending it directly in External Event Handler,
+        // since it is still called after this line - even if I switch focus.
+
+        //ProgressWindowUtils.End();
     }
 }

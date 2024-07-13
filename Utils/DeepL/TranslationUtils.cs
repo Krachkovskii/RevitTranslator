@@ -1,9 +1,13 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RevitTranslatorAddin.Utils.Revit;
+using RevitTranslatorAddin.ViewModels;
 
 namespace RevitTranslatorAddin.Utils.DeepL;
 
@@ -14,8 +18,10 @@ public class TranslationUtils
     private readonly HttpClient _httpClient = null;
     private static int _translationsCount = 0;
     private static int _completedTranslationsCount = 0;
+    private static int _characterCount = 0;
     internal static int CompletedTranslationsCount { get; private set; } = 0;
     internal static int TranslationsCount { get; private set; } = 0;
+    internal static int CharacterCount { get; private set; } = 0;
 
     /// <summary>
     /// List of elements to translate, intended to use with asynchronous translation methods.
@@ -59,7 +65,7 @@ public class TranslationUtils
         }
 
         // Perform test translation to see if translation can be performed.
-        // This action is done everytime settings are saved or when a command is executed.
+        // This action is done every time settings are saved or when a command is executed.
         try
         {
             var test = Task.Run(async () =>
@@ -71,6 +77,7 @@ public class TranslationUtils
 
             return test;
         }
+
         catch
         {
             MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
@@ -110,6 +117,8 @@ public class TranslationUtils
 
         var translationResult = JsonConvert.DeserializeObject<TranslationResult>(responseBody);
 
+        await Task.Delay(1000);
+
         return translationResult?.Translations?[0]?.Text;
     }
 
@@ -122,36 +131,23 @@ public class TranslationUtils
     /// <returns>The translated text.</returns>
     private async Task<string> TranslateTextAsync(string text)
     {
+        var translatedText = await TranslateBaseAsync(text);
+
         Interlocked.Increment(ref _translationsCount);
         TranslationsCount = _translationsCount;
-
-        var translatedText = await TranslateBaseAsync(text);
+        Interlocked.Add(ref _characterCount, text.Length);
+        CharacterCount = _characterCount;
 
         var finished = Interlocked.Increment(ref _completedTranslationsCount);
         CompletedTranslationsCount = finished;
         ProgressWindowUtils.Update(finished, _settings.TargetLanguage);
 
+        await Task.Delay(500);
+
         return translatedText;
     }
 
-    /// <summary>
-    /// Clears all properties related to translation count.
-    /// </summary>
-    internal static void ClearTranslationCount()
-    {
-        _translationsCount = 0;
-        _completedTranslationsCount = 0;
-        CompletedTranslationsCount = 0;
-        TranslationsCount = 0;
-        Translations = new ConcurrentBag<(object, string, string, ElementId)>();
-    }
-
-    private bool IsNumberOnly(string input)
-    {
-        return string.IsNullOrEmpty(input) || Regex.IsMatch(input, @"^\d+$");
-    }
-
-    internal async Task TranslateTextNoteAsync(TextNote textNote)
+    internal async Task TranslateTextNoteAsync(TextNote textNote, CancellationToken token)
     {
         var text = textNote.Text;
         if (!string.IsNullOrEmpty(text) && !IsNumberOnly(text))
@@ -164,7 +160,7 @@ public class TranslationUtils
         }
     }
 
-    internal async Task TranslateDimensionAsync(Dimension dim)
+    internal async Task TranslateDimensionAsync(Dimension dim, CancellationToken token)
     {
         var above = dim.Above;
         if (!string.IsNullOrEmpty(above) && !IsNumberOnly(above))
@@ -218,7 +214,7 @@ public class TranslationUtils
         }
     }
 
-    internal async Task TranslateElementParametersAsync(Element element)
+    internal async Task TranslateElementParametersAsync(Element element, CancellationToken token)
     {
         var parameters = element.Parameters
             .Cast<Parameter>()
@@ -243,7 +239,7 @@ public class TranslationUtils
         }
     }
 
-    internal async Task TranslateScheduleAsync(Document doc, ElementId scheduleId)
+    internal async Task TranslateScheduleAsync(Document doc, ElementId scheduleId, CancellationToken token)
     {
         // Translating names
         var s = doc.GetElement(scheduleId) as ViewSchedule;
@@ -293,6 +289,24 @@ public class TranslationUtils
         }
     }
 
+
+    /// <summary>
+    /// Clears all properties related to translation count.
+    /// </summary>
+    internal static void ClearTranslationCount()
+    {
+        _translationsCount = 0;
+        _completedTranslationsCount = 0;
+        CompletedTranslationsCount = 0;
+        TranslationsCount = 0;
+        Translations = new ConcurrentBag<(object, string, string, ElementId)>();
+    }
+
+    private bool IsNumberOnly(string input)
+    {
+        return string.IsNullOrEmpty(input) || Regex.IsMatch(input, @"^\d+$");
+    }
+
     /// <summary>
     /// Generic method for translating a set of elements. Calls appropriate translation methods for each
     /// element type. This is a synchronous method that freezes the main thread.
@@ -305,54 +319,95 @@ public class TranslationUtils
     /// </returns>
     internal bool StartTranslation(List<ElementId> elements)
     {
+        ProgressWindowViewModel.Cts = new CancellationTokenSource();
+
         var translationTasks = new List<Task>();
         var doc = RevitUtils.Doc;
 
         HashSet<ElementId> typeIds = [];
 
-        foreach (var id in elements)
-        {
-            var el = doc.GetElement(id);
+        try {
+            var token = ProgressWindowViewModel.Cts.Token;
+            //token.ThrowIfCancellationRequested();
 
-            switch (el)
+            foreach (var id in elements)
             {
-                case TextNote textNote:
-                    translationTasks.Add(Task.Run(() => TranslateTextNoteAsync(textNote)));
-                    break;
+                token.ThrowIfCancellationRequested();
+                var el = doc.GetElement(id);
 
-                case ElementType elementType:
-                    typeIds.Add(elementType.Id);
-                    break;
+                switch (el)
+                {
+                    case TextNote textNote:
+                        translationTasks.Add(Task.Run(() => TranslateTextNoteAsync(textNote, token)));
+                        break;
 
-                case ScheduleSheetInstance scheduleInstance:
-                    translationTasks.Add(Task.Run(() => TranslateScheduleAsync(doc, scheduleInstance.ScheduleId)));
-                    break;
+                    case ElementType elementType:
+                        typeIds.Add(elementType.Id);
+                        break;
 
-                case ViewSchedule viewSchedule:
-                    translationTasks.Add(Task.Run(() => TranslateScheduleAsync(doc, viewSchedule.Id)));
-                    break;
+                    case ScheduleSheetInstance scheduleInstance:
+                        translationTasks.Add(Task.Run(() => TranslateScheduleAsync(doc, scheduleInstance.ScheduleId, token)));
+                        break;
 
-                case Dimension dim:
-                    translationTasks.Add(Task.Run(() => TranslateDimensionAsync(dim)));
-                    break;
+                    case ViewSchedule viewSchedule:
+                        translationTasks.Add(Task.Run(() => TranslateScheduleAsync(doc, viewSchedule.Id, token)));
+                        break;
 
-                case Element element:
-                    translationTasks.Add(Task.Run(() => TranslateElementParametersAsync(element)));
-                    typeIds.Add(element.GetTypeId());
-                    break;
+                    case Dimension dim:
+                        translationTasks.Add(Task.Run(() => TranslateDimensionAsync(dim, token)));
+                        break;
+
+                    case Element element:
+                        translationTasks.Add(Task.Run(() => TranslateElementParametersAsync(element, token)));
+                        typeIds.Add(element.GetTypeId());
+                        break;
+                }
             }
+
+            foreach (var typeId in typeIds)
+            {
+                token.ThrowIfCancellationRequested();
+                if (doc.GetElement(typeId) is ElementType type)
+                {
+                    translationTasks.Add(Task.Run(() => TranslateElementParametersAsync(type, token)));
+                }
+            }
+
+            //Task.WhenAll(translationTasks).GetAwaiter().GetResult();
+            Task.WaitAll(translationTasks.ToArray(), token);
+            return true;
         }
 
-        foreach (var typeId in typeIds)
+        catch (OperationCanceledException)
         {
-            if (doc.GetElement(typeId) is ElementType type)
-            {
-                translationTasks.Add(Task.Run(() => TranslateElementParametersAsync(type)));
-            }
+            // Handle cancellation
+            Debug.WriteLine("Translation operation was cancelled.");
+            return false;
         }
 
-        Task.WhenAll(translationTasks).GetAwaiter().GetResult();
-        return true;
+        catch (AggregateException ae)
+        {
+            if (ae.InnerExceptions.Any(e => e is OperationCanceledException))
+            {
+                Debug.WriteLine("Translation operation was cancelled.");
+                return false;
+            }
+            Debug.WriteLine($"An error occurred during translation: {ae.Message}");
+            return false;
+        }
+
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            Debug.WriteLine($"An error occurred during translation: {ex.Message}");
+            return false;
+        }
+
+        finally
+        {
+            ProgressWindowViewModel.Cts?.Dispose();
+            ProgressWindowViewModel.Cts = null;
+        }
     }
 }
 

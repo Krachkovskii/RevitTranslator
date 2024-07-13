@@ -20,7 +20,7 @@ namespace RevitTranslatorAddin.Views;
 /// <summary>
 /// Interaction logic for NewProgressWindow.xaml
 /// </summary>
-public partial class NewProgressWindow : FluentWindow
+public partial class NewProgressWindow : Window
 {
     public NewProgressWindow(ProgressWindowViewModel viewModel)
     {
@@ -33,7 +33,7 @@ public partial class NewProgressWindow : FluentWindow
         if (Environment.OSVersion.Version >= new Version(10, 0, 22000))
         //if (false)
         {
-            WindowBackdropType = WindowBackdropType.Acrylic;
+            //WindowBackdropType = WindowBackdropType.Acrylic;
         }
         else
         {

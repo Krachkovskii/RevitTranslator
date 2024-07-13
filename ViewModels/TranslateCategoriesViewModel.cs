@@ -82,18 +82,26 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         if (categories.Count == 0) { return; }
         var elements = TranslateCategoriesCommand.GetElementsFromCategories(categories);
 
+        TranslateCategoriesCommand.Window.Close();
+        TranslateCategoriesCommand.Window = null;
+
         ProgressWindowUtils.Start();
 
-        _utils.StartTranslation(elements);
+        var finished = _utils.StartTranslation(elements);
+
         if (TranslationUtils.Translations.Count > 0)
         {
             TranslateCategoriesCommand.TranslateCategoriesExternalEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
+        else
+        {
+            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
+            ProgressWindowUtils.End();
+        }
 
-        ProgressWindowUtils.End();
-        TranslateCategoriesCommand.Window.Close();
-        TranslateCategoriesCommand.Window = null;
+        // this line is being called directly from external event for appropriate timing.
+        //ProgressWindowUtils.End();
     }
 
     public TranslateCategoriesViewModel(TranslationUtils utils)

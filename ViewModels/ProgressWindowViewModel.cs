@@ -10,6 +10,8 @@ using System.Windows.Input;
 namespace RevitTranslatorAddin.ViewModels;
 public class ProgressWindowViewModel : INotifyPropertyChanged
 {
+    internal static CancellationTokenSource Cts = null;
+
     private int _progressBarValue = 0;
     public int ProgressBarValue
     {
@@ -79,8 +81,8 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
 
     private void CancelTranslation()
     {
+        Cts?.Cancel();
     }
-
 
     public event PropertyChangedEventHandler PropertyChanged;
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

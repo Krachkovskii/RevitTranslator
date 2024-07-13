@@ -1,4 +1,5 @@
-﻿using System.Windows.Threading;
+﻿using System.Diagnostics;
+using System.Windows.Threading;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Views;
 
@@ -9,18 +10,27 @@ namespace RevitTranslatorAddin.Utils.Revit;
 /// </summary>
 internal class ProgressWindowUtils
 {
-    internal static ProgressWindow PW { get; set; } = null;
+    internal static ViewModels.ProgressWindowViewModel ProgressViewModel { get; set; } = null;
+    private static Views.NewProgressWindow _window = null;
     internal static AutoResetEvent WindowClosedEvent { get; set; } = new AutoResetEvent(false);
     internal static ManualResetEvent WindowReadyEvent { get; set; } = new ManualResetEvent(false);
 
     internal static void ShowProgressWindow()
     {
-        PW = new ProgressWindow();
-        PW.ProgressBar.Minimum = 0;
-        PW.ProgressBar.Maximum = 100;
-        PW.Closed += (s, e) => WindowClosedEvent.Set();
-        PW.Loaded += (s, e) => WindowReadyEvent.Set();
-        PW.Show();
+        ProgressViewModel = new ViewModels.ProgressWindowViewModel();
+        _window = new NewProgressWindow(ProgressViewModel);
+
+        ProgressViewModel.ProgressBarValue = 0;
+        ProgressViewModel.ProgressBarMaximum = 100;
+
+        _window.Closed += (s, e) =>
+        {
+            WindowClosedEvent.Set();
+            Dispatcher.ExitAllFrames();
+        };
+        _window.Loaded += (s, e) => WindowReadyEvent.Set();
+        _window.Show();
+
         Dispatcher.Run();
     }
 
@@ -28,6 +38,7 @@ internal class ProgressWindowUtils
     {
         var windowThread = new Thread(ShowProgressWindow);
         windowThread.SetApartmentState(ApartmentState.STA);
+        windowThread.IsBackground = true;
         windowThread.Start();
 
         WindowReadyEvent.WaitOne();
@@ -35,22 +46,21 @@ internal class ProgressWindowUtils
 
     internal static void End()
     {
-        PW.Dispatcher.Invoke(() => PW.Close());
+        _window.Dispatcher.Invoke(() => _window.Close());
     }
 
     internal static void Update(int num, string source)
     {
-        PW.Dispatcher.Invoke(() =>
+        _window.Dispatcher.Invoke(() =>
         {
-            PW.ProgressBar.Value = num;
-            PW.ProgressBar.Maximum = TranslationUtils.TranslationsCount;
-            PW.StatusTextBlock.Text = $"Finished {num} out of {TranslationUtils.TranslationsCount} translations to {source}";
+            ProgressViewModel.ProgressBarValue = num;
+            ProgressViewModel.ProgressBarMaximum = TranslationUtils.TranslationsCount;
+            ProgressViewModel.ProgressWindowCharacters = TranslationUtils.CharacterCount;
         });
     }
 
     internal static void RevitUpdate()
     {
-        PW.Dispatcher.Invoke(() => PW.StatusTextBlock.Text = "Updating Revit Elements");
-        PW.Dispatcher.Invoke(() => PW.ProgressBar.IsIndeterminate = true);
+        _window.Dispatcher.Invoke(() => ProgressViewModel.IsProgressBarIndeterminate = true);
     }
 }

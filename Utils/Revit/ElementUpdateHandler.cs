@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Utils.DeepL;
+using static Autodesk.Revit.DB.SpecTypeId;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 
@@ -30,7 +31,7 @@ public class ElementUpdateHandler : IExternalEventHandler
 
                     if (triple.Item2.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
                     {
-                        _cantTranslate.Add($"{triple.Item2} (Id: {triple.Item4})");
+                        _cantTranslate.Add($"{triple.Item2} (Symbol: \"{triple.Item2.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {triple.Item4})");
                         continue;
                     }
 
@@ -42,10 +43,6 @@ public class ElementUpdateHandler : IExternalEventHandler
 
                         case ScheduleField field:
                             field.ColumnHeading = triple.Item2;
-                            break;
-
-                        case ViewSchedule schedule:
-                            schedule.Name = triple.Item2;
                             break;
 
                         case TableSectionData tsd:
@@ -79,6 +76,14 @@ public class ElementUpdateHandler : IExternalEventHandler
                                     break;
                             }
                             break;
+
+                        case Element element:
+                            if (triple.Item3 == "name")
+                            {
+                                element.Name = triple.Item2;
+                            }
+                            break;
+
                         case object _:
                             continue;
                     }
@@ -102,9 +107,10 @@ public class ElementUpdateHandler : IExternalEventHandler
                     MessageBoxImage.Error);
                 t.RollBack();
             }
-
-            TranslationUtils.ClearTranslationCount();
         };
+
+        TranslationUtils.ClearTranslationCount();
+        ProgressWindowUtils.End();
     }
 
     public string GetName()

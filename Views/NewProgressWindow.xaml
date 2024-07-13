@@ -1,4 +1,4 @@
-﻿<ui:FluentWindow x:Class="RevitTranslatorAddin.Views.NewProgressWindow"
+﻿<Window x:Class="RevitTranslatorAddin.Views.NewProgressWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,7 +7,8 @@
         xmlns:local="clr-namespace:RevitTranslatorAddin.Views"
         xmlns:vm="clr-namespace:RevitTranslatorAddin.ViewModels"
         mc:Ignorable="d"
-        Title="NewProgressWindow" Height="150" Width="600">
+        Title="NewProgressWindow" Height="200" Width="600"
+                 ResizeMode="NoResize">
 
     <Window.DataContext>
         <vm:ProgressWindowViewModel/>
@@ -64,4 +65,4 @@
 
 
     </Grid>
-</ui:FluentWindow>
+</Window>
