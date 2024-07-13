@@ -14,7 +14,7 @@ internal class TranslatableTextExtractor
         return !(string.IsNullOrWhiteSpace(input) || Regex.IsMatch(input, @"^\d+$"));
     }
 
-    internal string TextNoteText(TextNote textNote)
+    private string TextNoteText(TextNote textNote)
     {
         if (IsTranslatable(textNote.Text))
         {
@@ -26,7 +26,7 @@ internal class TranslatableTextExtractor
     }
 
 
-    internal List<(string, string)> DimensionText(Dimension dim)
+    private List<(string, string)> DimensionText(Dimension dim)
     {
         var overrides = new List<(string, string)>();
         if (IsTranslatable(dim.Above))
@@ -67,7 +67,7 @@ internal class TranslatableTextExtractor
         return null;
     }
 
-    internal List<(Parameter, string)> ElementParametersText(Element element)
+    private List<(Parameter, string)> ElementParametersText(Element element)
     {
         var output = new List<(Parameter, string)>();
 
@@ -94,10 +94,10 @@ internal class TranslatableTextExtractor
         return null;
     }
 
-    internal List<(ScheduleField, string)> ScheduleHeadersText(Document doc, ElementId scheduleId)
+    private List<(ScheduleField, string)> ScheduleHeadersText(ViewSchedule s)
     {
         var output = new List<(ScheduleField, string)>();
-        var s = doc.GetElement(scheduleId) as ViewSchedule;
+        //var s = doc.GetElement(scheduleId) as ViewSchedule;
 
         // Translating field headers
         var sd = s.Definition;
@@ -119,5 +119,38 @@ internal class TranslatableTextExtractor
         }
 
         return null;
+    }
+
+    internal void GetTranslatableText(List<Element> elements)
+    {
+        foreach (var element in elements)
+        {
+            if (element is TextNote)
+            {
+                var text = TextNoteText(element as TextNote);
+            }
+            else if (element is Dimension)
+            {
+                var text = DimensionText(element as Dimension);
+            }
+            else if (element is ViewSchedule)
+            {
+                var text = ScheduleHeadersText(element as ViewSchedule);
+            }
+            else if (element is ScheduleSheetInstance)
+            {
+                var si = (ScheduleSheetInstance)element;
+                var s = RevitUtils.Doc.GetElement(si.ScheduleId) as ViewSchedule;
+                var text = ScheduleHeadersText(s);
+            }
+            else
+            {
+                var name = element.Name;
+                PossibleTranslationCount++;
+
+                var text = ElementParametersText(element);
+            }
+
+        }
     }
 }
