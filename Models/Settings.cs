@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
-using RevitTranslatorAddin.Utils;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Models;
 

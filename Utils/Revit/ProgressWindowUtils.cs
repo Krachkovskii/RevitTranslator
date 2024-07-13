@@ -1,7 +1,8 @@
 ﻿using System.Windows.Threading;
+using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Views;
 
-namespace RevitTranslatorAddin.Utils;
+namespace RevitTranslatorAddin.Utils.Revit;
 
 /// <summary>
 /// This class handles updates, initiation and closing of a progress window.

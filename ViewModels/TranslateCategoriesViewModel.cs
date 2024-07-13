@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
-using RevitTranslatorAddin.Utils;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.ViewModels;
 public class TranslateCategoriesViewModel : INotifyPropertyChanged

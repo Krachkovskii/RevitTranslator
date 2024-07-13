@@ -1,6 +1,7 @@
 ﻿using Nice3point.Revit.Toolkit.External;
 using Autodesk.Revit.UI;
-using RevitTranslatorAddin.Utils;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Commands;
 
@@ -27,7 +28,7 @@ public class TranslateSelectionCommand : ExternalCommand
         _utils = new TranslationUtils(_settings);
         ProgressWindowUtils.Start();
 
-        IExternalEventHandler handler = new RevitElementUpdateHandler();
+        IExternalEventHandler handler = new ElementUpdateHandler();
         _exEvent = ExternalEvent.Create(handler);
 
         List<ElementId> selection = RevitUtils.UIDoc.Selection.GetElementIds().ToList();

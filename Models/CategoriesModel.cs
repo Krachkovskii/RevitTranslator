@@ -1,4 +1,4 @@
-﻿using RevitTranslatorAddin.Utils;
+﻿using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Models;
 public class CategoriesModel

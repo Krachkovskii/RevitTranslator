@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using RevitTranslatorAddin.Utils;
+using RevitTranslatorAddin.Utils.DeepL;
 
 namespace RevitTranslatorAddin.ViewModels;
 

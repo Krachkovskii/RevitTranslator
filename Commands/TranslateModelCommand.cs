@@ -1,8 +1,9 @@
 ﻿using Autodesk.Revit.UI;
-using RevitTranslatorAddin.Utils;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslatorAddin.Models;
 using System.Windows;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Commands;
 
@@ -64,7 +65,7 @@ public class TranslateModelCommand : ExternalCommand
         _utils = new TranslationUtils(_settings);
         ProgressWindowUtils.Start();
 
-        IExternalEventHandler handler = new RevitElementUpdateHandler();
+        IExternalEventHandler handler = new ElementUpdateHandler();
         _exEvent = ExternalEvent.Create(handler);
         var finished = _utils.StartTranslation(instances);
 

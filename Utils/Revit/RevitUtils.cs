@@ -2,7 +2,7 @@
 using Autodesk.Revit.UI;
 using Autodesk.Windows;
 
-namespace RevitTranslatorAddin.Utils;
+namespace RevitTranslatorAddin.Utils.Revit;
 
 /// <summary>
 /// Represents active Revit context. Updates at the start of command execution.
@@ -44,7 +44,7 @@ internal class RevitUtils
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        IntPtr hBefore = GetForegroundWindow();
+        var hBefore = GetForegroundWindow();
 
         SetForegroundWindow(ComponentManager.ApplicationWindow);
         SetForegroundWindow(hBefore);

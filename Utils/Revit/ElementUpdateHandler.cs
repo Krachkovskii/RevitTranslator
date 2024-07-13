@@ -1,9 +1,10 @@
 ﻿using System.Windows;
 using Autodesk.Revit.UI;
+using RevitTranslatorAddin.Utils.DeepL;
 
-namespace RevitTranslatorAddin.Utils;
+namespace RevitTranslatorAddin.Utils.Revit;
 
-public class RevitElementUpdateHandler : IExternalEventHandler
+public class ElementUpdateHandler : IExternalEventHandler
 {
     /// <summary>
     /// This handler updates all elements in the active document after all translations have been completed.
@@ -14,8 +15,8 @@ public class RevitElementUpdateHandler : IExternalEventHandler
         List<string> _cantTranslate = [];
 
         ProgressWindowUtils.RevitUpdate();
-        
-        using (Transaction t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
+
+        using (var t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
         {
             t.Start();
             try
@@ -93,13 +94,13 @@ public class RevitElementUpdateHandler : IExternalEventHandler
 
                 t.Commit();
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
-                MessageBox.Show(e.Message, 
-                    "Error updating elements", 
-                    MessageBoxButton.OK, 
+                MessageBox.Show(e.Message,
+                    "Error updating elements",
+                    MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                t.RollBack(); 
+                t.RollBack();
             }
 
             TranslationUtils.ClearTranslationCount();

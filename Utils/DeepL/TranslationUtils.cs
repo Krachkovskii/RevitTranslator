@@ -3,8 +3,9 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Newtonsoft.Json;
+using RevitTranslatorAddin.Utils.Revit;
 
-namespace RevitTranslatorAddin.Utils;
+namespace RevitTranslatorAddin.Utils.DeepL;
 
 public class TranslationUtils
 {
@@ -17,7 +18,7 @@ public class TranslationUtils
     internal static int TranslationsCount { get; private set; } = 0;
 
     /// <summary>
-    /// List of elments to translate, intended to use with asynchronous translation methods.
+    /// List of elements to translate, intended to use with asynchronous translation methods.
     /// Each tuple stores three values:
     /// - element to be translated, e.g. a parameter or a textbox; (object)
     /// - translated text; (string)
@@ -42,7 +43,7 @@ public class TranslationUtils
     /// <returns>True if translation can be performed, false otherwise.</returns>
     public static bool CanTranslate(Models.Settings settings)
     {
-        if (settings.DeeplApiKey == null || settings.TargetLanguage == null) 
+        if (settings.DeeplApiKey == null || settings.TargetLanguage == null)
         {
             MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
                 "Please make sure everything is correct:\n" +
@@ -61,7 +62,7 @@ public class TranslationUtils
         // This action is done everytime settings are saved or when a command is executed.
         try
         {
-            var test = Task<bool>.Run(async () => 
+            var test = Task.Run(async () =>
             {
                 var utils = new TranslationUtils(settings);
                 var res = await utils.TranslateBaseAsync("bonjour");
@@ -126,7 +127,7 @@ public class TranslationUtils
 
         var translatedText = await TranslateBaseAsync(text);
 
-        int finished = Interlocked.Increment(ref _completedTranslationsCount);
+        var finished = Interlocked.Increment(ref _completedTranslationsCount);
         CompletedTranslationsCount = finished;
         ProgressWindowUtils.Update(finished, _settings.TargetLanguage);
 
@@ -165,7 +166,7 @@ public class TranslationUtils
 
     internal async Task TranslateDimensionAsync(Dimension dim)
     {
-        string above = dim.Above;
+        var above = dim.Above;
         if (!string.IsNullOrEmpty(above) && !IsNumberOnly(above))
         {
             var translated = await TranslateTextAsync(above);
@@ -175,17 +176,17 @@ public class TranslationUtils
             }
         }
 
-        string below = dim.Below;
+        var below = dim.Below;
         if (!string.IsNullOrEmpty(below) && !IsNumberOnly(below))
         {
             var translated = await TranslateTextAsync(below);
-            if ( translated != null)
+            if (translated != null)
             {
                 Translations.Add((dim, translated, "below", dim.Id));
             }
         }
 
-        string prefix = dim.Prefix;
+        var prefix = dim.Prefix;
         if (!string.IsNullOrEmpty(prefix) && !IsNumberOnly(prefix))
         {
             var translated = await TranslateTextAsync(prefix);
@@ -195,7 +196,7 @@ public class TranslationUtils
             }
         }
 
-        string suffix = dim.Suffix;
+        var suffix = dim.Suffix;
         if (!string.IsNullOrEmpty(suffix) && !IsNumberOnly(suffix))
         {
             var translated = await TranslateTextAsync(suffix);
@@ -205,7 +206,7 @@ public class TranslationUtils
             }
         }
 
-        string valueOverride = dim.ValueOverride;
+        var valueOverride = dim.ValueOverride;
         if (!string.IsNullOrEmpty(valueOverride) && !IsNumberOnly(valueOverride))
         {
             var translated = await TranslateTextAsync(valueOverride);
@@ -219,18 +220,18 @@ public class TranslationUtils
 
     internal async Task TranslateElementParametersAsync(Element element)
     {
-        List<Parameter> parameters = element.Parameters
+        var parameters = element.Parameters
             .Cast<Parameter>()
             .Where(p => p.StorageType == StorageType.String && !p.IsReadOnly)
             .ToList();
 
-        foreach (Parameter parameter in parameters)
+        foreach (var parameter in parameters)
         {
             var value = parameter.AsString();
             if (string.IsNullOrWhiteSpace(value) || IsNumberOnly(value)) { continue; }
 
             var translated = await TranslateTextAsync(value);
-            if (translated == null ||value == translated) { continue; }
+            if (translated == null || value == translated) { continue; }
             Translations.Add((parameter, translated, string.Empty, element.Id));
         }
 
@@ -277,17 +278,17 @@ public class TranslationUtils
         //}
 
         // Translating field headers
-        ScheduleDefinition sd = s.Definition;
-        int fieldCount = sd.GetFieldCount();
-        for (int i = 0; i < fieldCount; i++)
+        var sd = s.Definition;
+        var fieldCount = sd.GetFieldCount();
+        for (var i = 0; i < fieldCount; i++)
         {
-            ScheduleField field = sd.GetField(i);
-            string header = field.ColumnHeading;
+            var field = sd.GetField(i);
+            var header = field.ColumnHeading;
             if (string.IsNullOrWhiteSpace(header) || IsNumberOnly(header))
             {
                 continue;
             }
-            string f_translated = await TranslateTextAsync(header);
+            var f_translated = await TranslateTextAsync(header);
             Translations.Add((field, f_translated, string.Empty, scheduleId));
         }
     }
@@ -309,7 +310,7 @@ public class TranslationUtils
 
         HashSet<ElementId> typeIds = [];
 
-        foreach (ElementId id in elements)
+        foreach (var id in elements)
         {
             var el = doc.GetElement(id);
 
@@ -342,7 +343,7 @@ public class TranslationUtils
             }
         }
 
-        foreach (ElementId typeId in typeIds)
+        foreach (var typeId in typeIds)
         {
             if (doc.GetElement(typeId) is ElementType type)
             {
