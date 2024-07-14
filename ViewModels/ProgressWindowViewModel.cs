@@ -149,7 +149,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         }
         else
         {
-            AfterText = "Translation finished";
+            AfterText = "Translation finished!";
         }
     }
 
@@ -160,9 +160,10 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         Cts?.Cancel();
     }
 
-        public ProgressWindowViewModel()
+    public ProgressWindowViewModel()
     {
         StopCommand = new RelayCommand(Stop);
+        AfterTextVisible = Visibility.Invisible;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
