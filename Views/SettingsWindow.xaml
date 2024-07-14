@@ -118,10 +118,6 @@
                   ItemsSource="{Binding Languages}"
                   SelectedIndex="{Binding SelectedTargetLanguageIndex}"/>
 
-        <!--Separator Grid.Row="3"
-                   Grid.Column="1"
-                   Grid.ColumnSpan="5"/>-->
-            
         <Rectangle Grid.Row="3"
                    Grid.Column="1"
                    Grid.ColumnSpan="5"

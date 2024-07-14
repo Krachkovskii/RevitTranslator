@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RevitTranslatorAddin.Utils;
+namespace RevitTranslatorAddin.Utils.DeepL;
 internal class DeeplLanguageCodes
 {
     // Source: https://developers.deepl.com/docs/v/en/resources/supported-languages

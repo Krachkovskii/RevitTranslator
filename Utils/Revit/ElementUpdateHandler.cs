@@ -1,9 +1,11 @@
 ﻿using System.Windows;
 using Autodesk.Revit.UI;
+using RevitTranslatorAddin.Utils.DeepL;
+using static Autodesk.Revit.DB.SpecTypeId;
 
-namespace RevitTranslatorAddin.Utils;
+namespace RevitTranslatorAddin.Utils.Revit;
 
-public class RevitElementUpdateHandler : IExternalEventHandler
+public class ElementUpdateHandler : IExternalEventHandler
 {
     /// <summary>
     /// This handler updates all elements in the active document after all translations have been completed.
@@ -14,8 +16,8 @@ public class RevitElementUpdateHandler : IExternalEventHandler
         List<string> _cantTranslate = [];
 
         ProgressWindowUtils.RevitUpdate();
-        
-        using (Transaction t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
+
+        using (var t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
         {
             t.Start();
             try
@@ -29,7 +31,7 @@ public class RevitElementUpdateHandler : IExternalEventHandler
 
                     if (triple.Item2.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
                     {
-                        _cantTranslate.Add($"{triple.Item2} (Id: {triple.Item4})");
+                        _cantTranslate.Add($"{triple.Item2} (Symbol: \"{triple.Item2.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {triple.Item4})");
                         continue;
                     }
 
@@ -41,10 +43,6 @@ public class RevitElementUpdateHandler : IExternalEventHandler
 
                         case ScheduleField field:
                             field.ColumnHeading = triple.Item2;
-                            break;
-
-                        case ViewSchedule schedule:
-                            schedule.Name = triple.Item2;
                             break;
 
                         case TableSectionData tsd:
@@ -78,6 +76,14 @@ public class RevitElementUpdateHandler : IExternalEventHandler
                                     break;
                             }
                             break;
+
+                        case Element element:
+                            if (triple.Item3 == "name")
+                            {
+                                element.Name = triple.Item2;
+                            }
+                            break;
+
                         case object _:
                             continue;
                     }
@@ -93,17 +99,18 @@ public class RevitElementUpdateHandler : IExternalEventHandler
 
                 t.Commit();
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
-                MessageBox.Show(e.Message, 
-                    "Error updating elements", 
-                    MessageBoxButton.OK, 
+                MessageBox.Show(e.Message,
+                    "Error updating elements",
+                    MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                t.RollBack(); 
+                t.RollBack();
             }
-
-            TranslationUtils.ClearTranslationCount();
         };
+
+        TranslationUtils.ClearTranslationCount();
+        ProgressWindowUtils.End();
     }
 
     public string GetName()

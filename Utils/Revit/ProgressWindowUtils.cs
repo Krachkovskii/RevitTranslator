@@ -1,22 +1,27 @@
 ﻿using System.Windows.Threading;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.ViewModels;
 using RevitTranslatorAddin.Views;
 
-namespace RevitTranslatorAddin.Utils;
+namespace RevitTranslatorAddin.Utils.Revit;
 
 /// <summary>
 /// This class handles updates, initiation and closing of a progress window.
 /// </summary>
 internal class ProgressWindowUtils
 {
+    internal static ProgressWindowViewModel VM { get; set; } = null;
     internal static ProgressWindow PW { get; set; } = null;
     internal static AutoResetEvent WindowClosedEvent { get; set; } = new AutoResetEvent(false);
     internal static ManualResetEvent WindowReadyEvent { get; set; } = new ManualResetEvent(false);
 
     internal static void ShowProgressWindow()
     {
-        PW = new ProgressWindow();
-        PW.ProgressBar.Minimum = 0;
-        PW.ProgressBar.Maximum = 100;
+        VM = new ProgressWindowViewModel();
+        PW = new ProgressWindow(VM);
+        PW.Activate();
+        PW.Focus();
+        VM.Maximum = 100;
         PW.Closed += (s, e) => WindowClosedEvent.Set();
         PW.Loaded += (s, e) => WindowReadyEvent.Set();
         PW.Show();
@@ -34,22 +39,22 @@ internal class ProgressWindowUtils
 
     internal static void End()
     {
-        PW.Dispatcher.Invoke(() => PW.Close());
+        //PW.Dispatcher.Invoke(() => PW.Close());
+        VM.TranslationsFinished();
     }
 
     internal static void Update(int num, string source)
     {
         PW.Dispatcher.Invoke(() =>
         {
-            PW.ProgressBar.Value = num;
-            PW.ProgressBar.Maximum = TranslationUtils.TranslationsCount;
-            PW.StatusTextBlock.Text = $"Finished {num} out of {TranslationUtils.TranslationsCount} translations to {source}";
+            VM.Value = num;
+            VM.Maximum = TranslationUtils.TranslationsCount;
+            VM.CharacterCount = TranslationUtils.CharacterCount;
         });
     }
 
     internal static void RevitUpdate()
     {
-        PW.Dispatcher.Invoke(() => PW.StatusTextBlock.Text = "Updating Revit Elements");
-        PW.Dispatcher.Invoke(() => PW.ProgressBar.IsIndeterminate = true);
+        //PW.Dispatcher.Invoke(() => VM.StatusTextBlock = "Updating Revit Elements");
     }
 }

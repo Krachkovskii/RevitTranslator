@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Windows.Media.Imaging;
 using Nice3point.Revit.Toolkit.External;
+using JetBrains.Annotations;
 using RevitTranslatorAddin.Utils;
 
 namespace RevitTranslatorAddin;
@@ -37,8 +38,8 @@ public class Application : ExternalApplication
             "RevitTranslatorAddin.Commands.TranslateSelectionCommand")
         {
             LongDescription = "Translate all selected elements, including their family type, if applicable.",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute)),
-            LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute))
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/SelectionIcon16.png", UriKind.RelativeOrAbsolute)),
+            LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/SelectionIcon32.png", UriKind.RelativeOrAbsolute))
         };
 
         var translateModelButtonData = new PushButtonData("Model",
@@ -47,8 +48,8 @@ public class Application : ExternalApplication
             "RevitTranslatorAddin.Commands.TranslateModelCommand")
         {
             LongDescription = "Translate all model elements",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute)),
-            LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute))
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/AllIcon16.png", UriKind.RelativeOrAbsolute)),
+            LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/AllIcon32.png", UriKind.RelativeOrAbsolute))
         };
 
         var translateCategoriesButtonData = new PushButtonData("Categories",
@@ -57,11 +58,9 @@ public class Application : ExternalApplication
             "RevitTranslatorAddin.Commands.TranslateCategoriesCommand")
         {
             LongDescription = "Translate all elements of selected categories",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute)),
-            LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Translate32.png", UriKind.RelativeOrAbsolute))
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/CategoryIcon16.png", UriKind.RelativeOrAbsolute)),
+            LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/CategoryIcon32.png", UriKind.RelativeOrAbsolute))
         };
-
-        //var TranslateAllSplitButtonData = new SplitButtonData("All", "Translate All");
 
         var pulldownButtonData = new PulldownButtonData("translator", "Revit Translator")
         {
@@ -76,11 +75,5 @@ public class Application : ExternalApplication
         pulldownButton.AddPushButton(translateSelectionButtonData);
         pulldownButton.AddSeparator();
         pulldownButton.AddPushButton(settingsButtonData);
-
-        //IList<RibbonItem> stackedItems = panel.AddStackedItems(TranslateAllSplitButtonData, translateSelectionButtonData, settingsButtonData);
-        //var splitButton = stackedItems[0] as SplitButton;
-
-        //splitButton.AddPushButton(translateModelButtonData);
-        //splitButton.AddPushButton(translateCategoriesButtonData);
     }
 }

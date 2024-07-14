@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
-using RevitTranslatorAddin.Utils;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.ViewModels;
 public class TranslateCategoriesViewModel : INotifyPropertyChanged
@@ -81,18 +82,27 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         if (categories.Count == 0) { return; }
         var elements = TranslateCategoriesCommand.GetElementsFromCategories(categories);
 
+        TranslateCategoriesCommand.Window.Close();
+        TranslateCategoriesCommand.Window = null;
+
+        //ProgressWindowUtils.Start(RevitUtils.UIApp);
         ProgressWindowUtils.Start();
 
-        _utils.StartTranslation(elements);
+        var finished = _utils.StartTranslation(elements);
+
         if (TranslationUtils.Translations.Count > 0)
         {
             TranslateCategoriesCommand.TranslateCategoriesExternalEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
+        else
+        {
+            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
+            ProgressWindowUtils.End();
+        }
 
-        ProgressWindowUtils.End();
-        TranslateCategoriesCommand.Window.Close();
-        TranslateCategoriesCommand.Window = null;
+        // this line is being called directly from external event for appropriate timing.
+        //ProgressWindowUtils.End();
     }
 
     public TranslateCategoriesViewModel(TranslationUtils utils)

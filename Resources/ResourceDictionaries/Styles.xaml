@@ -5,7 +5,7 @@
     <Color x:Key="DeepGreen">#0c2105</Color>
     <Color x:Key="LighterGreen">#123307</Color>
     <Color x:Key="DarkerGreen">#081703</Color>
-    <Color x:Key="LightGray">#9e9e9e</Color>
+    <Color x:Key="LightGray">#646464</Color>
 
 	<!-- Brushes -->
 	<SolidColorBrush x:Key="DeepGreenBrush" Color="{StaticResource DeepGreen}"/>

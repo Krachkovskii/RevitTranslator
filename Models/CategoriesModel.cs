@@ -1,4 +1,4 @@
-﻿using RevitTranslatorAddin.Utils;
+﻿using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Models;
 public class CategoriesModel
@@ -20,10 +20,6 @@ public class CategoriesModel
 
         foreach (Category c in allCategories)
         {
-            if (c.BuiltInCategory == BuiltInCategory.OST_Materials)
-            {
-                Console.WriteLine(c.Name);
-            }
             if (c.BuiltInCategory != BuiltInCategory.INVALID
                 //&& c.IsVisibleInUI
                 && c.Parent == null

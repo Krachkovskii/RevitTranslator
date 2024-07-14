@@ -1,8 +1,9 @@
 ﻿using Autodesk.Revit.UI;
-using RevitTranslatorAddin.Utils;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslatorAddin.Models;
 using System.Windows;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Commands;
 
@@ -64,15 +65,20 @@ public class TranslateModelCommand : ExternalCommand
         _utils = new TranslationUtils(_settings);
         ProgressWindowUtils.Start();
 
-        IExternalEventHandler handler = new RevitElementUpdateHandler();
+        IExternalEventHandler handler = new ElementUpdateHandler();
         _exEvent = ExternalEvent.Create(handler);
         var finished = _utils.StartTranslation(instances);
 
-        if (finished && TranslationUtils.Translations.Count > 0)
+        if (TranslationUtils.Translations.Count > 0)
         {
             _exEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
-        ProgressWindowUtils.End();
+        else
+        {
+            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
+            // otherwise, it's called from external event above
+            ProgressWindowUtils.End();
+        }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using Autodesk.Revit.UI;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslatorAddin.Models;
-using RevitTranslatorAddin.Utils;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.Revit;
 using RevitTranslatorAddin.ViewModels;
 using RevitTranslatorAddin.Views;
 
@@ -39,7 +40,7 @@ internal class TranslateCategoriesCommand : ExternalCommand
         Window = new TranslateCategoriesWindow(viewModel);
         Window.Show();
 
-        IExternalEventHandler handler = new RevitElementUpdateHandler();
+        IExternalEventHandler handler = new ElementUpdateHandler();
         TranslateCategoriesHandler = handler;
         TranslateCategoriesExternalEvent = ExternalEvent.Create(handler);
 
