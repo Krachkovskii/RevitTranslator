@@ -26,6 +26,7 @@ public class TranslateSelectionCommand : ExternalCommand
         }
 
         _utils = new TranslationUtils(_settings);
+        //ProgressWindowUtils.Start(RevitUtils.UIApp);
         ProgressWindowUtils.Start();
 
         IExternalEventHandler handler = new ElementUpdateHandler();
@@ -42,12 +43,8 @@ public class TranslateSelectionCommand : ExternalCommand
         else
         {
             // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
+            // otherwise, it is called from external event
             ProgressWindowUtils.End();
         }
-
-        // instead, ending it directly in External Event Handler,
-        // since it is still called after this line - even if I switch focus.
-
-        //ProgressWindowUtils.End();
     }
 }

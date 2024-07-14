@@ -1,91 +1,77 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace RevitTranslatorAddin.ViewModels;
+
 public class ProgressWindowViewModel : INotifyPropertyChanged
 {
+    private int _maximum = 0;
+    private int _value = 0;
+    private int _characterCount = 0;
+    private string _statusTextBlock = string.Empty;
+
     internal static CancellationTokenSource Cts = null;
 
-    private int _progressBarValue = 0;
-    public int ProgressBarValue
+    public int Maximum
     {
-
-        get => _progressBarValue;
+        get => _maximum;
         set
         {
-            if (_progressBarValue != value)
-            {
-                _progressBarValue = value;
-                OnPropertyChanged(nameof(ProgressBarValue));
-            }
+            _maximum = value;
+            OnPropertyChanged(nameof(Maximum));
         }
     }
 
-    private int _progressBarMaximum = 0;
-    public int ProgressBarMaximum
+    public int Value
     {
-
-        get => _progressBarMaximum;
+        get => _value;
         set
         {
-            if (_progressBarMaximum != value)
-            {
-                _progressBarMaximum = value;
-                OnPropertyChanged(nameof(ProgressBarMaximum));
-            }
+            _value = value;
+            OnPropertyChanged(nameof(Value));
         }
     }
 
-    private bool _isProgressBarIndeterminate = false;
-    public bool IsProgressBarIndeterminate
+    public string StatusTextBlock
     {
-
-        get => _isProgressBarIndeterminate;
+        get => _statusTextBlock;
         set
         {
-            if (_isProgressBarIndeterminate != value)
-            {
-                _isProgressBarIndeterminate = value;
-                OnPropertyChanged(nameof(IsProgressBarIndeterminate));
-            }
+            _statusTextBlock = value;
+            OnPropertyChanged(nameof(StatusTextBlock));
         }
     }
 
-    private int _progressWindowCharacters = 0;
-    public int ProgressWindowCharacters
+    public int CharacterCount
     {
-
-        get => _progressWindowCharacters;
+        get => _characterCount;
         set
         {
-            if (_progressWindowCharacters != value)
-            {
-                _progressWindowCharacters = value;
-                OnPropertyChanged(nameof(ProgressWindowCharacters));
-            }
+            _characterCount = value;
+            OnPropertyChanged(nameof(CharacterCount));
         }
     }
 
-    public ICommand CancelCommand { get; }
-
-    public ProgressWindowViewModel()
+    public ICommand CancelCommand
     {
-        CancelCommand = new RelayCommand(CancelTranslation);
+        get;
     }
 
-    private void CancelTranslation()
+    private void Cancel()
     {
         Cts?.Cancel();
     }
 
+        public ProgressWindowViewModel()
+    {
+        CancelCommand = new RelayCommand(Cancel);
+    }
+
     public event PropertyChangedEventHandler PropertyChanged;
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }

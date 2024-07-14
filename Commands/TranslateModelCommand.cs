@@ -77,11 +77,8 @@ public class TranslateModelCommand : ExternalCommand
         else
         {
             // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
+            // otherwise, it's called from external event above
             ProgressWindowUtils.End();
         }
-
-        // this line is being called from external event for better timing.
-
-        //ProgressWindowUtils.End();
     }
 }

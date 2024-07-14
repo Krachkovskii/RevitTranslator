@@ -78,7 +78,7 @@ public class TranslationUtils
             return test;
         }
 
-        catch
+        catch (Exception e)
         {
             MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
                 "Please make sure everything is correct:\n" +
@@ -89,6 +89,8 @@ public class TranslationUtils
                 "Incorrect settings",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
+            
+            Debug.WriteLine(e.Message);
 
             return false;
         }
@@ -117,7 +119,7 @@ public class TranslationUtils
 
         var translationResult = JsonConvert.DeserializeObject<TranslationResult>(responseBody);
 
-        await Task.Delay(1000);
+        //await Task.Delay(500);
 
         return translationResult?.Translations?[0]?.Text;
     }
@@ -131,18 +133,18 @@ public class TranslationUtils
     /// <returns>The translated text.</returns>
     private async Task<string> TranslateTextAsync(string text)
     {
-        var translatedText = await TranslateBaseAsync(text);
-
         Interlocked.Increment(ref _translationsCount);
         TranslationsCount = _translationsCount;
         Interlocked.Add(ref _characterCount, text.Length);
         CharacterCount = _characterCount;
 
+        var translatedText = await TranslateBaseAsync(text);
+
         var finished = Interlocked.Increment(ref _completedTranslationsCount);
         CompletedTranslationsCount = finished;
         ProgressWindowUtils.Update(finished, _settings.TargetLanguage);
 
-        await Task.Delay(500);
+        //await Task.Delay(100);
 
         return translatedText;
     }
@@ -298,24 +300,29 @@ public class TranslationUtils
         _translationsCount = 0;
         _completedTranslationsCount = 0;
         CompletedTranslationsCount = 0;
+        _characterCount = 0;
+        CharacterCount = 0;
         TranslationsCount = 0;
         Translations = new ConcurrentBag<(object, string, string, ElementId)>();
     }
 
+    private static readonly Regex NumberOnlyRegex = new(@"^\d+$");
     private bool IsNumberOnly(string input)
     {
-        return string.IsNullOrEmpty(input) || Regex.IsMatch(input, @"^\d+$");
+        return string.IsNullOrEmpty(input) || NumberOnlyRegex.IsMatch(input);
     }
 
     /// <summary>
-    /// Generic method for translating a set of elements. Calls appropriate translation methods for each
-    /// element type. This is a synchronous method that freezes the main thread.
+    /// Generic method for translating a set of elements. Calls appropriate translation methods for each type of
+    /// element. This is a synchronous method that freezes the main thread.
     /// </summary>
     /// <param name="elements">
     /// A set of ElementIds to translate.
     /// </param>
     /// <returns>
-    /// A boolean value indicating whether the translations have finished or not.
+    /// A boolean value indicating the state of finished operation:
+    ///     true - all translations finished successfully
+    ///     false - error occurred or cancellation was requested
     /// </returns>
     internal bool StartTranslation(List<ElementId> elements)
     {
