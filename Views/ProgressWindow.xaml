@@ -1,12 +1,12 @@
 ﻿<Window x:Class="RevitTranslatorAddin.Views.ProgressWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        
         Title="Translation Progress" 
         Width="600" Height="200"
         WindowStyle="ToolWindow" 
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen">
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20"/>
@@ -28,19 +28,21 @@
         <Button Grid.Row="3"
                 Grid.RowSpan="2"
                 Grid.Column="3"
-                Command="{Binding CancelCommand}"
-                Content="Cancel"
+                Command="{Binding StopCommand}"
+                IsEnabled="{Binding IsStopEnabled}"
+                Content="Stop"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"/>
 
         <ProgressBar Grid.Row="1"
-             Grid.Column="1"
-             Grid.ColumnSpan="3"
-             Value="{Binding Value}"
-             Maximum="{Binding Maximum}"
-             IsIndeterminate="False"/>
+                     Grid.Column="1"
+                     Grid.ColumnSpan="3"
+                     Value="{Binding Value}"
+                     Maximum="{Binding Maximum}"
+                     IsIndeterminate="{Binding IsProgressBarIndeterminate}"/>
 
+        
         <Rectangle Grid.Row="3"
                    Grid.RowSpan="2"
                    Grid.Column="1"
@@ -52,7 +54,7 @@
                    Grid.Column="1"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
-                   Text="Translations completed:"/>
+                   Text="Translations completed"/>
 
         <TextBlock Grid.Row="3"
                    Grid.Column="1"
@@ -68,12 +70,28 @@
                    Grid.Column="2"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
-                   Text="Characters translated:"/>
+                   Text="Characters translated"/>
         <TextBlock Grid.Row="3"
                    Grid.Column="2"
                    FontSize="25"
                    Text="{Binding CharacterCount}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"/>
+
+        <TextBlock x:Name="AfterMessage"
+                   Grid.Row="1"
+                   Grid.Column="1"
+                   Grid.ColumnSpan="3"
+                   Text="{Binding AfterText}"
+                   FontSize="25"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
+                   TextAlignment="Center"
+                   Visibility="{Binding AfterTextVisible}"
+                   >
+            <TextBlock.Background>
+                <SolidColorBrush Color="White" Opacity="0.5"/>
+            </TextBlock.Background>
+        </TextBlock>
     </Grid>
 </Window>

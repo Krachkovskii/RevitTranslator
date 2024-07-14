@@ -39,7 +39,8 @@ internal class ProgressWindowUtils
 
     internal static void End()
     {
-        PW.Dispatcher.Invoke(() => PW.Close());
+        //PW.Dispatcher.Invoke(() => PW.Close());
+        VM.TranslationsFinished();
     }
 
     internal static void Update(int num, string source)
