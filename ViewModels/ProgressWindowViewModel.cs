@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
+using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.ViewModels;
 
@@ -15,8 +18,8 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     private bool _isStopEnabled = true;
     private bool _isStopRequested = false;
     private bool _translationFinished = false;
-    private string _afterText = string.Empty;
-    private Visibility _afterTextVisible = Visibility.Invisible;
+    private string _buttonText = string.Empty;
+    private double _progressBarOpacity = 1;
 
     internal static CancellationTokenSource Cts = null;
 
@@ -100,23 +103,23 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         }
     }
 
-    public string AfterText
+    public string ButtonText
     {
-        get => _afterText;
+        get => _buttonText;
         set
         {
-            _afterText = value;
-            OnPropertyChanged(nameof(AfterText));
+            _buttonText = value;
+            OnPropertyChanged(nameof(ButtonText));
         }
     }
 
-    public Visibility AfterTextVisible
+    public double ProgressBarOpacity
     {
-        get => _afterTextVisible;
+        get => _progressBarOpacity;
         set
         {
-            _afterTextVisible = value;
-            OnPropertyChanged(nameof(AfterTextVisible));
+            _progressBarOpacity = value;
+            OnPropertyChanged(nameof(ProgressBarOpacity));
         }
     }
 
@@ -130,8 +133,11 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         get;
     }
 
-    private void OnWindowClosed(object parameter)
+    public ProgressWindowViewModel()
     {
+        StopCommand = new RelayCommand(Stop);
+        IsStopEnabled = true;
+        ButtonText = "Stop translation";
     }
 
     internal void TranslationsFinished()
@@ -141,33 +147,26 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
             IsStopEnabled = false;
         }
 
-        AfterTextVisible = Visibility.Visible;
-        
         if (IsStopRequested)
         {
-            AfterText = "Translation was interrupted";
+            ButtonText = "Translation was interrupted";
         }
         else
         {
-            AfterText = "Translation finished!";
+            ButtonText = "Translation finished!";
         }
     }
 
     private void Stop()
     {
+        Cts.Cancel();
+        ButtonText = "Stopping...";
         IsStopEnabled = false;
         IsStopRequested = true;
-        Cts?.Cancel();
-    }
-
-    public ProgressWindowViewModel()
-    {
-        StopCommand = new RelayCommand(Stop);
-        AfterTextVisible = Visibility.Invisible;
+        ProgressBarOpacity = 0.5;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
-
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

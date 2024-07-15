@@ -28,8 +28,8 @@ public class Application : ExternalApplication
             "RevitTranslatorAddin.Commands.SettingsCommand")
         {
             LongDescription = "Set API key, languages to translate to and from, and list of parameters to ignore.",
-            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Settings32.png", UriKind.RelativeOrAbsolute)),
-            LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/Settings32.png", UriKind.RelativeOrAbsolute))
+            Image = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/SettingsIcon32.png", UriKind.RelativeOrAbsolute)),
+            LargeImage = new BitmapImage(new Uri("/RevitTranslatorAddin;component/Resources/Icons/SettingsIcon32.png", UriKind.RelativeOrAbsolute))
         };
 
         var translateSelectionButtonData = new PushButtonData("Selection",
