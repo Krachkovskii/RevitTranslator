@@ -1,5 +1,5 @@
 # International projects in BIM just got easier.
-Revit Translator is an add-in for Autodesk Revit that performs automated translation and update of text data in Revit models.
+Revit Translator is an add-in for Autodesk Revit that performs automated translation and update of text data in your Revit models. Use it to translate views, schedules, annotations and much more.
 
 It uses DeepL API to perform quick and precise translations of whole Revit projects within minutes.
 
