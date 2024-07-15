@@ -43,15 +43,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="Resources\Icons\AllIcon16.png" />
       <None Remove="Resources\Icons\AllIcon32.png" />
-      <None Remove="Resources\Icons\CategoryIcon16.png" />
       <None Remove="Resources\Icons\CategoryIcon32.png" />
-      <None Remove="Resources\Icons\SelectionIcon16.png" />
       <None Remove="Resources\Icons\SelectionIcon32.png" />
-      <None Remove="Resources\Icons\Settings16.png" />
-      <None Remove="Resources\Icons\Settings32.png" />
-      <None Remove="Resources\Icons\Translate16.png" />
+      <None Remove="Resources\Icons\SettingsIcon32.png" />
       <None Remove="Resources\Icons\Translate32.png" />
     </ItemGroup>
 
@@ -75,17 +70,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Resource Include="Resources\Icons\AllIcon16.png" />
         <Resource Include="Resources\Icons\AllIcon32.png" />
-        <Resource Include="Resources\Icons\CategoryIcon16.png" />
         <Resource Include="Resources\Icons\CategoryIcon32.png" />
-        <Resource Include="Resources\Icons\RibbonIcon16.png" />
-        <Resource Include="Resources\Icons\RibbonIcon32.png" />
-        <Resource Include="Resources\Icons\SelectionIcon16.png" />
         <Resource Include="Resources\Icons\SelectionIcon32.png" />
-        <Resource Include="Resources\Icons\Settings32.png" />
-        <Resource Include="Resources\Icons\Translate16.png" />
-        <Resource Include="Resources\Icons\Settings16.png" />
+        <Resource Include="Resources\Icons\SettingsIcon32.png" />
         <Resource Include="Resources\Icons\Translate32.png" />
     </ItemGroup>
 

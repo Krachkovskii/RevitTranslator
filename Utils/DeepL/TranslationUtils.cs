@@ -71,7 +71,7 @@ public class TranslationUtils
             var test = Task.Run(async () =>
             {
                 var utils = new TranslationUtils(settings);
-                var res = await utils.TranslateBaseAsync("bonjour");
+                var res = await utils.TranslateBaseAsync("bonjour", new CancellationTokenSource().Token);
                 return true;
             }).GetAwaiter().GetResult();
 
@@ -102,16 +102,16 @@ public class TranslationUtils
     /// </summary>
     /// <param name="text">The text to be translated.</param>
     /// <returns>The translated text.</returns>
-    private async Task<string> TranslateBaseAsync(string text)
+    private async Task<string> TranslateBaseAsync(string text, CancellationToken token)
     {
-        var content = new FormUrlEncodedContent(new[]
-        {
+        var content = new FormUrlEncodedContent(
+        [
             new KeyValuePair<string, string>("auth_key", _settings.DeeplApiKey),
             new KeyValuePair<string, string>("text", text),
             new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"),
             new KeyValuePair<string, string>("target_lang", _settings.Languages[_settings.TargetLanguage]),
             new KeyValuePair<string, string>("source_lang", _settings.SourceLanguage == null ? null : _settings.Languages[_settings.SourceLanguage])
-        });
+        ]);
 
         var response = await _httpClient.PostAsync(_apiUrl, content);
         response.EnsureSuccessStatusCode();
@@ -131,14 +131,15 @@ public class TranslationUtils
     /// </summary>
     /// <param name="text">The text to be translated.</param>
     /// <returns>The translated text.</returns>
-    private async Task<string> TranslateTextAsync(string text)
+    private async Task<string> TranslateTextAsync(CancellationToken token, string text)
     {
         Interlocked.Increment(ref _translationsCount);
         TranslationsCount = _translationsCount;
+
+        var translatedText = await TranslateBaseAsync(text, token);
+        
         Interlocked.Add(ref _characterCount, text.Length);
         CharacterCount = _characterCount;
-
-        var translatedText = await TranslateBaseAsync(text);
 
         var finished = Interlocked.Increment(ref _completedTranslationsCount);
         CompletedTranslationsCount = finished;
@@ -154,12 +155,12 @@ public class TranslationUtils
         var text = textNote.Text;
         if (!string.IsNullOrEmpty(text) && !IsNumberOnly(text))
         {
-            var translated = await TranslateTextAsync(text);
+            var translated = await TranslateTextAsync(token, text);
             if (translated != null)
             {
                 Translations.Add((textNote, translated, string.Empty, textNote.Id));
             }
-        }
+        }  
     }
 
     internal async Task TranslateDimensionAsync(Dimension dim, CancellationToken token)
@@ -167,7 +168,7 @@ public class TranslationUtils
         var above = dim.Above;
         if (!string.IsNullOrEmpty(above) && !IsNumberOnly(above))
         {
-            var translated = await TranslateTextAsync(above);
+            var translated = await TranslateTextAsync(token, above);
             if (translated != null)
             {
                 Translations.Add((dim, translated, "above", dim.Id));
@@ -177,7 +178,7 @@ public class TranslationUtils
         var below = dim.Below;
         if (!string.IsNullOrEmpty(below) && !IsNumberOnly(below))
         {
-            var translated = await TranslateTextAsync(below);
+            var translated = await TranslateTextAsync(token, below);
             if (translated != null)
             {
                 Translations.Add((dim, translated, "below", dim.Id));
@@ -187,7 +188,7 @@ public class TranslationUtils
         var prefix = dim.Prefix;
         if (!string.IsNullOrEmpty(prefix) && !IsNumberOnly(prefix))
         {
-            var translated = await TranslateTextAsync(prefix);
+            var translated = await TranslateTextAsync(token, prefix);
             if (translated != null)
             {
                 Translations.Add((dim, translated, "prefix", dim.Id));
@@ -197,7 +198,7 @@ public class TranslationUtils
         var suffix = dim.Suffix;
         if (!string.IsNullOrEmpty(suffix) && !IsNumberOnly(suffix))
         {
-            var translated = await TranslateTextAsync(suffix);
+            var translated = await TranslateTextAsync(token, suffix);
             if (translated != null)
             {
                 Translations.Add((dim, translated, "suffix", dim.Id));
@@ -207,7 +208,7 @@ public class TranslationUtils
         var valueOverride = dim.ValueOverride;
         if (!string.IsNullOrEmpty(valueOverride) && !IsNumberOnly(valueOverride))
         {
-            var translated = await TranslateTextAsync(valueOverride);
+            var translated = await TranslateTextAsync(token, valueOverride);
             if (translated != null)
             {
                 Translations.Add((dim, translated, "value", dim.Id));
@@ -228,13 +229,13 @@ public class TranslationUtils
             var value = parameter.AsString();
             if (string.IsNullOrWhiteSpace(value) || IsNumberOnly(value)) { continue; }
 
-            var translated = await TranslateTextAsync(value);
+            var translated = await TranslateTextAsync(token, value);
             if (translated == null || value == translated) { continue; }
             Translations.Add((parameter, translated, string.Empty, element.Id));
         }
 
         var name = element.Name;
-        var translated_name = await TranslateTextAsync(name);
+        var translated_name = await TranslateTextAsync(token, name);
         if (translated_name != null)
         {
             Translations.Add((element, translated_name, "name", element.Id));
@@ -246,7 +247,7 @@ public class TranslationUtils
         // Translating names
         var s = doc.GetElement(scheduleId) as ViewSchedule;
         var name = s.Name;
-        var translated = await TranslateTextAsync(name);
+        var translated = await TranslateTextAsync(token, name);
         if (translated != null)
         {
             Translations.Add((s, translated, "name", scheduleId));
@@ -267,7 +268,7 @@ public class TranslationUtils
         //        {
         //            continue;
         //        }
-        //        var h_translated = await TranslateTextAsync(text);
+        //        var h_translated = await TranslateTextAsync(token, text);
         //        if (h_translated != null)
         //        {
         //            Translations.Add((tsd, h_translated, $"{i},{j}"));
@@ -286,7 +287,7 @@ public class TranslationUtils
             {
                 continue;
             }
-            var f_translated = await TranslateTextAsync(header);
+            var f_translated = await TranslateTextAsync(token, header);
             Translations.Add((field, f_translated, string.Empty, scheduleId));
         }
     }
@@ -333,19 +334,26 @@ public class TranslationUtils
 
         HashSet<ElementId> typeIds = [];
 
-        try {
-            var token = ProgressWindowViewModel.Cts.Token;
-            //token.ThrowIfCancellationRequested();
+        var token = ProgressWindowViewModel.Cts.Token;
 
+        try
+        {
             foreach (var id in elements)
             {
-                token.ThrowIfCancellationRequested();
+                if(token.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 var el = doc.GetElement(id);
 
                 switch (el)
                 {
                     case TextNote textNote:
-                        translationTasks.Add(Task.Run(() => TranslateTextNoteAsync(textNote, token)));
+                        translationTasks.Add(Task.Run(async () => { 
+                            token.ThrowIfCancellationRequested();
+                            await TranslateTextNoteAsync(textNote, token); 
+                        }, token));
                         break;
 
                     case ElementType elementType:
@@ -353,19 +361,31 @@ public class TranslationUtils
                         break;
 
                     case ScheduleSheetInstance scheduleInstance:
-                        translationTasks.Add(Task.Run(() => TranslateScheduleAsync(doc, scheduleInstance.ScheduleId, token)));
+                        translationTasks.Add(Task.Run( async () => { 
+                            token.ThrowIfCancellationRequested();
+                            await TranslateScheduleAsync(doc, scheduleInstance.ScheduleId, token); 
+                        }));
                         break;
 
                     case ViewSchedule viewSchedule:
-                        translationTasks.Add(Task.Run(() => TranslateScheduleAsync(doc, viewSchedule.Id, token)));
+                        translationTasks.Add(Task.Run(async () => { 
+                            token.ThrowIfCancellationRequested();
+                            await TranslateScheduleAsync(doc, viewSchedule.Id, token); 
+                        }));
                         break;
 
                     case Dimension dim:
-                        translationTasks.Add(Task.Run(() => TranslateDimensionAsync(dim, token)));
+                        translationTasks.Add(Task.Run( async () => { 
+                            token.ThrowIfCancellationRequested();
+                            await TranslateDimensionAsync(dim, token); 
+                        }));
                         break;
 
                     case Element element:
-                        translationTasks.Add(Task.Run(() => TranslateElementParametersAsync(element, token)));
+                        translationTasks.Add(Task.Run(async () => { 
+                            token.ThrowIfCancellationRequested();
+                            await TranslateElementParametersAsync(element, token); 
+                        }));
                         typeIds.Add(element.GetTypeId());
                         break;
                 }
@@ -373,13 +393,21 @@ public class TranslationUtils
 
             foreach (var typeId in typeIds)
             {
-                token.ThrowIfCancellationRequested();
+                if (token.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 if (doc.GetElement(typeId) is ElementType type)
                 {
-                    translationTasks.Add(Task.Run(() => TranslateElementParametersAsync(type, token)));
+                    translationTasks.Add(Task.Run(async () => { 
+                            token.ThrowIfCancellationRequested();
+                            await TranslateElementParametersAsync(type, token); 
+                    }));
                 }
             }
 
+            //Task.WhenAll(translationTasks);
             //Task.WhenAll(translationTasks).GetAwaiter().GetResult();
             Task.WaitAll(translationTasks.ToArray(), token);
             return true;
@@ -412,8 +440,7 @@ public class TranslationUtils
 
         finally
         {
-            ProgressWindowViewModel.Cts?.Dispose();
-            ProgressWindowViewModel.Cts = null;
+            ProgressWindowViewModel.Cts.Dispose();
         }
     }
 }

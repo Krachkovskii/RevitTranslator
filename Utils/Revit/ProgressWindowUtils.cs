@@ -21,7 +21,7 @@ internal class ProgressWindowUtils
         PW = new ProgressWindow(VM);
         PW.Activate();
         PW.Focus();
-        VM.Maximum = 100;
+        VM.Maximum = 1;
         PW.Closed += (s, e) => WindowClosedEvent.Set();
         PW.Loaded += (s, e) => WindowReadyEvent.Set();
         PW.Show();
@@ -45,12 +45,15 @@ internal class ProgressWindowUtils
 
     internal static void Update(int num, string source)
     {
-        PW.Dispatcher.Invoke(() =>
+        if (ProgressWindowViewModel.Cts != null && !ProgressWindowViewModel.Cts.IsCancellationRequested)
         {
-            VM.Value = num;
-            VM.Maximum = TranslationUtils.TranslationsCount;
-            VM.CharacterCount = TranslationUtils.CharacterCount;
-        });
+            PW.Dispatcher.Invoke(() =>
+            {
+                VM.Value = num;
+                VM.Maximum = TranslationUtils.TranslationsCount;
+                VM.CharacterCount = TranslationUtils.CharacterCount;
+            });
+        }
     }
 
     internal static void RevitUpdate()
