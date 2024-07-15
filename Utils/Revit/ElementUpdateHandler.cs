@@ -24,74 +24,78 @@ public class ElementUpdateHandler : IExternalEventHandler
             {
                 foreach (var triple in TranslationUtils.Translations)
                 {
-                    if (triple.Item1 == null)
+                    try
                     {
-                        continue;
-                    }
-
-                    if (triple.Item2.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
-                    {
-                        _cantTranslate.Add($"{triple.Item2} (Symbol: \"{triple.Item2.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {triple.Item4})");
-                        continue;
-                    }
-
-                    switch (triple.Item1)
-                    {
-                        case Parameter param:
-                            param.Set(triple.Item2);
-                            break;
-
-                        case ScheduleField field:
-                            field.ColumnHeading = triple.Item2;
-                            break;
-
-                        case TableSectionData tsd:
-                            var values = triple.Item3.Split(',').ToList();
-                            var row = int.Parse(values[0]);
-                            var column = int.Parse(values[1]);
-                            tsd.SetCellText(row, column, triple.Item2);
-                            break;
-
-                        case TextNote textNote:
-                            textNote.Text = triple.Item2;
-                            break;
-
-                        case Dimension dim:
-                            switch (triple.Item3)
-                            {
-                                case "above":
-                                    dim.Above = triple.Item2;
-                                    break;
-                                case "below":
-                                    dim.Below = triple.Item2;
-                                    break;
-                                case "prefix":
-                                    dim.Prefix = triple.Item2;
-                                    break;
-                                case "suffix":
-                                    dim.Suffix = triple.Item2;
-                                    break;
-                                case "value":
-                                    dim.ValueOverride = triple.Item2;
-                                    break;
-                            }
-                            break;
-
-                        case Element element:
-                            if (triple.Item3 == "name")
-                            {
-                                element.Name = triple.Item2;
-                            }
-                            break;
-
-                        case object _:
+                        if (triple.Item1 == null)
+                        {
                             continue;
+                        }
+
+                        if (triple.Item2.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
+                        {
+                            _cantTranslate.Add($"{triple.Item2} (Symbol: \"{triple.Item2.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {triple.Item4})");
+                            continue;
+                        }
+
+                        switch (triple.Item1)
+                        {
+                            case Parameter param:
+                                param.Set(triple.Item2);
+                                break;
+
+                            case ScheduleField field:
+                                field.ColumnHeading = triple.Item2;
+                                break;
+
+                            case TableSectionData tsd:
+                                var values = triple.Item3.Split(',').ToList();
+                                var row = int.Parse(values[0]);
+                                var column = int.Parse(values[1]);
+                                tsd.SetCellText(row, column, triple.Item2);
+                                break;
+
+                            case TextNote textNote:
+                                textNote.Text = triple.Item2;
+                                break;
+
+                            case Dimension dim:
+                                switch (triple.Item3)
+                                {
+                                    case "above":
+                                        dim.Above = triple.Item2;
+                                        break;
+                                    case "below":
+                                        dim.Below = triple.Item2;
+                                        break;
+                                    case "prefix":
+                                        dim.Prefix = triple.Item2;
+                                        break;
+                                    case "suffix":
+                                        dim.Suffix = triple.Item2;
+                                        break;
+                                    case "value":
+                                        dim.ValueOverride = triple.Item2;
+                                        break;
+                                }
+                                break;
+
+                            case Element element:
+                                if (triple.Item3 == "name")
+                                {
+                                    element.Name = triple.Item2;
+                                }
+                                break;
+
+                            case object _:
+                                continue;
+                        }
                     }
+                    catch { }
                 }
 
                 if (_cantTranslate.Count > 0)
                 {
-                    MessageBox.Show($"The following translations couldn't be applied due to forbidden symbols: {string.Join(", ", _cantTranslate)}.",
+                    MessageBox.Show($"The following translations couldn't be applied due to forbidden symbols: \n{string.Join("\n", _cantTranslate)}.",
                                         "Warning",
                                         MessageBoxButton.OK,
                                         MessageBoxImage.Warning);
