@@ -115,6 +115,8 @@ public class ElementUpdateHandler : IExternalEventHandler
 
         TranslationUtils.ClearTranslationCount();
         ProgressWindowUtils.End();
+        ProgressWindowUtils.PW.Activate();
+        ProgressWindowUtils.PW.Focus();
     }
 
     public string GetName()

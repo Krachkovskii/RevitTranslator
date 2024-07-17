@@ -130,7 +130,7 @@ public class SettingsViewModel : INotifyPropertyChanged
         SaveCommand = new RelayCommand(SaveSettings);
         SwitchLanguagesCommand = new RelayCommand(SwitchLanguages);
         OpenLinkedinCommand = new RelayCommand<string>(OpenLinkedin);
-        UpdateButtonText = "Save Settings";
+        UpdateButtonText = "Save settings";
     }
         
     private void LoadSettings()
@@ -196,7 +196,7 @@ public class SettingsViewModel : INotifyPropertyChanged
 
         Task.Run(async () =>
         {
-            await Task.Delay(3000);
+            await Task.Delay(2000);
             UpdateButtonText = "Save settings";
         });
     }
