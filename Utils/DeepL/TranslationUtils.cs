@@ -153,7 +153,7 @@ public class TranslationUtils
     internal async Task TranslateTextNoteAsync(TextNote textNote, CancellationToken token)
     {
         var text = textNote.Text;
-        if (!string.IsNullOrEmpty(text) && !IsNumberOnly(text))
+        if (!IsTextOnly(text))
         {
             var translated = await TranslateTextAsync(token, text);
             if (translated != null)
@@ -166,7 +166,7 @@ public class TranslationUtils
     internal async Task TranslateDimensionAsync(Dimension dim, CancellationToken token)
     {
         var above = dim.Above;
-        if (!string.IsNullOrEmpty(above) && !IsNumberOnly(above))
+        if (IsTextOnly(above))
         {
             var translated = await TranslateTextAsync(token, above);
             if (translated != null)
@@ -176,7 +176,7 @@ public class TranslationUtils
         }
 
         var below = dim.Below;
-        if (!string.IsNullOrEmpty(below) && !IsNumberOnly(below))
+        if (IsTextOnly(below))
         {
             var translated = await TranslateTextAsync(token, below);
             if (translated != null)
@@ -186,7 +186,7 @@ public class TranslationUtils
         }
 
         var prefix = dim.Prefix;
-        if (!string.IsNullOrEmpty(prefix) && !IsNumberOnly(prefix))
+        if (IsTextOnly(prefix))
         {
             var translated = await TranslateTextAsync(token, prefix);
             if (translated != null)
@@ -196,7 +196,7 @@ public class TranslationUtils
         }
 
         var suffix = dim.Suffix;
-        if (!string.IsNullOrEmpty(suffix) && !IsNumberOnly(suffix))
+        if (IsTextOnly(suffix))
         {
             var translated = await TranslateTextAsync(token, suffix);
             if (translated != null)
@@ -206,7 +206,7 @@ public class TranslationUtils
         }
 
         var valueOverride = dim.ValueOverride;
-        if (!string.IsNullOrEmpty(valueOverride) && !IsNumberOnly(valueOverride))
+        if (IsTextOnly(valueOverride))
         {
             var translated = await TranslateTextAsync(token, valueOverride);
             if (translated != null)
@@ -227,7 +227,10 @@ public class TranslationUtils
         foreach (var parameter in parameters)
         {
             var value = parameter.AsString();
-            if (string.IsNullOrWhiteSpace(value) || IsNumberOnly(value)) { continue; }
+            if (!IsTextOnly(value)) 
+            { 
+                continue; 
+            }
 
             var translated = await TranslateTextAsync(token, value);
             if (translated == null || value == translated) { continue; }
@@ -283,7 +286,7 @@ public class TranslationUtils
         {
             var field = sd.GetField(i);
             var header = field.ColumnHeading;
-            if (string.IsNullOrWhiteSpace(header) || IsNumberOnly(header))
+            if (!IsTextOnly(header))
             {
                 continue;
             }
@@ -308,11 +311,27 @@ public class TranslationUtils
     }
 
     private static readonly Regex NumberOnlyRegex = new(@"^\d+$");
-    private bool IsNumberOnly(string input)
+    /// <summary>
+    /// Checks if the input contains only text and is not a null, whitespace, numeric or alphanumeric sequence.
+    /// </summary>
+    /// <param name="input">
+    /// String to check.
+    /// </param>
+    /// <returns>
+    /// Bool that indicates whether the input contains only numbers
+    /// </returns>
+    private bool IsTextOnly(string input)
     {
-        return string.IsNullOrEmpty(input) || NumberOnlyRegex.IsMatch(input);
+        return !(string.IsNullOrWhiteSpace(input) || NumberOnlyRegex.IsMatch(input));
     }
 
+    /// <summary>
+    /// Shows a warning window after translation was cancelled. 
+    /// Determines whether the model should be updated.
+    /// </summary>
+    /// <returns>
+    /// Bool value with user's response.
+    /// </returns>
     internal static bool ProceedWithUpdate()
     {
         var result = MessageBox.Show($"You've interrupted translation process.\n" +
