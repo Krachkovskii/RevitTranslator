@@ -55,9 +55,4 @@ internal class ProgressWindowUtils
             });
         }
     }
-
-    internal static void RevitUpdate()
-    {
-        //PW.Dispatcher.Invoke(() => VM.StatusTextBlock = "Updating Revit Elements");
-    }
 }

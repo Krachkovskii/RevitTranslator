@@ -313,6 +313,22 @@ public class TranslationUtils
         return string.IsNullOrEmpty(input) || NumberOnlyRegex.IsMatch(input);
     }
 
+    internal static bool ProceedWithUpdate()
+    {
+        var result = MessageBox.Show($"You've interrupted translation process.\n" +
+            $"Do you still want to update the model?",
+            "Translation interrupted",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result.Equals(MessageBoxResult.Yes))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Generic method for translating a set of elements. Calls appropriate translation methods for each type of
     /// element. This is a synchronous method that freezes the main thread.

@@ -37,6 +37,15 @@ public class TranslateSelectionCommand : ExternalCommand
 
         if (TranslationUtils.Translations.Count > 0)
         {
+            if (!finished)
+            {
+                var proceed = TranslationUtils.ProceedWithUpdate();
+                if (!proceed)
+                {
+                    return;
+                }
+            }
+
             _exEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }

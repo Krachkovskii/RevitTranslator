@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Utils.DeepL;
-using static Autodesk.Revit.DB.SpecTypeId;
+using RevitTranslatorAddin.ViewModels;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 
@@ -15,7 +15,7 @@ public class ElementUpdateHandler : IExternalEventHandler
     {
         List<string> _cantTranslate = [];
 
-        ProgressWindowUtils.RevitUpdate();
+        ProgressWindowUtils.VM.UpdateStarted();
 
         using (var t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
         {
@@ -113,8 +113,9 @@ public class ElementUpdateHandler : IExternalEventHandler
             }
         };
 
-        TranslationUtils.ClearTranslationCount();
-        ProgressWindowUtils.End();
+        ProgressWindowUtils.VM.UpdateFinished();
+        //TranslationUtils.ClearTranslationCount();
+        //ProgressWindowUtils.End();
     }
 
     public string GetName()

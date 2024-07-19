@@ -57,7 +57,7 @@ public class TranslateModelCommand : ExternalCommand
             MessageBoxButton.YesNo, 
             MessageBoxImage.Warning);
 
-        if (result == MessageBoxResult.No)
+        if (result.Equals(MessageBoxResult.No))
         {
             return;
         }
@@ -71,6 +71,14 @@ public class TranslateModelCommand : ExternalCommand
 
         if (TranslationUtils.Translations.Count > 0)
         {
+            if (!finished)
+            {
+                var proceed = TranslationUtils.ProceedWithUpdate();
+                if (!proceed)
+                {
+                    return;
+                }
+            }
             _exEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }

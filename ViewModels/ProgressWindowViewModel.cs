@@ -157,10 +157,32 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    internal void UpdateStarted()
+    {
+        ButtonText = "Updating Revit model...";
+        IsProgressBarIndeterminate = true;
+    }
+
+    internal void UpdateFinished()
+    {
+        ProgressWindowUtils.PW.Activate();
+        TranslationUtils.ClearTranslationCount();
+        ProgressWindowUtils.End();
+
+        if (IsStopRequested)
+        {
+            ButtonText = "Translation interrupted | Elements updated";
+        }
+        else
+        {
+            ButtonText = "Elements translated!";
+        }
+    }
+
     private void Stop()
     {
         Cts.Cancel();
-        ButtonText = "Stopping...";
+        ButtonText = "Stopping translation...";
         IsStopEnabled = false;
         IsStopRequested = true;
         ProgressBarOpacity = 0.5;
