@@ -26,7 +26,6 @@ public class TranslateSelectionCommand : ExternalCommand
         }
 
         _utils = new TranslationUtils(_settings);
-        //ProgressWindowUtils.Start(RevitUtils.UIApp);
         ProgressWindowUtils.Start();
 
         IExternalEventHandler handler = new ElementUpdateHandler();

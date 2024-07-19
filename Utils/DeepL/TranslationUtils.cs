@@ -2,10 +2,8 @@
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RevitTranslatorAddin.Utils.Revit;
 using RevitTranslatorAddin.ViewModels;
 
@@ -150,6 +148,12 @@ public class TranslationUtils
         return translatedText;
     }
 
+    /// <summary>
+    /// Translate context of a TextNote.
+    /// </summary>
+    /// <param name="textNote"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     internal async Task TranslateTextNoteAsync(TextNote textNote, CancellationToken token)
     {
         var text = textNote.Text;
@@ -163,6 +167,12 @@ public class TranslationUtils
         }  
     }
 
+    /// <summary>
+    /// Translate dimension overrides.
+    /// </summary>
+    /// <param name="dim"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     internal async Task TranslateDimensionAsync(Dimension dim, CancellationToken token)
     {
         var above = dim.Above;
@@ -217,6 +227,12 @@ public class TranslationUtils
         }
     }
 
+    /// <summary>
+    /// Extract and translate name of the element and all values of its text parameters.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     internal async Task TranslateElementParametersAsync(Element element, CancellationToken token)
     {
         var parameters = element.Parameters
@@ -245,10 +261,16 @@ public class TranslationUtils
         }
     }
 
-    internal async Task TranslateScheduleAsync(Document doc, ElementId scheduleId, CancellationToken token)
+    /// <summary>
+    /// Translate schedule name and headers.
+    /// </summary>
+    /// <param name="scheduleId">ElementId of a schedule.</param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    internal async Task TranslateScheduleAsync(ElementId scheduleId, CancellationToken token)
     {
         // Translating names
-        var s = doc.GetElement(scheduleId) as ViewSchedule;
+        var s = RevitUtils.Doc.GetElement(scheduleId) as ViewSchedule;
         var name = s.Name;
         var translated = await TranslateTextAsync(token, name);
         if (translated != null)
@@ -398,14 +420,14 @@ public class TranslationUtils
                     case ScheduleSheetInstance scheduleInstance:
                         translationTasks.Add(Task.Run( async () => { 
                             token.ThrowIfCancellationRequested();
-                            await TranslateScheduleAsync(doc, scheduleInstance.ScheduleId, token); 
+                            await TranslateScheduleAsync(scheduleInstance.ScheduleId, token); 
                         }));
                         break;
 
                     case ViewSchedule viewSchedule:
                         translationTasks.Add(Task.Run(async () => { 
                             token.ThrowIfCancellationRequested();
-                            await TranslateScheduleAsync(doc, viewSchedule.Id, token); 
+                            await TranslateScheduleAsync(viewSchedule.Id, token); 
                         }));
                         break;
 
@@ -481,6 +503,9 @@ public class TranslationUtils
 }
 
 
+/// <summary>
+/// Classes for handling responses from DeepL API.
+/// </summary>
 public class TranslationResult
 {
     [JsonProperty("translations")]

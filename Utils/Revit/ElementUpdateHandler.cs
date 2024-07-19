@@ -20,10 +20,12 @@ public class ElementUpdateHandler : IExternalEventHandler
         using (var t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
         {
             t.Start();
+            // Catching any transaction-related errors.
             try
             {
                 foreach (var triple in TranslationUtils.Translations)
                 {
+                    // catching any errors related to element updates. If raised, simply go to the next element.
                     try
                     {
                         if (triple.Item1 == null)

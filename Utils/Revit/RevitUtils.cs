@@ -13,6 +13,10 @@ internal class RevitUtils
     internal static Autodesk.Revit.ApplicationServices.Application App = null;
     internal static UIDocument UIDoc = null;
     internal static Document Doc = null;
+    
+    /// <summary>
+    /// Characters that can't be used in certain Revit text properties.
+    /// </summary>
     internal static readonly List<char> ForbiddenSymbols = new()
     {
         '\\', ':', '{', '}', '[', ']', '|', ';', '<', '>', '?', '`', '~'
@@ -24,6 +28,7 @@ internal class RevitUtils
         UIDoc = uiapp.ActiveUIDocument;
         Doc = UIDoc.Document;
     }
+
     /// <summary>
     /// Sets focus on a main Revit window momentarily.
     /// Code snippet created by Jeremy Tammik.

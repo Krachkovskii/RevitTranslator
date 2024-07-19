@@ -43,12 +43,6 @@ internal class TranslateCategoriesCommand : ExternalCommand
         IExternalEventHandler handler = new ElementUpdateHandler();
         TranslateCategoriesHandler = handler;
         TranslateCategoriesExternalEvent = ExternalEvent.Create(handler);
-
-        //var finished = _utils.StartTranslation(_elements);   
-        //if (finished)
-        //{
-        //    TranslateCategoriesExtrnalEvent.Raise();
-        //}
     }
 
     internal static List<ElementId> GetElementsFromCategories(List<BuiltInCategory> categories)
