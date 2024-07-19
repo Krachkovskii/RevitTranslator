@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
 using RevitTranslatorAddin.Utils.DeepL;
@@ -87,6 +88,9 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
 
         ProgressWindowUtils.Start();
 
+        RevitUtils.ExEventHandler = new ElementUpdateHandler();
+        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
+
         var finished = _utils.StartTranslation(elements);
 
         if (TranslationUtils.Translations.Count > 0)
@@ -100,7 +104,8 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
                 }
             }
 
-            TranslateCategoriesCommand.TranslateCategoriesExternalEvent.Raise();
+            //TranslateCategoriesCommand.TranslateCategoriesExternalEvent.Raise();
+            RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
         else

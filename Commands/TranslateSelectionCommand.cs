@@ -28,8 +28,10 @@ public class TranslateSelectionCommand : ExternalCommand
         _utils = new TranslationUtils(_settings);
         ProgressWindowUtils.Start();
 
-        IExternalEventHandler handler = new ElementUpdateHandler();
-        _exEvent = ExternalEvent.Create(handler);
+        //IExternalEventHandler handler = new ElementUpdateHandler();
+        //_exEvent = ExternalEvent.Create(handler);
+        RevitUtils.ExEventHandler = new ElementUpdateHandler();
+        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
 
         List<ElementId> selection = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
         var finished = _utils.StartTranslation(selection);
@@ -45,7 +47,8 @@ public class TranslateSelectionCommand : ExternalCommand
                 }
             }
 
-            _exEvent.Raise();
+            //_exEvent.Raise();
+            RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
         else

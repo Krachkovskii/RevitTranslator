@@ -15,7 +15,7 @@ public class ElementUpdateHandler : IExternalEventHandler
     {
         List<string> _cantTranslate = [];
 
-        ProgressWindowUtils.VM.UpdateStarted();
+        ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateStarted());
 
         using (var t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
         {
@@ -115,7 +115,9 @@ public class ElementUpdateHandler : IExternalEventHandler
             }
         };
 
-        ProgressWindowUtils.VM.UpdateFinished();
+        ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateFinished());
+        RevitUtils.ExEvent = null;
+        RevitUtils.ExEventHandler = null;
         //TranslationUtils.ClearTranslationCount();
         //ProgressWindowUtils.End();
     }

@@ -165,7 +165,6 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
 
     internal void UpdateFinished()
     {
-        ProgressWindowUtils.PW.Activate();
         TranslationUtils.ClearTranslationCount();
         ProgressWindowUtils.End();
 
@@ -177,6 +176,9 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         {
             ButtonText = "Elements translated!";
         }
+
+        IsProgressBarIndeterminate = false;
+        ProgressWindowUtils.PW.Activate();
     }
 
     private void Stop()

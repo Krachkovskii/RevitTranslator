@@ -65,8 +65,12 @@ public class TranslateModelCommand : ExternalCommand
         _utils = new TranslationUtils(_settings);
         ProgressWindowUtils.Start();
 
-        IExternalEventHandler handler = new ElementUpdateHandler();
-        _exEvent = ExternalEvent.Create(handler);
+        //IExternalEventHandler handler = new ElementUpdateHandler();
+        //_exEvent = ExternalEvent.Create(handler);
+
+        RevitUtils.ExEventHandler = new ElementUpdateHandler();
+        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
+
         var finished = _utils.StartTranslation(instances);
 
         if (TranslationUtils.Translations.Count > 0)
@@ -79,7 +83,8 @@ public class TranslateModelCommand : ExternalCommand
                     return;
                 }
             }
-            _exEvent.Raise();
+            //_exEvent.Raise();
+            RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
         else
