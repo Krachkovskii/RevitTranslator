@@ -52,6 +52,7 @@ internal class ProgressWindowUtils
                 VM.Value = num;
                 VM.Maximum = TranslationUtils.TranslationsCount;
                 VM.CharacterCount = TranslationUtils.CharacterCount;
+                VM.MonthlyUsage = TranslationUtils.Usage + VM.CharacterCount;
             });
         }
     }

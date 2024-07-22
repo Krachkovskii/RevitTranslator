@@ -88,9 +88,6 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
 
         ProgressWindowUtils.Start();
 
-        RevitUtils.ExEventHandler = new ElementUpdateHandler();
-        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
-
         var finished = _utils.StartTranslation(elements);
 
         if (TranslationUtils.Translations.Count > 0)

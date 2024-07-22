@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Newtonsoft.Json;
@@ -12,7 +13,9 @@ namespace RevitTranslatorAddin.Utils.DeepL;
 public class TranslationUtils
 {
     private readonly Models.Settings _settings = null;
-    private readonly string _apiUrl = "https://api-free.deepl.com/v2/translate";
+    private readonly string _baseApi = "https://api-free.deepl.com/v2/";
+    private readonly string _apiTranslateUrl = null;
+    private readonly string _apiUsageUrl = null;
     private readonly HttpClient _httpClient = null;
     private static int _translationsCount = 0;
     private static int _completedTranslationsCount = 0;
@@ -20,6 +23,8 @@ public class TranslationUtils
     internal static int CompletedTranslationsCount { get; private set; } = 0;
     internal static int TranslationsCount { get; private set; } = 0;
     internal static int CharacterCount { get; private set; } = 0;
+    internal static int Usage { get; private set; } = 0;
+    internal static int Limit { get; private set; } = 0;
 
     /// <summary>
     /// List of elements to translate, intended to use with asynchronous translation methods.
@@ -34,9 +39,13 @@ public class TranslationUtils
     {
         _settings = settings;
         _httpClient = new HttpClient();
-        _apiUrl = _settings.IsPaidPlan
-            ? "https://api.deepl.com/v2/translate"
-            : "https://api-free.deepl.com/v2/translate";
+        _baseApi = _settings.IsPaidPlan
+            ? "https://api.deepl.com/v2/"
+            : "https://api-free.deepl.com/v2/";
+        _apiTranslateUrl = $"{_baseApi}translate";
+        _apiUsageUrl = $"{_baseApi}usage";
+
+        Task.Run( () => GetUsageAsync() ).Wait();
     }
 
     /// <summary>
@@ -95,6 +104,25 @@ public class TranslationUtils
     }
 
     /// <summary>
+    /// Retrieves monthly usage and limits for this API key.
+    /// </summary>
+    /// <returns></returns>
+    public async Task GetUsageAsync()
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("DeepL-Auth-Key", _settings.DeeplApiKey);
+        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("RevitTranslator");
+
+        var response = await _httpClient.GetAsync(_apiUsageUrl);
+        response.EnsureSuccessStatusCode();
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        var usage = JsonConvert.DeserializeObject<DeepLUsage>(responseBody);
+
+        Usage = usage.CharacterCount;
+        Limit = usage.CharacterLimit;
+    }
+
+    /// <summary>
     /// Translates a given text using the DeepL translation API.
     /// This is a base method that simply returns translated text.
     /// </summary>
@@ -111,7 +139,7 @@ public class TranslationUtils
             new KeyValuePair<string, string>("source_lang", _settings.SourceLanguage == null ? null : _settings.Languages[_settings.SourceLanguage])
         ]);
 
-        var response = await _httpClient.PostAsync(_apiUrl, content);
+        var response = await _httpClient.PostAsync(_apiTranslateUrl, content);
         response.EnsureSuccessStatusCode();
         var responseBody = await response.Content.ReadAsStringAsync();
 
@@ -525,6 +553,21 @@ public class Translation
 
     [JsonProperty("text")]
     public string Text
+    {
+        get; set;
+    }
+}
+
+/// <summary>
+/// Class that stores DeepL usage and quota.
+/// </summary>
+public class DeepLUsage
+{
+    public int CharacterCount
+    {
+        get; set;
+    }
+    public int CharacterLimit
     {
         get; set;
     }

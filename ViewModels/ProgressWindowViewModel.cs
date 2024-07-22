@@ -20,6 +20,8 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     private bool _translationFinished = false;
     private string _buttonText = string.Empty;
     private double _progressBarOpacity = 1;
+    private int _monthlyUsage = 0;
+    private int _monthlyLimit = 0;
 
     internal static CancellationTokenSource Cts = null;
 
@@ -123,6 +125,26 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    public int MonthlyUsage
+    {
+        get => _monthlyUsage;
+        set
+        {
+            _monthlyUsage = value;
+            OnPropertyChanged(nameof(MonthlyUsage));
+        }
+    }
+
+    public int MonthlyLimit
+    {
+        get => _monthlyLimit;
+        set
+        {
+            _monthlyLimit = value;
+            OnPropertyChanged(nameof(MonthlyLimit));
+        }
+    }
+
     public ICommand StopCommand
     {
         get;
@@ -136,6 +158,8 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     public ProgressWindowViewModel()
     {
         StopCommand = new RelayCommand(Stop);
+        MonthlyLimit = TranslationUtils.Limit;
+        MonthlyUsage = TranslationUtils.Usage;
         IsStopEnabled = true;
         ButtonText = "Stop translation";
     }
