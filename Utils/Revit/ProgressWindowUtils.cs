@@ -17,13 +17,20 @@ internal class ProgressWindowUtils
 
     internal static void ShowProgressWindow()
     {
+        if (VM != null || PW != null) 
+        {
+            PW = null;
+            VM = null;
+        }
         VM = new ProgressWindowViewModel();
         PW = new ProgressWindow(VM);
+
         PW.Activate();
         PW.Focus();
-        VM.Maximum = 1;
+
         PW.Closed += (s, e) => WindowClosedEvent.Set();
         PW.Loaded += (s, e) => WindowReadyEvent.Set();
+
         PW.Show();
         Dispatcher.Run();
     }

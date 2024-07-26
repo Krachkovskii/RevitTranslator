@@ -7,6 +7,7 @@ using System.Windows;
 using Newtonsoft.Json;
 using RevitTranslatorAddin.Utils.Revit;
 using RevitTranslatorAddin.ViewModels;
+using Wpf.Ui.Controls;
 
 namespace RevitTranslatorAddin.Utils.DeepL;
 
@@ -58,14 +59,14 @@ public class TranslationUtils
     {
         if (settings.DeeplApiKey == null || settings.TargetLanguage == null)
         {
-            MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
+            System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
                 "Please make sure everything is correct:\n" +
                 "• API key\n" +
                 "• Target language\n" +
                 "• Paid/Free plan\n" +
                 "• Translation limits.",
                 "Incorrect settings",
-                MessageBoxButton.OK,
+                System.Windows.MessageBoxButton.OK,
                 MessageBoxImage.Warning);
 
             return false;
@@ -87,14 +88,14 @@ public class TranslationUtils
 
         catch (Exception e)
         {
-            MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
+            System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
                 "Please make sure everything is correct:\n" +
                 "• API key\n" +
                 "• Target language\n" +
                 "• Paid/Free plan\n" +
                 "• Translation limits.",
                 "Incorrect settings",
-                MessageBoxButton.OK,
+                System.Windows.MessageBoxButton.OK,
                 MessageBoxImage.Warning);
             
             Debug.WriteLine(e.Message);
@@ -265,7 +266,7 @@ public class TranslationUtils
     {
         var parameters = element.Parameters
             .Cast<Parameter>()
-            .Where(p => p.StorageType == StorageType.String && !p.IsReadOnly)
+            .Where(p => p.StorageType == StorageType.String && !p.IsReadOnly && p.UserModifiable && p.HasValue)
             .ToList();
 
         foreach (var parameter in parameters)
@@ -384,13 +385,13 @@ public class TranslationUtils
     /// </returns>
     internal static bool ProceedWithUpdate()
     {
-        var result = MessageBox.Show($"You've interrupted translation process.\n" +
-            $"Do you still want to update the model?",
+        var result = System.Windows.MessageBox.Show($"Translation process was interrupted, or an error was thrown.\n" +
+            $"Do you still want to update the model with translated text?",
             "Translation interrupted",
-            MessageBoxButton.YesNo,
+            System.Windows.MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
-        if (result.Equals(MessageBoxResult.Yes))
+        if (result.Equals(System.Windows.MessageBoxResult.Yes))
         {
             return true;
         }
@@ -410,7 +411,8 @@ public class TranslationUtils
     ///     true - all translations finished successfully
     ///     false - error occurred or cancellation was requested
     /// </returns>
-    internal bool StartTranslation(List<ElementId> elements)
+    internal async Task<bool> StartTranslationAsync(List<ElementId> elements)
+    //internal bool StartTranslation(List<ElementId> elements)
     {
         ProgressWindowViewModel.Cts = new CancellationTokenSource();
 
@@ -492,9 +494,9 @@ public class TranslationUtils
                 }
             }
 
-            //Task.WhenAll(translationTasks);
+            await Task.WhenAll(translationTasks);
             //Task.WhenAll(translationTasks).GetAwaiter().GetResult();
-            Task.WaitAll(translationTasks.ToArray(), token);
+            //Task.WaitAll(translationTasks.ToArray(), token);
             return true;
         }
 

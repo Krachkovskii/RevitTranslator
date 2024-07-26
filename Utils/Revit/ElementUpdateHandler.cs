@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.ViewModels;
@@ -28,13 +29,16 @@ public class ElementUpdateHandler : IExternalEventHandler
                     // catching any errors related to element updates. If raised, simply go to the next element.
                     try
                     {
+                        // triple.Item1 contains an element (parameter, property, or element itself) that will be updated
                         if (triple.Item1 == null)
                         {
                             continue;
                         }
 
+                        // triple.Item2 contains translation of text to be updated
                         if (triple.Item2.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
                         {
+                            // triple.Item4 contains ElementId of an element
                             _cantTranslate.Add($"{triple.Item2} (Symbol: \"{triple.Item2.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {triple.Item4})");
                             continue;
                         }
@@ -61,6 +65,7 @@ public class ElementUpdateHandler : IExternalEventHandler
                                 break;
 
                             case Dimension dim:
+                                // triple.Item3 contains additional comments on what part of the element will be updated
                                 switch (triple.Item3)
                                 {
                                     case "above":
@@ -89,10 +94,13 @@ public class ElementUpdateHandler : IExternalEventHandler
                                 break;
 
                             case object _:
-                                continue;
+                                break;
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error while updating the value: {ex.Message}");
+                    }
                 }
 
                 if (_cantTranslate.Count > 0)
@@ -116,6 +124,7 @@ public class ElementUpdateHandler : IExternalEventHandler
         };
 
         ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateFinished());
+
         RevitUtils.ExEvent = null;
         RevitUtils.ExEventHandler = null;
         //TranslationUtils.ClearTranslationCount();

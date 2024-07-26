@@ -71,7 +71,9 @@ public class TranslateModelCommand : ExternalCommand
         RevitUtils.ExEventHandler = new ElementUpdateHandler();
         RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
 
-        var finished = _utils.StartTranslation(instances);
+        //var finished = _utils.StartTranslation(instances);
+        var finishedTask = Task.Run(() => _utils.StartTranslationAsync(instances));
+        var finished = finishedTask.GetAwaiter().GetResult();
 
         if (TranslationUtils.Translations.Count > 0)
         {
@@ -86,9 +88,9 @@ public class TranslateModelCommand : ExternalCommand
             //_exEvent.Raise();
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
-        }
-        else
-        {
+        //}
+        //else
+        //{
             // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
             // otherwise, it's called from external event above
             ProgressWindowUtils.End();

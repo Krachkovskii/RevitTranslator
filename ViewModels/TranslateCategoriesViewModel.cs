@@ -88,7 +88,9 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
 
         ProgressWindowUtils.Start();
 
-        var finished = _utils.StartTranslation(elements);
+        var finishedTask = Task.Run(() => _utils.StartTranslationAsync(elements));
+        var finished = finishedTask.GetAwaiter().GetResult();
+        //var finished = _utils.StartTranslation(elements);
 
         if (TranslationUtils.Translations.Count > 0)
         {
@@ -104,9 +106,9 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
             //TranslateCategoriesCommand.TranslateCategoriesExternalEvent.Raise();
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
-        }
-        else
-        {
+        //}
+        //else
+        //{
             // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
             ProgressWindowUtils.End();
         }

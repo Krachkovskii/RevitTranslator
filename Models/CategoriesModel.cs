@@ -21,7 +21,7 @@ public class CategoriesModel
         foreach (Category c in allCategories)
         {
             if (c.BuiltInCategory != BuiltInCategory.INVALID
-                //&& c.IsVisibleInUI
+                && c.IsVisibleInUI
                 && c.Parent == null
                 && c.CategoryType != CategoryType.Invalid){
             validCategories.Add(c);

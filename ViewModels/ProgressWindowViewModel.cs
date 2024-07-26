@@ -201,6 +201,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
             ButtonText = "Elements translated!";
         }
 
+        ProgressBarOpacity = 0.5;
         IsProgressBarIndeterminate = false;
         ProgressWindowUtils.PW.Activate();
     }
@@ -211,7 +212,6 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         ButtonText = "Stopping translation...";
         IsStopEnabled = false;
         IsStopRequested = true;
-        ProgressBarOpacity = 0.5;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
