@@ -23,8 +23,18 @@ public class CategoriesModel
             if (c.BuiltInCategory != BuiltInCategory.INVALID
                 && c.IsVisibleInUI
                 && c.Parent == null
-                && c.CategoryType != CategoryType.Invalid){
-            validCategories.Add(c);
+                && c.CategoryType != CategoryType.Invalid)
+            {
+                validCategories.Add(c);
+                continue;
+            }
+
+            // Seems like Materials are not visible in UI,
+            // but it's still an important category that needs translation.
+            // Therefore, it is added separately.
+            if (c.BuiltInCategory == BuiltInCategory.OST_Materials) 
+            { 
+                validCategories.Add(c);
             }
         }
 

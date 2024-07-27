@@ -7,7 +7,6 @@ using System.Windows;
 using Newtonsoft.Json;
 using RevitTranslatorAddin.Utils.Revit;
 using RevitTranslatorAddin.ViewModels;
-using Wpf.Ui.Controls;
 
 namespace RevitTranslatorAddin.Utils.DeepL;
 
@@ -27,6 +26,7 @@ public class TranslationUtils
     internal static int Usage { get; private set; } = 0;
     internal static int Limit { get; private set; } = 0;
 
+    //TODO: switch from tuple to an object with corresponding properties for more clarity
     /// <summary>
     /// List of elements to translate, intended to use with asynchronous translation methods.
     /// Each tuple stores three values:
@@ -51,10 +51,15 @@ public class TranslationUtils
 
     /// <summary>
     /// Checks if translation can be performed based on the provided settings. 
-    /// This method tries to translate a single word.
+    /// This method attempts to translate a single word.
     /// </summary>
-    /// <param name="settings">The settings object containing the API key and target language.</param>
-    /// <returns>True if translation can be performed, false otherwise.</returns>
+    /// <param name="settings">
+    /// The Settings object containing the API key and target language.
+    /// </param>
+    /// <returns>
+    /// Bool
+    ///     True if translation can be performed, false otherwise.
+    /// </returns>
     public static bool CanTranslate(Models.Settings settings)
     {
         if (settings.DeeplApiKey == null || settings.TargetLanguage == null)
@@ -104,10 +109,10 @@ public class TranslationUtils
         }
     }
 
+    //TODO: switch to returning (int, int); do not set properties inside the function. Instead, set properties in the main block
     /// <summary>
-    /// Retrieves monthly usage and limits for this API key.
+    /// Retrieves monthly usage and limits for this API key. Sets corresponding properties.
     /// </summary>
-    /// <returns></returns>
     public async Task GetUsageAsync()
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("DeepL-Auth-Key", _settings.DeeplApiKey);
@@ -127,8 +132,14 @@ public class TranslationUtils
     /// Translates a given text using the DeepL translation API.
     /// This is a base method that simply returns translated text.
     /// </summary>
-    /// <param name="text">The text to be translated.</param>
-    /// <returns>The translated text.</returns>
+    /// <param name="text">
+    /// String
+    ///     Text to be translated.
+    /// </param>
+    /// <returns>
+    /// String
+    ///     Translated text.
+    ///     </returns>
     private async Task<string> TranslateBaseAsync(string text, CancellationToken token)
     {
         var content = new FormUrlEncodedContent(
@@ -146,8 +157,6 @@ public class TranslationUtils
 
         var translationResult = JsonConvert.DeserializeObject<TranslationResult>(responseBody);
 
-        //await Task.Delay(500);
-
         return translationResult?.Translations?[0]?.Text;
     }
 
@@ -156,8 +165,14 @@ public class TranslationUtils
     /// This method is responsible for updating the translation count, calling the base translation method,
     /// and updating the progress window.
     /// </summary>
-    /// <param name="text">The text to be translated.</param>
-    /// <returns>The translated text.</returns>
+    /// <param name="text">
+    /// String
+    ///     The text to be translated.
+    /// </param>
+    /// <returns>
+    /// String 
+    ///     Translated text.
+    /// </returns>
     private async Task<string> TranslateTextAsync(CancellationToken token, string text)
     {
         Interlocked.Increment(ref _translationsCount);
@@ -170,7 +185,7 @@ public class TranslationUtils
 
         var finished = Interlocked.Increment(ref _completedTranslationsCount);
         CompletedTranslationsCount = finished;
-        ProgressWindowUtils.Update(finished, _settings.TargetLanguage);
+        ProgressWindowUtils.Update(finished);
 
         //await Task.Delay(100);
 
@@ -178,7 +193,7 @@ public class TranslationUtils
     }
 
     /// <summary>
-    /// Translate context of a TextNote.
+    /// Translate content of a TextNote.
     /// </summary>
     /// <param name="textNote"></param>
     /// <param name="token"></param>
@@ -196,6 +211,8 @@ public class TranslationUtils
         }  
     }
 
+
+    //TODO: Check in detail, seems that dimensions are not being translated properly
     /// <summary>
     /// Translate dimension overrides.
     /// </summary>
@@ -256,13 +273,18 @@ public class TranslationUtils
         }
     }
 
-    /// <summary>
-    /// Extract and translate name of the element and all values of its text parameters.
-    /// </summary>
-    /// <param name="element"></param>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    internal async Task TranslateElementParametersAsync(Element element, CancellationToken token)
+    //internal async Task TranslateMaterialAsync(Material element, CancellationToken token)
+    //{
+        //TODO: implement material-specific properties
+    //}
+
+        /// <summary>
+        /// Extract and translate name of the element and all values of its text parameters.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        internal async Task TranslateElementParametersAsync(Element element, CancellationToken token)
     {
         var parameters = element.Parameters
             .Cast<Parameter>()
@@ -495,7 +517,6 @@ public class TranslationUtils
             }
 
             await Task.WhenAll(translationTasks);
-            //Task.WhenAll(translationTasks).GetAwaiter().GetResult();
             //Task.WaitAll(translationTasks.ToArray(), token);
             return true;
         }

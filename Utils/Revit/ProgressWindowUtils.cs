@@ -15,6 +15,9 @@ internal class ProgressWindowUtils
     internal static AutoResetEvent WindowClosedEvent { get; set; } = new AutoResetEvent(false);
     internal static ManualResetEvent WindowReadyEvent { get; set; } = new ManualResetEvent(false);
 
+    /// <summary>
+    /// Sets up a new instance of a ProgressWindow
+    /// </summary>
     internal static void ShowProgressWindow()
     {
         if (VM != null || PW != null) 
@@ -35,6 +38,9 @@ internal class ProgressWindowUtils
         Dispatcher.Run();
     }
 
+    /// <summary>
+    /// Creates an instance of a ProgressWindow on a separate thread
+    /// </summary>
     internal static void Start()
     {
         var windowThread = new Thread(ShowProgressWindow);
@@ -44,13 +50,22 @@ internal class ProgressWindowUtils
         WindowReadyEvent.WaitOne();
     }
 
+    /// <summary>
+    /// Indicates the end of translation process, changing the state of progress window
+    /// </summary>
     internal static void End()
     {
-        //PW.Dispatcher.Invoke(() => PW.Close());
         VM.TranslationsFinished();
     }
 
-    internal static void Update(int num, string source)
+    /// <summary>
+    /// Updates values of a ProgressWindow
+    /// </summary>
+    /// <param name="num">
+    /// Int
+    ///     Current number of translations
+    /// </param>
+    internal static void Update(int num)
     {
         if (ProgressWindowViewModel.Cts != null && !ProgressWindowViewModel.Cts.IsCancellationRequested)
         {

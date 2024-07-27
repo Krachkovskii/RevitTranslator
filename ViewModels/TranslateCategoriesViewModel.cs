@@ -50,6 +50,7 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
     }
 
     public ICommand SelectAllInGroupCommand => new RelayCommand<Tuple<bool, string>>(ExecuteSelectAllInGroup);
+
     /// <summary>
     /// Checks or unchecks all categories in selected Category Type.
     /// </summary>
@@ -73,6 +74,7 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
     }
 
     public ICommand TranslateSelectedCommand => new RelayCommand(TranslateSelected);
+
     /// <summary>
     /// Command for translation of all elements in selected categories. 
     /// Starts translation process and calls the raise of ExternalEvent to update Revit model.
@@ -103,15 +105,10 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
                 }
             }
 
-            //TranslateCategoriesCommand.TranslateCategoriesExternalEvent.Raise();
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
-        //}
-        //else
-        //{
-            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
-            ProgressWindowUtils.End();
         }
+        ProgressWindowUtils.End();
     }
 
     public TranslateCategoriesViewModel(TranslationUtils utils)

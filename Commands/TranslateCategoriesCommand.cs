@@ -13,10 +13,9 @@ internal class TranslateCategoriesCommand : ExternalCommand
 {
     private TranslationUtils _utils = null;
     private Models.Settings _settings = null;
-    //internal static ExternalEvent TranslateCategoriesExternalEvent = null;
-    //internal static IExternalEventHandler TranslateCategoriesHandler = null;
-    internal static TranslateCategoriesWindow Window = null;
+    internal static TranslateCategoriesWindow Window { get; set; } = null;
     private List<ElementId> _elements = [];
+
     public override void Execute()
     {
         if (RevitUtils.Doc != Document)
@@ -40,14 +39,19 @@ internal class TranslateCategoriesCommand : ExternalCommand
         Window = new TranslateCategoriesWindow(viewModel);
         Window.Show();
 
-        //IExternalEventHandler handler = new ElementUpdateHandler();
-        //TranslateCategoriesHandler = handler;
-        //TranslateCategoriesExternalEvent = ExternalEvent.Create(handler);
-
         RevitUtils.ExEventHandler = new ElementUpdateHandler();
         RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
     }
 
+    /// <summary>
+    /// Gets all elements from selected categories
+    /// </summary>
+    /// <param name="categories">
+    /// Categories to select elements
+    /// </param>
+    /// <returns>
+    /// List of ElementIds
+    /// </returns>
     internal static List<ElementId> GetElementsFromCategories(List<BuiltInCategory> categories)
     {
         var filter = new ElementMulticategoryFilter(categories);

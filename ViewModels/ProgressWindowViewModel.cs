@@ -22,8 +22,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     private double _progressBarOpacity = 1;
     private int _monthlyUsage = 0;
     private int _monthlyLimit = 0;
-
-    internal static CancellationTokenSource Cts = null;
+    internal static CancellationTokenSource Cts { get; set; } = null;
 
     public int Maximum
     {

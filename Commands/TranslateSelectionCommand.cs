@@ -10,7 +10,7 @@ public class TranslateSelectionCommand : ExternalCommand
 {
     private TranslationUtils _utils = null;
     private Models.Settings _settings = null;
-    //private static ExternalEvent _exEvent = null;
+
     public override void Execute()
     {
         if (RevitUtils.Doc != Document)
@@ -28,8 +28,6 @@ public class TranslateSelectionCommand : ExternalCommand
         _utils = new TranslationUtils(_settings);
         ProgressWindowUtils.Start();
 
-        //IExternalEventHandler handler = new ElementUpdateHandler();
-        //_exEvent = ExternalEvent.Create(handler);
         RevitUtils.ExEventHandler = new ElementUpdateHandler();
         RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
 
@@ -49,15 +47,11 @@ public class TranslateSelectionCommand : ExternalCommand
                 }
             }
 
-            //_exEvent.Raise();
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
-        //}
-        //else
-        //{
-            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
-            // otherwise, it is called from external event
-            ProgressWindowUtils.End();
+
         }
+
+        ProgressWindowUtils.End();
     }
 }   

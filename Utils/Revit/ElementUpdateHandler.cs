@@ -127,8 +127,6 @@ public class ElementUpdateHandler : IExternalEventHandler
 
         RevitUtils.ExEvent = null;
         RevitUtils.ExEventHandler = null;
-        //TranslationUtils.ClearTranslationCount();
-        //ProgressWindowUtils.End();
     }
 
     public string GetName()

@@ -27,7 +27,7 @@ public class TranslateModelCommand : ExternalCommand
             return;
         }
 
-        // only allow elements of user-visible categories
+        // only allow elements of user-visible categories via ElementMulticategoryFilter
         List<BuiltInCategory> categoryList = [];
         var categories = CategoriesModel.GetCategories();
         foreach (Category category in categories)
@@ -65,9 +65,6 @@ public class TranslateModelCommand : ExternalCommand
         _utils = new TranslationUtils(_settings);
         ProgressWindowUtils.Start();
 
-        //IExternalEventHandler handler = new ElementUpdateHandler();
-        //_exEvent = ExternalEvent.Create(handler);
-
         RevitUtils.ExEventHandler = new ElementUpdateHandler();
         RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
 
@@ -85,15 +82,11 @@ public class TranslateModelCommand : ExternalCommand
                     return;
                 }
             }
-            //_exEvent.Raise();
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
-        //}
-        //else
-        //{
-            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
-            // otherwise, it's called from external event above
-            ProgressWindowUtils.End();
+
         }
+
+        ProgressWindowUtils.End();
     }
 }

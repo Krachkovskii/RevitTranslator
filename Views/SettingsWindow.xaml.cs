@@ -10,7 +10,6 @@ namespace RevitTranslatorAddin.Views;
 /// <summary>
 /// Interaction logic for SettingsWindow.xaml
 /// </summary>
-/// 
 public partial class SettingsWindow : FluentWindow
 {
     public SettingsWindow(SettingsViewModel viewModel)
