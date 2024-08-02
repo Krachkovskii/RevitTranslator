@@ -27,7 +27,7 @@ public class TranslationUnit
     /// <summary>
     /// The element to be updated.
     /// </summary>
-    public Element Element { get; internal set; } = null;
+    public object Element { get; internal set; } = null;
 
     /// <summary>
     /// Optional: parent element that is UI-visible. 
