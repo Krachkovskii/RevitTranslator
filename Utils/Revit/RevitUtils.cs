@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Windows;
 using Autodesk.Revit.UI;
 using Autodesk.Windows;
 
@@ -32,6 +33,55 @@ internal class RevitUtils
         UIDoc = uiapp.ActiveUIDocument;
         Doc = UIDoc.Document;
     }
+
+    /// <summary>
+    /// Shows warning about using Revit 2025 (.NET8 version), since it still can cause errors.
+    /// </summary>
+    /// <returns>
+    /// <c>MessageBoxResult</c> with user's choice.
+    /// </returns>
+    internal static MessageBoxResult ShowNet8Warning()
+    {
+        var warningResult = MessageBox.Show(messageBoxText: "Translator for Revit 2025 is still in the testing phase. " +
+            "Stable performance cannot be guaranteed.\n" +
+            "Do you want to save the file before starting translation?",
+            caption: "Revit 2025 warning",
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+
+        return warningResult;
+    }
+
+    /// <summary>
+    /// Take action depending on user's choice after .NET8 warning.
+    /// You can save the document, skip saving or abort operation.
+    /// </summary>
+    /// <param name="res">The result.</param>
+    /// <returns>
+    /// <c>true</c> if user decides to proceed (with or without saving);
+    /// <c>false</c> if user decides to abort operation
+    /// </returns>
+    internal static bool Net8WarningAction(MessageBoxResult res)
+    {
+        if (res == MessageBoxResult.Yes)
+        {
+            SaveRevitDocument();
+        }
+
+        else if (res == MessageBoxResult.Cancel)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static void SaveRevitDocument()
+    {
+        var so = new SaveOptions();
+        Doc.Save(so);
+    }
+
 
     //TODO: Remove redundant method
     /// <summary>

@@ -23,6 +23,16 @@ internal class TranslateCategoriesCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
+#if NET8_0
+        var res = RevitUtils.ShowNet8Warning();
+        var action = RevitUtils.Net8WarningAction(res);
+
+        if (!action)
+        {
+            return;
+        }
+#endif
+
         _settings = Models.Settings.LoadFromJson();
 
         if (!TranslationUtils.CanTranslate(_settings))

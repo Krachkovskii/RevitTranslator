@@ -29,16 +29,13 @@ public class ElementUpdateHandler : IExternalEventHandler
                     // catching any errors related to element updates. If raised, simply go to the next element.
                     try
                     {
-                        // triple.Item1 contains an element (parameter, property, or element itself) that will be updated
                         if (unit.Element == null)
                         {
                             continue;
                         }
 
-                        // unit.TranslatedText contains translation of text to be updated
                         if (unit.TranslatedText.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
                         {
-                            // triple.Item4 contains ElementId of an element
                             _cantTranslate.Add($"{unit.TranslatedText} (Symbol: \"{unit.TranslatedText.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {unit.ElementId})");
                             continue;
                         }
@@ -62,7 +59,6 @@ public class ElementUpdateHandler : IExternalEventHandler
                                 break;
 
                             case Dimension dim:
-                                // triple.Item3 contains additional comments on what part of the element will be updated
                                 switch (unit.TranslationDetails)
                                 {
                                     case TranslationDetails.DimensionAbove:

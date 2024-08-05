@@ -18,6 +18,16 @@ public class TranslateSelectionCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
+#if NET8_0
+        var res = RevitUtils.ShowNet8Warning();
+        var action = RevitUtils.Net8WarningAction(res);
+
+        if (!action)
+        {
+            return;
+        }
+#endif
+
         _settings = Models.Settings.LoadFromJson();
         
         if (!TranslationUtils.CanTranslate(_settings))
@@ -32,7 +42,7 @@ public class TranslateSelectionCommand : ExternalCommand
         RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
 
         List<ElementId> selection = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
-        //var finished = _utils.StartTranslation(selection);
+        
         var finishedTask = Task.Run( async () => await _utils.StartTranslationAsync(selection));
         var finished = finishedTask.GetAwaiter().GetResult();
 
@@ -49,7 +59,6 @@ public class TranslateSelectionCommand : ExternalCommand
 
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
-
         }
 
         ProgressWindowUtils.End();
