@@ -13,7 +13,6 @@ public class TranslateModelCommand : ExternalCommand
 {
     private TranslationUtils _utils = null;
     private Models.Settings _settings = null;
-    private static ExternalEvent _exEvent = null;
     public override void Execute()
     {
         if (RevitUtils.Doc != Document)

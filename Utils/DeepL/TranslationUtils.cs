@@ -542,6 +542,8 @@ public class TranslationUtils
         return false;
     }
 
+    private HashSet<ElementId> _typeIds = [];
+    private List<Task> _translationTasks = [];
     /// <summary>
     /// Generic method for translating a set of elements. Calls appropriate translation methods for each type of
     /// element. This is a synchronous method that freezes the main thread.
@@ -559,11 +561,6 @@ public class TranslationUtils
     {
         ProgressWindowViewModel.Cts = new CancellationTokenSource();
 
-        var translationTasks = new List<Task>();
-        var doc = RevitUtils.Doc;
-
-        HashSet<ElementId> typeIds = [];
-
         token = ProgressWindowViewModel.Cts.Token;
 
         try
@@ -575,70 +572,75 @@ public class TranslationUtils
                     break;
                 }
 
-                var el = doc.GetElement(id);
+                var el = RevitUtils.Doc.GetElement(id);
 
                 switch (el)
                 {
                     case TextNote textNote:
-                        translationTasks.Add(Task.Run(async () => { 
+                        _translationTasks.Add(Task.Run(async () => { 
                             token.ThrowIfCancellationRequested();
                             await TranslateTextNoteAsync(textNote); 
                         }, token));
                         break;
 
                     case ElementType elementType:
-                        typeIds.Add(elementType.Id);
+                        _typeIds.Add(elementType.Id);
                         break;
 
                     case ScheduleSheetInstance scheduleInstance:
-                        translationTasks.Add(Task.Run( async () => { 
+                        _translationTasks.Add(Task.Run( async () => { 
                             token.ThrowIfCancellationRequested();
                             await TranslateScheduleAsync(scheduleInstance.ScheduleId); 
                         }));
                         break;
 
                     case ViewSchedule viewSchedule:
-                        translationTasks.Add(Task.Run(async () => { 
+                        _translationTasks.Add(Task.Run(async () => { 
                             token.ThrowIfCancellationRequested();
                             await TranslateScheduleAsync(viewSchedule.Id); 
                         }));
                         break;
 
                     case Dimension dim:
-                        translationTasks.Add(Task.Run( async () => { 
+                        _translationTasks.Add(Task.Run( async () => { 
                             token.ThrowIfCancellationRequested();
                             await TranslateDimensionAsync(dim); 
                         }));
                         break;
 
                     case Element element:
-                        translationTasks.Add(Task.Run(async () => { 
+                        _translationTasks.Add(Task.Run(async () => { 
                             token.ThrowIfCancellationRequested();
                             await TranslateElementParametersAsync(element); 
                         }));
-                        typeIds.Add(element.GetTypeId());
+                        _typeIds.Add(element.GetTypeId());
                         break;
                 }
             }
 
-            foreach (var typeId in typeIds)
+            foreach (var typeId in _typeIds)
             {
                 if (token.IsCancellationRequested)
                 {
                     break;
                 }
 
-                if (doc.GetElement(typeId) is ElementType type)
+                if (RevitUtils.Doc.GetElement(typeId) is ElementType type)
                 {
-                    translationTasks.Add(Task.Run(async () => { 
+                    _translationTasks.Add(Task.Run(async () => { 
                             token.ThrowIfCancellationRequested();
                             await TranslateElementParametersAsync(type); 
                     }));
                 }
             }
 
-            await Task.WhenAll(translationTasks);
-            //Task.WaitAll(translationTasks.ToArray(), token);
+            do
+            {
+                var doneTask = await Task.WhenAny(_translationTasks);
+                await doneTask;
+                _translationTasks.Remove(doneTask);
+            } while (_translationTasks.Count > 0);
+
             return true;
         }
 
@@ -670,6 +672,12 @@ public class TranslationUtils
         finally
         {
             ProgressWindowViewModel.Cts.Dispose();
+            CleanLists();
         }
+    }
+
+    private void CleanLists()
+    {
+        _typeIds.Clear();
     }
 }

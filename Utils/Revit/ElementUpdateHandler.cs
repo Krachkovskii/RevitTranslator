@@ -38,56 +38,6 @@ public class ElementUpdateHandler : IExternalEventHandler
                         }
 
                         UpdateElementTranslation(unit);
-
-                        //switch (unit.Element)
-                        //{
-                        //    case Parameter param:
-                        //        param.Set(unit.TranslatedText);
-                        //        break;
-
-                        //    case ScheduleField field:
-                        //        field.ColumnHeading = unit.TranslatedText;
-                        //        break;
-
-                        //    case TableSectionData tsd:
-                        //        tsd.SetCellText(unit.TableSectionCoordinates.Row, unit.TableSectionCoordinates.Column, unit.TranslatedText);
-                        //        break;
-
-                        //    case TextNote textNote:
-                        //        textNote.Text = unit.TranslatedText;
-                        //        break;
-
-                        //    case Dimension dim:
-                        //        switch (unit.TranslationDetails)
-                        //        {
-                        //            case TranslationDetails.DimensionAbove:
-                        //                dim.Above = unit.TranslatedText;
-                        //                break;
-                        //            case TranslationDetails.DimensionBelow:
-                        //                dim.Below = unit.TranslatedText;
-                        //                break;
-                        //            case TranslationDetails.DimensionPrefix:
-                        //                dim.Prefix = unit.TranslatedText;
-                        //                break;
-                        //            case TranslationDetails.DimensionSuffix:
-                        //                dim.Suffix = unit.TranslatedText;
-                        //                break;
-                        //            case TranslationDetails.DimensionOverride:
-                        //                dim.ValueOverride = unit.TranslatedText;
-                        //                break;
-                        //        }
-                        //        break;
-
-                        //    case Element element:
-                        //        if (unit.TranslationDetails == TranslationDetails.ElementName)
-                        //        {
-                        //            element.Name = unit.TranslatedText;
-                        //        }
-                        //        break;
-
-                        //    case object _:
-                        //        break;
-                        //}
                     }
                     catch (Exception ex)
                     {
