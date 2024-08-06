@@ -8,25 +8,22 @@ namespace RevitTranslatorAddin.Utils.Revit;
 
 public class ElementUpdateHandler : IExternalEventHandler
 {
+    private List<string> _cantUpdate = [];
     /// <summary>
     /// This handler updates all elements in the active document after all translations have been completed.
     /// After all element have been updated, it calls ```TranslationUtils.ClearTranslationCount()``` method.
     /// </summary>
     public void Execute(UIApplication app)
     {
-        List<string> _cantTranslate = [];
-
         ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateStarted());
 
         using (var t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
         {
             t.Start();
-            // Catching any transaction-related errors.
             try
             {
                 foreach (var unit in TranslationUtils.Translations)
                 {
-                    // catching any errors related to element updates. If raised, simply go to the next element.
                     try
                     {
                         if (unit.Element == null)
@@ -36,59 +33,61 @@ public class ElementUpdateHandler : IExternalEventHandler
 
                         if (unit.TranslatedText.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
                         {
-                            _cantTranslate.Add($"{unit.TranslatedText} (Symbol: \"{unit.TranslatedText.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {unit.ElementId})");
+                            AddUntranslatableSymbol(unit);
                             continue;
                         }
 
-                        switch (unit.Element)
-                        {
-                            case Parameter param:
-                                param.Set(unit.TranslatedText);
-                                break;
+                        UpdateElementTranslation(unit);
 
-                            case ScheduleField field:
-                                field.ColumnHeading = unit.TranslatedText;
-                                break;
+                        //switch (unit.Element)
+                        //{
+                        //    case Parameter param:
+                        //        param.Set(unit.TranslatedText);
+                        //        break;
 
-                            case TableSectionData tsd:
-                                tsd.SetCellText(unit.TableSectionCoordinates.Row, unit.TableSectionCoordinates.Column, unit.TranslatedText);
-                                break;
+                        //    case ScheduleField field:
+                        //        field.ColumnHeading = unit.TranslatedText;
+                        //        break;
 
-                            case TextNote textNote:
-                                textNote.Text = unit.TranslatedText;
-                                break;
+                        //    case TableSectionData tsd:
+                        //        tsd.SetCellText(unit.TableSectionCoordinates.Row, unit.TableSectionCoordinates.Column, unit.TranslatedText);
+                        //        break;
 
-                            case Dimension dim:
-                                switch (unit.TranslationDetails)
-                                {
-                                    case TranslationDetails.DimensionAbove:
-                                        dim.Above = unit.TranslatedText;
-                                        break;
-                                    case TranslationDetails.DimensionBelow:
-                                        dim.Below = unit.TranslatedText;
-                                        break;
-                                    case TranslationDetails.DimensionPrefix:
-                                        dim.Prefix = unit.TranslatedText;
-                                        break;
-                                    case TranslationDetails.DimensionSuffix:
-                                        dim.Suffix = unit.TranslatedText;
-                                        break;
-                                    case TranslationDetails.DimensionOverride:
-                                        dim.ValueOverride = unit.TranslatedText;
-                                        break;
-                                }
-                                break;
+                        //    case TextNote textNote:
+                        //        textNote.Text = unit.TranslatedText;
+                        //        break;
 
-                            case Element element:
-                                if (unit.TranslationDetails == TranslationDetails.ElementName)
-                                {
-                                    element.Name = unit.TranslatedText;
-                                }
-                                break;
+                        //    case Dimension dim:
+                        //        switch (unit.TranslationDetails)
+                        //        {
+                        //            case TranslationDetails.DimensionAbove:
+                        //                dim.Above = unit.TranslatedText;
+                        //                break;
+                        //            case TranslationDetails.DimensionBelow:
+                        //                dim.Below = unit.TranslatedText;
+                        //                break;
+                        //            case TranslationDetails.DimensionPrefix:
+                        //                dim.Prefix = unit.TranslatedText;
+                        //                break;
+                        //            case TranslationDetails.DimensionSuffix:
+                        //                dim.Suffix = unit.TranslatedText;
+                        //                break;
+                        //            case TranslationDetails.DimensionOverride:
+                        //                dim.ValueOverride = unit.TranslatedText;
+                        //                break;
+                        //        }
+                        //        break;
 
-                            case object _:
-                                break;
-                        }
+                        //    case Element element:
+                        //        if (unit.TranslationDetails == TranslationDetails.ElementName)
+                        //        {
+                        //            element.Name = unit.TranslatedText;
+                        //        }
+                        //        break;
+
+                        //    case object _:
+                        //        break;
+                        //}
                     }
                     catch (Exception ex)
                     {
@@ -96,9 +95,9 @@ public class ElementUpdateHandler : IExternalEventHandler
                     }
                 }
 
-                if (_cantTranslate.Count > 0)
+                if (_cantUpdate.Count > 0)
                 {
-                    MessageBox.Show($"The following translations couldn't be applied due to forbidden symbols: \n{string.Join("\n", _cantTranslate)}.",
+                    MessageBox.Show($"The following translations couldn't be applied due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
                                         "Warning",
                                         MessageBoxButton.OK,
                                         MessageBoxImage.Warning);
@@ -117,13 +116,95 @@ public class ElementUpdateHandler : IExternalEventHandler
         };
 
         ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateFinished());
-
-        RevitUtils.ExEvent = null;
-        RevitUtils.ExEventHandler = null;
+        ClearEvents();
     }
 
     public string GetName()
     {
         return "Element Updater";
+    }
+
+    private void UpdateElementTranslation(TranslationUnit unit)
+    {
+        switch (unit.Element)
+        {
+            case Parameter param:
+                param.Set(unit.TranslatedText);
+                break;
+
+            case ScheduleField field:
+                SetScheduleField(unit, field);
+                break;
+
+            case TableSectionData tsd:
+                tsd.SetCellText(unit.TableSectionCoordinates.Row, unit.TableSectionCoordinates.Column, unit.TranslatedText);
+                break;
+
+            case TextNote textNote:
+                SetTextNoteText(unit, textNote);
+                break;
+
+            case Dimension dim:
+                SetDimensionText(unit, dim);
+                break;
+
+            case Element element:
+                if (unit.TranslationDetails == TranslationDetails.ElementName)
+                {
+                    SetElementName(unit, element);
+                }
+                break;
+
+            case object _:
+                break;
+        }
+    }
+
+    private void SetScheduleField(TranslationUnit unit, ScheduleField field)
+    {
+        field.ColumnHeading = unit.TranslatedText;
+    }
+
+    private void SetTextNoteText(TranslationUnit unit, TextNote textNote)
+    {
+        textNote.Text = unit.TranslatedText;
+    }
+
+    private void SetDimensionText(TranslationUnit unit, Dimension dim)
+    {
+        switch (unit.TranslationDetails)
+        {
+            case TranslationDetails.DimensionAbove:
+                dim.Above = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionBelow:
+                dim.Below = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionPrefix:
+                dim.Prefix = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionSuffix:
+                dim.Suffix = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionOverride:
+                dim.ValueOverride = unit.TranslatedText;
+                break;
+        }
+    }
+
+    private void SetElementName(TranslationUnit unit, Element element)
+    {
+        element.Name = unit.TranslatedText;
+    }
+
+    private void AddUntranslatableSymbol(TranslationUnit unit)
+    {
+        _cantUpdate.Add($"{unit.TranslatedText} (Symbol: \"{unit.TranslatedText.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {unit.ElementId})");
+    }
+
+    private void ClearEvents()
+    {
+        RevitUtils.ExEvent = null;
+        RevitUtils.ExEventHandler = null;
     }
 }
