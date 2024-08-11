@@ -48,7 +48,6 @@ public class TranslationUtils
 
     //internal static ConcurrentBag<(object, string, string, ElementId)> Translations { get; set; } = [];
 
-    internal static ConcurrentBag<TranslationUnit> Translations { get; set; } = [];
     private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
 
     public TranslationUtils(Models.Settings settings, ProgressWindowUtils progressWindowUtils)
@@ -76,20 +75,11 @@ public class TranslationUtils
     /// Bool
     ///     True if translation can be performed, false otherwise.
     /// </returns>
-    public static bool CanTranslate(Models.Settings settings)
+    public bool CanTranslate(Models.Settings settings)
     {
         if (settings.DeeplApiKey == null || settings.TargetLanguage == null)
         {
-            System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
-                "Please make sure everything is correct:\n" +
-                "• API key\n" +
-                "• Target language\n" +
-                "• Paid/Free plan\n" +
-                "• Translation limits.",
-                "Incorrect settings",
-                System.Windows.MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-
+            ShowCantTranslateMessage();
             return false;
         }
 
@@ -109,7 +99,16 @@ public class TranslationUtils
 
         catch (Exception e)
         {
-            System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
+            ShowCantTranslateMessage();
+            Debug.WriteLine(e.Message);
+
+            return false;
+        }
+    }
+
+    private void ShowCantTranslateMessage()
+    {
+        System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
                 "Please make sure everything is correct:\n" +
                 "• API key\n" +
                 "• Target language\n" +
@@ -118,11 +117,6 @@ public class TranslationUtils
                 "Incorrect settings",
                 System.Windows.MessageBoxButton.OK,
                 MessageBoxImage.Warning);
-            
-            Debug.WriteLine(e.Message);
-
-            return false;
-        }
     }
 
     //TODO: switch to returning (int, int); do not set properties inside the function. Instead, set properties in the main block
@@ -229,8 +223,6 @@ public class TranslationUtils
         _characterCount = 0;
         CharacterCount = 0;
         TranslationsCount = 0;
-
-        Translations = new ConcurrentBag<TranslationUnit>();
     }
 
     /// <summary>

@@ -23,6 +23,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     private int _monthlyUsage = 0;
     private int _monthlyLimit = 0;
     internal static CancellationTokenSource Cts { get; set; } = null;
+    private readonly TranslationUtils _translationUtils = null;
 
     public int Maximum
     {
@@ -154,13 +155,14 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         get;
     }
 
-    public ProgressWindowViewModel()
+    public ProgressWindowViewModel(TranslationUtils translationUtils)
     {
         StopCommand = new RelayCommand(Stop);
         MonthlyLimit = TranslationUtils.Limit;
         MonthlyUsage = TranslationUtils.Usage;
         IsStopEnabled = true;
         ButtonText = "Stop translation";
+        _translationUtils = translationUtils;
     }
 
     internal void TranslationsFinished()

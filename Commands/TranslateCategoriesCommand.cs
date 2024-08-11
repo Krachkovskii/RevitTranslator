@@ -24,16 +24,12 @@ internal class TranslateCategoriesCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
-        _settings = Models.Settings.LoadFromJson();
+        CreateAndSetUtils();
 
-        if (!TranslationUtils.CanTranslate(_settings))
+        if (!_translationUtils.CanTranslate(_settings))
         {
             return;
         }
-
-        _progressWindowUtils = new ProgressWindowUtils();
-        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
-        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
 
         // initialising a class to fill static property that contains all categories
         new CategoriesModel();
@@ -63,5 +59,13 @@ internal class TranslateCategoriesCommand : ExternalCommand
             .ToList();
 
         return elements;
+    }
+    private void CreateAndSetUtils()
+    {
+        _settings = Models.Settings.LoadFromJson();
+        _progressWindowUtils = new ProgressWindowUtils();
+        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
+        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
+        _progressWindowUtils.TranslationUtils = _translationUtils;
     }
 }

@@ -23,9 +23,9 @@ public class TranslateModelCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
-        _settings = Models.Settings.LoadFromJson();
+        CreateAndSetUtils();
 
-        if (!TranslationUtils.CanTranslate(_settings))
+        if (!_translationUtils.CanTranslate(_settings))
         {
             return;
         }
@@ -43,9 +43,6 @@ public class TranslateModelCommand : ExternalCommand
             return;
         }
 
-        _progressWindowUtils = new ProgressWindowUtils();
-        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
-        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
         _progressWindowUtils.Start();
 
         RevitUtils.ExEventHandler = new ElementUpdateHandler();
@@ -134,5 +131,13 @@ public class TranslateModelCommand : ExternalCommand
 
         if (result == MessageBoxResult.Yes) { return true; }
         else { return false; }
+    }
+    private void CreateAndSetUtils()
+    {
+        _settings = Models.Settings.LoadFromJson();
+        _progressWindowUtils = new ProgressWindowUtils();
+        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
+        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
+        _progressWindowUtils.TranslationUtils = _translationUtils;
     }
 }

@@ -16,6 +16,7 @@ public class ProgressWindowUtils
     internal AutoResetEvent WindowClosedEvent { get; set; } = new AutoResetEvent(false);
     internal ManualResetEvent WindowReadyEvent { get; set; } = new ManualResetEvent(false);
     internal CancellationTokenHandler TokenHandler { get; set; } = null;
+    internal TranslationUtils TranslationUtils { get; set; } = null;
 
     internal ProgressWindowUtils()
     {
@@ -31,7 +32,7 @@ public class ProgressWindowUtils
             PW = null;
             VM = null;
         }
-        VM = new ProgressWindowViewModel();
+        VM = new ProgressWindowViewModel(TranslationUtils);
         PW = new ProgressWindow(VM, this);
 
         PW.Activate();

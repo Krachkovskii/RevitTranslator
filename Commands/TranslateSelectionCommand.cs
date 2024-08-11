@@ -23,14 +23,13 @@ public class TranslateSelectionCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
-        _settings = Models.Settings.LoadFromJson();
+        CreateAndSetUtils();
 
-        if (!TranslationUtils.CanTranslate(_settings))
+        if (!_translationUtils.CanTranslate(_settings))
         {
             return;
         }
 
-        CreateUtils();
         CreateAndAssignEvents();
 
         _progressWindowUtils.Start();
@@ -70,11 +69,13 @@ public class TranslateSelectionCommand : ExternalCommand
         return elements;
     }
 
-    private void CreateUtils()
+    private void CreateAndSetUtils()
     {
+        _settings = Models.Settings.LoadFromJson();
         _progressWindowUtils = new ProgressWindowUtils();
         ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
         _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
+        _progressWindowUtils.TranslationUtils = _translationUtils;
     }
 
     private void CreateAndAssignEvents()

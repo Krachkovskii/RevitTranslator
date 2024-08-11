@@ -185,9 +185,10 @@ public class SettingsViewModel : INotifyPropertyChanged
         _settings.SourceLanguage = SelectedSourceLanguageIndex == -1 ? null : Languages[SelectedSourceLanguageIndex];
         _settings.TargetLanguage = Languages[SelectedTargetLanguageIndex];
         _settings.SaveToJson();
-        //_savedState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
 
-        if (!TranslationUtils.CanTranslate(Models.Settings.LoadFromJson()))
+        var translationUtils = new TranslationUtils(_settings, new Utils.App.ProgressWindowUtils());
+
+        if (!translationUtils.CanTranslate(_settings))
         {
             return;
         }

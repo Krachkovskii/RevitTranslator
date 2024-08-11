@@ -90,7 +90,6 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
 
         _progressWindowUtils.Start();
 
-//#if NET8_0_OR_GREATER
         var textRetriever = new ElementTextRetriever(_progressWindowUtils);
         textRetriever.ProcessElements(elements);
         var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
@@ -113,28 +112,6 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
             RevitUtils.SetTemporaryFocus();
         }
         _progressWindowUtils.End();
-
-//#else
-//        var finishedTask = Task.Run(() => _translationUtils.StartTranslationAsync(elements));
-//        var finished = finishedTask.GetAwaiter().GetResult();
-//        //var finished = _translationUtils.StartTranslation(elements);
-
-//        if (TranslationUtils.Translations.Count > 0)
-//        {
-//            if (!finished)
-//            {
-//                var proceed = TranslationUtils.ProceedWithUpdate();
-//                if (!proceed)
-//                {
-//                    return;
-//                }
-//            }
-
-//            RevitUtils.ExEvent.Raise();
-//            RevitUtils.SetTemporaryFocus();
-//        }
-//        ProgressWindowUtils.End();
-//#endif
     }
 
     public TranslateCategoriesViewModel(TranslationUtils utils, ProgressWindowUtils windowUtils)
