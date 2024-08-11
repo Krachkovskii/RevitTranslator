@@ -48,13 +48,11 @@ internal class ElementTextRetriever
                 break;
 
             case ScheduleSheetInstance scheduleInstance:
-                var scheduleInstanceUnit = ProcessSchedule(RevitUtils.Doc.GetElement(scheduleInstance.ScheduleId) as ViewSchedule);
-                AddTranslationUnitToList(scheduleInstanceUnit);
+                ProcessSchedule(RevitUtils.Doc.GetElement(scheduleInstance.ScheduleId) as ViewSchedule);
                 break;
 
             case ViewSchedule schedule:
-                var scheduleUnit = ProcessSchedule(schedule);
-                AddTranslationUnitToList(scheduleUnit);
+                ProcessSchedule(schedule);
                 break;
 
             case Dimension dim:
@@ -76,9 +74,9 @@ internal class ElementTextRetriever
         return new TranslationUnit(note, text);
     }
 
-    private TranslationUnit ProcessSchedule(ViewSchedule schedule)
+    private void ProcessSchedule(ViewSchedule schedule)
     {
-        return new TranslationUnit();
+        ProcessScheduleHeaders(schedule);
     }
 
     private void ProcessDimensionOverrides(Dimension dim)
@@ -317,6 +315,36 @@ internal class ElementTextRetriever
         {
             ProcessElementParameters(type);
         }
+    }
+
+    private void ProcessScheduleHeaders(ViewSchedule s)
+    {
+        var sd = s.Definition;
+        var fieldCount = sd.GetFieldCount();
+        for (var i = 0; i < fieldCount; i++)
+        {
+            var unit = ProcessScheduleHeader(sd, s, i);
+            if (unit != null)
+            {
+                AddTranslationUnitToList(unit);
+            }
+        }
+    }
+
+    private TranslationUnit ProcessScheduleHeader(ScheduleDefinition sd, ViewSchedule s, int fieldIndex)
+    {
+        var field = sd.GetField(fieldIndex);
+        var header = field.ColumnHeading;
+
+        if (!ValidationUtils.IsTextOnly(header))
+        {
+            return null;
+        }
+
+        var unit = new TranslationUnit(field, header);
+        unit.ParentElement = s;
+
+        return unit;
     }
 
     private void AddTranslationUnitToList(TranslationUnit unit)

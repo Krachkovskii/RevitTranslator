@@ -42,8 +42,6 @@ internal class MultiTaskTranslationHandler
         _progressWindowUtils.TokenHandler = TokenHandler;
         _progressWindowUtils.UpdateTotal(_translationUnits.Count);
 
-        Debug.WriteLine("Token created!");
-
         try
         {
             foreach (var unit in _translationUnits)
@@ -51,15 +49,6 @@ internal class MultiTaskTranslationHandler
                 if (TokenHandler.Cts.Token.IsCancellationRequested)
                 {
                     break;
-                }
-
-                if (TokenHandler.Cts == null)
-                {
-                    Debug.WriteLine("Token IS null while creating tasks.");
-                }
-                else
-                {
-                    Debug.WriteLine("Token is NOT null while creating tasks.");
                 }
                 AddTranslationTask(unit);
             }
@@ -88,7 +77,6 @@ internal class MultiTaskTranslationHandler
     {
         _translationTasks.Add(Task.Run(async () =>
         {
-            Debug.WriteLine("Adding translation task!");
             TokenHandler.Cts.Token.ThrowIfCancellationRequested();
             var translated = await _translationUtils.TranslateTextAsync(unit.OriginalText,
                                                                         TokenHandler.Cts.Token);

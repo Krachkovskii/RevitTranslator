@@ -12,8 +12,6 @@ using RevitTranslatorAddin.Utils.Revit;
 namespace RevitTranslatorAddin.ViewModels;
 public class TranslateCategoriesViewModel : INotifyPropertyChanged
 {
-
-    private List<ListItem> _selectedCategories = [];
     private readonly TranslationUtils _translationUtils = null;
     private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
     public ObservableCollection<ListItem> Categories { get; } = [];
