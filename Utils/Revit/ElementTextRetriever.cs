@@ -77,6 +77,7 @@ internal class ElementTextRetriever
     private void ProcessSchedule(ViewSchedule schedule)
     {
         ProcessScheduleHeaders(schedule);
+        ProcessElementName(schedule);
     }
 
     private void ProcessDimensionOverrides(Dimension dim)
