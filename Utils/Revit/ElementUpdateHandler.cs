@@ -1,18 +1,15 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using Autodesk.Revit.UI;
-using RevitTranslatorAddin.Utils.DeepL;
-using RevitTranslatorAddin.ViewModels;
+using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 
 public class ElementUpdateHandler : IExternalEventHandler
 {
-    private List<string> _cantUpdate = [];
-    /// <summary>
-    /// This handler updates all elements in the active document after all translations have been completed.
-    /// After all element have been updated, it calls ```TranslationUtils.ClearTranslationCount()``` method.
-    /// </summary>
+    internal static List<TranslationUnit> TranslationUnits { get; set; } = [];
+    internal static ProgressWindowUtils ProgressWindowUtils { get; set; } = null;
+    private readonly List<string> _cantUpdate = [];
     public void Execute(UIApplication app)
     {
         ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateStarted());
@@ -22,56 +19,56 @@ public class ElementUpdateHandler : IExternalEventHandler
             t.Start();
             try
             {
-                foreach (var unit in TranslationUtils.Translations)
+                foreach (var unit in TranslationUnits)
                 {
-                    try
-                    {
-                        if (unit.Element == null)
-                        {
-                            continue;
-                        }
-
-                        if (unit.TranslatedText.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
-                        {
-                            AddUntranslatableSymbol(unit);
-                            continue;
-                        }
-
-                        UpdateElementTranslation(unit);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error while updating the value: {ex.Message}");
-                    }
+                    UpdateElement(unit);
                 }
 
                 if (_cantUpdate.Count > 0)
                 {
-                    MessageBox.Show($"The following translations couldn't be applied due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
-                                        "Warning",
-                                        MessageBoxButton.OK,
-                                        MessageBoxImage.Warning);
+                    ShowCantTranslateMessage();
                 }
 
                 t.Commit();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                MessageBox.Show(e.Message,
-                    "Error updating elements",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                ShowTransactionErrorMessage(ex);
                 t.RollBack();
             }
         };
 
-        ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateFinished());
-        ClearEvents();
+        FinalizeUpdate();
     }
 
     public string GetName()
     {
         return "Element Updater";
+    }
+
+    private void UpdateElement(TranslationUnit unit)
+    {
+        try
+        {
+            if (unit.Element == null 
+                || unit.TranslatedText == string.Empty 
+                || unit.TranslatedText == unit.OriginalText)
+            {
+                return;
+            }
+
+            if (unit.TranslatedText.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
+            {
+                AddUntranslatableSymbol(unit);
+                return;
+            }
+
+            UpdateElementTranslation(unit);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error while updating the value: {ex.Message}");
+        }
     }
 
     private void UpdateElementTranslation(TranslationUnit unit)
@@ -96,6 +93,10 @@ public class ElementUpdateHandler : IExternalEventHandler
 
             case Dimension dim:
                 SetDimensionText(unit, dim);
+                break;
+
+            case DimensionSegment dimSegment:
+                SetDimensionSegmentText(unit, dimSegment);
                 break;
 
             case Element element:
@@ -142,6 +143,28 @@ public class ElementUpdateHandler : IExternalEventHandler
         }
     }
 
+    private void SetDimensionSegmentText(TranslationUnit unit, DimensionSegment dim)
+    {
+        switch (unit.TranslationDetails)
+        {
+            case TranslationDetails.DimensionAbove:
+                dim.Above = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionBelow:
+                dim.Below = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionPrefix:
+                dim.Prefix = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionSuffix:
+                dim.Suffix = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionOverride:
+                dim.ValueOverride = unit.TranslatedText;
+                break;
+        }
+    }
+
     private void SetElementName(TranslationUnit unit, Element element)
     {
         element.Name = unit.TranslatedText;
@@ -149,11 +172,35 @@ public class ElementUpdateHandler : IExternalEventHandler
 
     private void AddUntranslatableSymbol(TranslationUnit unit)
     {
-        _cantUpdate.Add($"{unit.TranslatedText} (Symbol: \"{unit.TranslatedText.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {unit.ElementId})");
+        _cantUpdate.Add($"{unit.TranslatedText} " +
+            $"(Symbol: \"{unit.TranslatedText.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", " +
+            $"ElementId: {unit.ElementId})");
     }
 
-    private void ClearEvents()
+    private void ShowCantTranslateMessage()
     {
+        MessageBox.Show($"These values weren't applied due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
+                                        "Warning",
+                                        MessageBoxButton.OK,
+                                        MessageBoxImage.Warning);
+    }
+
+    private void ShowTransactionErrorMessage(Exception ex)
+    {
+        MessageBox.Show(ex.Message,
+                        "Error updating elements",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+    }
+
+    private void FinalizeUpdate()
+    {
+        ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateFinished());
+
+        TranslationUnits.Clear();
+        _cantUpdate.Clear();
+        ProgressWindowUtils = null;
+
         RevitUtils.ExEvent = null;
         RevitUtils.ExEventHandler = null;
     }

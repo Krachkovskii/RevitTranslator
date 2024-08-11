@@ -3,6 +3,7 @@ using Nice3point.Revit.Toolkit.External;
 using RevitTranslatorAddin.Models;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
+using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.ViewModels;
 using RevitTranslatorAddin.Views;
 
@@ -11,10 +12,10 @@ namespace RevitTranslatorAddin.Commands;
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
 internal class TranslateCategoriesCommand : ExternalCommand
 {
-    private TranslationUtils _utils = null;
+    private TranslationUtils _translationUtils = null;
+    private ProgressWindowUtils _progressWindowUtils = null;
     private Models.Settings _settings = null;
     internal static TranslateCategoriesWindow Window { get; set; } = null;
-    private List<ElementId> _elements = [];
 
     public override void Execute()
     {
@@ -23,16 +24,6 @@ internal class TranslateCategoriesCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
-#if NET8_0
-        var res = RevitUtils.ShowNet8Warning();
-        var action = RevitUtils.Net8WarningAction(res);
-
-        if (!action)
-        {
-            return;
-        }
-#endif
-
         _settings = Models.Settings.LoadFromJson();
 
         if (!TranslationUtils.CanTranslate(_settings))
@@ -40,12 +31,14 @@ internal class TranslateCategoriesCommand : ExternalCommand
             return;
         }
 
-        var utils = new TranslationUtils(_settings);
-        _utils = utils;
+        _progressWindowUtils = new ProgressWindowUtils();
+        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
+        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
 
         // initialising a class to fill static property that contains all categories
         new CategoriesModel();
-        var viewModel = new TranslateCategoriesViewModel(utils);
+
+        var viewModel = new TranslateCategoriesViewModel(_translationUtils, _progressWindowUtils);
         Window = new TranslateCategoriesWindow(viewModel);
         Window.Show();
 
@@ -62,12 +55,11 @@ internal class TranslateCategoriesCommand : ExternalCommand
     /// <returns>
     /// List of ElementIds
     /// </returns>
-    internal static List<ElementId> GetElementsFromCategories(List<BuiltInCategory> categories)
+    internal static List<Element> GetElementsFromCategories(List<BuiltInCategory> categories)
     {
         var filter = new ElementMulticategoryFilter(categories);
         var elements = new FilteredElementCollector(RevitUtils.Doc)
             .WherePasses(filter)
-            .ToElementIds()
             .ToList();
 
         return elements;

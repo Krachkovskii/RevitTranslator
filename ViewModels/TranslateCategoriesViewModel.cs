@@ -5,6 +5,7 @@ using System.Windows.Input;
 using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
+using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
 
@@ -13,7 +14,8 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
 {
 
     private List<ListItem> _selectedCategories = [];
-    private readonly TranslationUtils _utils = null;
+    private readonly TranslationUtils _translationUtils = null;
+    private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
     public ObservableCollection<ListItem> Categories { get; } = [];
 
     private int _elementCount
@@ -88,15 +90,17 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         TranslateCategoriesCommand.Window.Close();
         TranslateCategoriesCommand.Window = null;
 
-        ProgressWindowUtils.Start();
+        _progressWindowUtils.Start();
 
-        var finishedTask = Task.Run(() => _utils.StartTranslationAsync(elements));
-        var finished = finishedTask.GetAwaiter().GetResult();
-        //var finished = _utils.StartTranslation(elements);
+//#if NET8_0_OR_GREATER
+        var textRetriever = new ElementTextRetriever(_progressWindowUtils);
+        textRetriever.ProcessElements(elements);
+        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
+        var result = taskHandler.StartTranslation();
 
-        if (TranslationUtils.Translations.Count > 0)
+        if (textRetriever.TranslationUnits.Count > 0)
         {
-            if (!finished)
+            if (!result.Completed)
             {
                 var proceed = TranslationUtils.ProceedWithUpdate();
                 if (!proceed)
@@ -105,13 +109,37 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
                 }
             }
 
+            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
-        ProgressWindowUtils.End();
+        _progressWindowUtils.End();
+
+//#else
+//        var finishedTask = Task.Run(() => _translationUtils.StartTranslationAsync(elements));
+//        var finished = finishedTask.GetAwaiter().GetResult();
+//        //var finished = _translationUtils.StartTranslation(elements);
+
+//        if (TranslationUtils.Translations.Count > 0)
+//        {
+//            if (!finished)
+//            {
+//                var proceed = TranslationUtils.ProceedWithUpdate();
+//                if (!proceed)
+//                {
+//                    return;
+//                }
+//            }
+
+//            RevitUtils.ExEvent.Raise();
+//            RevitUtils.SetTemporaryFocus();
+//        }
+//        ProgressWindowUtils.End();
+//#endif
     }
 
-    public TranslateCategoriesViewModel(TranslationUtils utils)
+    public TranslateCategoriesViewModel(TranslationUtils utils, ProgressWindowUtils windowUtils)
     {
 
         foreach (Category c in CategoriesModel.AllCategories)
@@ -119,7 +147,8 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
             Categories.Add(new ListItem(c, this));
         }
 
-        _utils = utils;
+        _translationUtils = utils;
+        _progressWindowUtils = windowUtils;
         TranslateButtonText = "Translate";
     }
 

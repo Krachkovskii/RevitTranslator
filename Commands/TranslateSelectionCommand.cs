@@ -2,14 +2,19 @@
 using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using RevitTranslatorAddin.Utils.App;
+using System.Collections.Generic;
 
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
 public class TranslateSelectionCommand : ExternalCommand
 {
-    private TranslationUtils _utils = null;
+    private TranslationUtils _translationUtils = null;
     private Models.Settings _settings = null;
+    private ProgressWindowUtils _progressWindowUtils = null;
 
     public override void Execute()
     {
@@ -18,49 +23,63 @@ public class TranslateSelectionCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
-#if NET8_0
-        var res = RevitUtils.ShowNet8Warning();
-        var action = RevitUtils.Net8WarningAction(res);
-
-        if (!action)
-        {
-            return;
-        }
-#endif
-
         _settings = Models.Settings.LoadFromJson();
-        
+
         if (!TranslationUtils.CanTranslate(_settings))
         {
             return;
         }
 
-        _utils = new TranslationUtils(_settings);
-        ProgressWindowUtils.Start();
+        CreateUtils();
+        CreateAndAssignEvents();
 
-        RevitUtils.ExEventHandler = new ElementUpdateHandler();
-        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
+        _progressWindowUtils.Start();
 
-        List<ElementId> selection = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
-        
-        var finishedTask = Task.Run( async () => await _utils.StartTranslationAsync(selection));
-        var finished = finishedTask.GetAwaiter().GetResult();
+        List<Element> selection = GetCurrentSelection();
 
-        if (TranslationUtils.Translations.Count > 0)
+        var textRetriever = new ElementTextRetriever(_progressWindowUtils);
+        textRetriever.ProcessElements(selection);
+        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
+        var result = taskHandler.StartTranslation();
+
+        if (textRetriever.TranslationUnits.Count > 0)
         {
-            if (!finished)
+
+            if (!result.Completed)
             {
                 var proceed = TranslationUtils.ProceedWithUpdate();
                 if (!proceed)
                 {
                     return;
-                }
+                } 
             }
+
+            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
 
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
-
-        ProgressWindowUtils.End();
+        _progressWindowUtils.End();
     }
-}   
+
+    private List<Element> GetCurrentSelection()
+    {
+        var ids = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
+        var elements = RevitUtils.GetElementsFromIds(ids);
+        
+        return elements;
+    }
+
+    private void CreateUtils()
+    {
+        _progressWindowUtils = new ProgressWindowUtils();
+        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
+        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
+    }
+
+    private void CreateAndAssignEvents()
+    {
+        RevitUtils.ExEventHandler = new ElementUpdateHandler();
+        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
+    }
+}

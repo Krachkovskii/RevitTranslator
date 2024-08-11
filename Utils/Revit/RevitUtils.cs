@@ -138,4 +138,19 @@ internal class RevitUtils
         return revitWindow;
     }
 
+    internal static List<Element> GetElementsFromIds(List<ElementId> ids)
+    {
+        var elements = new List<Element>();
+        
+        foreach (ElementId id in ids)
+        {
+            var el = Doc.GetElement(id);
+            if (el != null)
+            {
+                elements.Add(el);
+            }
+        }
+
+        return elements;
+    }
 }

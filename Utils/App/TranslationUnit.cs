@@ -5,8 +5,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using RevitTranslatorAddin.Utils.Revit;
 
-namespace RevitTranslatorAddin.Utils.Revit;
+namespace RevitTranslatorAddin.Utils.App;
 public class TranslationUnit
 {
     /// <summary>
@@ -46,5 +47,27 @@ public class TranslationUnit
     /// </summary>
     public TranslationDetails TranslationDetails { get; internal set; } = TranslationDetails.None;
 
-    public TranslationUnit() { }
+    public TranslationUnit()
+    {
+    }
+
+    public TranslationUnit(object element, string originalText)
+    {
+        OriginalText = originalText;
+        Element = element;
+    }
+
+    public TranslationUnit(object element, string originalText, TranslationDetails details)
+    {
+        OriginalText = originalText;
+        Element = element;
+        TranslationDetails = details;
+    }
+
+    public TranslationUnit(object element, string originalText, TableSectionCoordinates cellCoordinates)
+    {
+        OriginalText = originalText;
+        Element = element;
+        TableSectionCoordinates = cellCoordinates;
+    }
 }

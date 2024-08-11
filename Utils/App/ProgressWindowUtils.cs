@@ -1,32 +1,38 @@
-﻿using System.Windows.Threading;
+﻿using System.Diagnostics;
+using System.Windows.Threading;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.ViewModels;
 using RevitTranslatorAddin.Views;
 
-namespace RevitTranslatorAddin.Utils.Revit;
+namespace RevitTranslatorAddin.Utils.App;
 
 /// <summary>
 /// This class handles updates, initiation and closing of a progress window.
 /// </summary>
-internal class ProgressWindowUtils
+public class ProgressWindowUtils
 {
-    internal static ProgressWindowViewModel VM { get; set; } = null;
-    internal static ProgressWindow PW { get; set; } = null;
-    internal static AutoResetEvent WindowClosedEvent { get; set; } = new AutoResetEvent(false);
-    internal static ManualResetEvent WindowReadyEvent { get; set; } = new ManualResetEvent(false);
+    internal ProgressWindowViewModel VM { get; set; } = null;
+    internal ProgressWindow PW { get; set; } = null;
+    internal AutoResetEvent WindowClosedEvent { get; set; } = new AutoResetEvent(false);
+    internal ManualResetEvent WindowReadyEvent { get; set; } = new ManualResetEvent(false);
+    internal CancellationTokenHandler TokenHandler { get; set; } = null;
+
+    internal ProgressWindowUtils()
+    {
+    }
 
     /// <summary>
     /// Sets up a new instance of a ProgressWindow
     /// </summary>
-    internal static void ShowProgressWindow()
+    private void ShowProgressWindow()
     {
-        if (VM != null || PW != null) 
+        if (VM != null || PW != null)
         {
             PW = null;
             VM = null;
         }
         VM = new ProgressWindowViewModel();
-        PW = new ProgressWindow(VM);
+        PW = new ProgressWindow(VM, this);
 
         PW.Activate();
         PW.Focus();
@@ -41,7 +47,7 @@ internal class ProgressWindowUtils
     /// <summary>
     /// Creates an instance of a ProgressWindow on a separate thread
     /// </summary>
-    internal static void Start()
+    internal void Start()
     {
         var windowThread = new Thread(ShowProgressWindow);
         windowThread.SetApartmentState(ApartmentState.STA);
@@ -53,7 +59,7 @@ internal class ProgressWindowUtils
     /// <summary>
     /// Indicates the end of translation process, changing the state of progress window
     /// </summary>
-    internal static void End()
+    internal void End()
     {
         VM.TranslationsFinished();
     }
@@ -62,12 +68,11 @@ internal class ProgressWindowUtils
     /// Updates values of a ProgressWindow
     /// </summary>
     /// <param name="num">
-    /// Int
-    ///     Current number of translations
+    /// Current number of translations
     /// </param>
-    internal static void Update(int num)
+    internal void Update(int num)
     {
-        if (ProgressWindowViewModel.Cts != null && !ProgressWindowViewModel.Cts.IsCancellationRequested)
+        if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
         {
             PW.Dispatcher.Invoke(() =>
             {
@@ -75,6 +80,30 @@ internal class ProgressWindowUtils
                 VM.Maximum = TranslationUtils.TranslationsCount;
                 VM.CharacterCount = TranslationUtils.CharacterCount;
                 VM.MonthlyUsage = TranslationUtils.Usage + VM.CharacterCount;
+            });
+        }
+    }
+
+    internal void UpdateTotal(int num)
+    {
+        if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
+        {
+            PW.Dispatcher.Invoke(() =>
+            {
+                VM.Maximum = num;
+            });
+        }
+    }
+
+    internal void UpdateCurrent(int num)
+    {
+        if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
+        {
+            PW.Dispatcher.Invoke(() =>
+            {
+                VM.Value = num;
+                VM.CharacterCount = TranslationUtils.CharacterCount;
+                VM.MonthlyUsage = TranslationUtils.Usage + TranslationUtils.CharacterCount;
             });
         }
     }

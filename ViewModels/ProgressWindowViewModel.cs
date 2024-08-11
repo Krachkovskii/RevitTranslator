@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.Utils.DeepL;
-using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.ViewModels;
 
@@ -189,7 +189,6 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     internal void UpdateFinished()
     {
         TranslationUtils.ClearTranslationCount();
-        ProgressWindowUtils.End();
 
         if (IsStopRequested)
         {
@@ -202,7 +201,6 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
 
         ProgressBarOpacity = 0.5;
         IsProgressBarIndeterminate = false;
-        ProgressWindowUtils.PW.Activate();
     }
 
     private void Stop()

@@ -5,13 +5,16 @@ using System.Windows;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
 using Autodesk.Revit.DB;
+using RevitTranslatorAddin.Utils.App;
+using Autodesk.Revit.UI.Selection;
 
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
 public class TranslateModelCommand : ExternalCommand
 {
-    private TranslationUtils _utils = null;
+    private TranslationUtils _translationUtils = null;
+    private ProgressWindowUtils _progressWindowUtils = null;
     private Models.Settings _settings = null;
     public override void Execute()
     {
@@ -19,16 +22,6 @@ public class TranslateModelCommand : ExternalCommand
         {
             RevitUtils.SetUtils(UiApplication);
         }
-
-#if NET8_0
-        var res = RevitUtils.ShowNet8Warning();
-        var action = RevitUtils.Net8WarningAction(res);
-
-        if (!action)
-        {
-            return;
-        }
-#endif
 
         _settings = Models.Settings.LoadFromJson();
 
@@ -50,19 +43,22 @@ public class TranslateModelCommand : ExternalCommand
             return;
         }
 
-        _utils = new TranslationUtils(_settings);
-        ProgressWindowUtils.Start();
+        _progressWindowUtils = new ProgressWindowUtils();
+        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
+        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
+        _progressWindowUtils.Start();
 
         RevitUtils.ExEventHandler = new ElementUpdateHandler();
         RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
 
-        //var finished = _utils.StartTranslation(instances);
-        var finishedTask = Task.Run(() => _utils.StartTranslationAsync(instances));
-        var finished = finishedTask.GetAwaiter().GetResult();
+        var textRetriever = new ElementTextRetriever(_progressWindowUtils);
+        textRetriever.ProcessElements(instances);
+        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
+        var result = taskHandler.StartTranslation();
 
-        if (TranslationUtils.Translations.Count > 0)
+        if (textRetriever.TranslationUnits.Count > 0)
         {
-            if (!finished)
+            if (!result.Completed)
             {
                 var proceed = TranslationUtils.ProceedWithUpdate();
                 if (!proceed)
@@ -70,32 +66,40 @@ public class TranslateModelCommand : ExternalCommand
                     return;
                 }
             }
+
+            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
-        ProgressWindowUtils.End();
+        _progressWindowUtils.End();
     }
 
     private ElementMulticategoryFilter CreateCategoryFilter()
     {
-        // only allow elements of user-visible categories via ElementMulticategoryFilter
+        List<BuiltInCategory> categoryList = CreateCategoryList();
+        var filter = new ElementMulticategoryFilter(categoryList);
+        return filter;
+    }
+
+    private List<BuiltInCategory> CreateCategoryList()
+    {
         List<BuiltInCategory> categoryList = [];
+
         var categories = CategoriesModel.GetCategories();
         foreach (Category category in categories)
         {
             categoryList.Add(category.BuiltInCategory);
         }
-        var filter = new ElementMulticategoryFilter(categoryList);
 
-        return filter;
+        return categoryList;
     }
 
-    private List<ElementId> GetModelInstances(ElementMulticategoryFilter filter)
+    private List<Element> GetModelInstances(ElementMulticategoryFilter filter)
     {
-        List<ElementId> instances = new FilteredElementCollector(RevitUtils.Doc)
+        List<Element> instances = new FilteredElementCollector(RevitUtils.Doc)
             .WherePasses(filter)
             .WhereElementIsNotElementType()
-            .ToElementIds()
             .ToList();
 
         return instances;
@@ -114,7 +118,6 @@ public class TranslateModelCommand : ExternalCommand
     private int CountTotalElements(int instCount, int typesCount)
     {
         var rounded = (int)Math.Round((instCount + typesCount) / 100d) * 100;
-        
         return rounded;
     }
 
