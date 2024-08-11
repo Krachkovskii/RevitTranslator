@@ -21,6 +21,7 @@
             <ColumnDefinition Width="20"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -44,7 +45,7 @@
 
         <ProgressBar Grid.Row="1"
                      Grid.Column="1"
-                     Grid.ColumnSpan="2"
+                     Grid.ColumnSpan="3"
                      Value="{Binding Value}"
                      Maximum="{Binding Maximum}"
                      IsIndeterminate="{Binding IsProgressBarIndeterminate}"
@@ -53,6 +54,13 @@
         <Rectangle Grid.Row="3"
                    Grid.RowSpan="2"
                    Grid.Column="1"
+                   Width="1"
+                   HorizontalAlignment="Right"
+                   Fill="LightGray"/>
+
+        <Rectangle Grid.Row="3"
+                   Grid.RowSpan="2"
+                   Grid.Column="2"
                    Width="1"
                    HorizontalAlignment="Right"
                    Fill="LightGray"/>
@@ -87,20 +95,21 @@
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"/>
 
-        <!--<TextBlock x:Name="AfterMessage"
-                   Grid.Row="1"
-                   Grid.Column="1"
-                   Grid.ColumnSpan="3"
-                   Text="{Binding AfterText}"
-                   FontSize="25"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Stretch"
-                   TextAlignment="Center"
-                   Visibility="{Binding AfterTextVisible}"
-                   >
-            <TextBlock.Background>
-                <SolidColorBrush Color="White" Opacity="0.5"/>
-            </TextBlock.Background>
-        </TextBlock>-->
+        <TextBlock Grid.Row="3"
+           Grid.RowSpan="2"
+           Grid.Column="3"
+           TextAlignment="Right"
+           VerticalAlignment="Center"
+           Style="{StaticResource Annotation}"
+           LineHeight="1.5">
+            <Run Text="Monthly usage:"/>
+            <Run Text="{Binding MonthlyUsage}"/>
+            <Run Text="ch"/>
+            <LineBreak/>
+            <Run Text="Limit:"/>
+            <Run Text="{Binding MonthlyLimit}"/>
+            <Run Text="ch/mo"/>
+        </TextBlock>
+
     </Grid>
 </Window>

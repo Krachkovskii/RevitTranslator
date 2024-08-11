@@ -1,126 +1,207 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using Autodesk.Revit.UI;
-using RevitTranslatorAddin.Utils.DeepL;
-using static Autodesk.Revit.DB.SpecTypeId;
+using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 
 public class ElementUpdateHandler : IExternalEventHandler
 {
-    /// <summary>
-    /// This handler updates all elements in the active document after all translations have been completed.
-    /// After all element have been updated, it calls ```TranslationUtils.ClearTranslationCount()``` method.
-    /// </summary>
+    internal static List<TranslationUnit> TranslationUnits { get; set; } = [];
+    internal static ProgressWindowUtils ProgressWindowUtils { get; set; } = null;
+    private readonly List<string> _cantUpdate = [];
     public void Execute(UIApplication app)
     {
-        List<string> _cantTranslate = [];
-
-        ProgressWindowUtils.RevitUpdate();
+        ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateStarted());
 
         using (var t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
         {
             t.Start();
             try
             {
-                foreach (var triple in TranslationUtils.Translations)
+                foreach (var unit in TranslationUnits)
                 {
-                    try
-                    {
-                        if (triple.Item1 == null)
-                        {
-                            continue;
-                        }
-
-                        if (triple.Item2.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
-                        {
-                            _cantTranslate.Add($"{triple.Item2} (Symbol: \"{triple.Item2.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", ElementId: {triple.Item4})");
-                            continue;
-                        }
-
-                        switch (triple.Item1)
-                        {
-                            case Parameter param:
-                                param.Set(triple.Item2);
-                                break;
-
-                            case ScheduleField field:
-                                field.ColumnHeading = triple.Item2;
-                                break;
-
-                            case TableSectionData tsd:
-                                var values = triple.Item3.Split(',').ToList();
-                                var row = int.Parse(values[0]);
-                                var column = int.Parse(values[1]);
-                                tsd.SetCellText(row, column, triple.Item2);
-                                break;
-
-                            case TextNote textNote:
-                                textNote.Text = triple.Item2;
-                                break;
-
-                            case Dimension dim:
-                                switch (triple.Item3)
-                                {
-                                    case "above":
-                                        dim.Above = triple.Item2;
-                                        break;
-                                    case "below":
-                                        dim.Below = triple.Item2;
-                                        break;
-                                    case "prefix":
-                                        dim.Prefix = triple.Item2;
-                                        break;
-                                    case "suffix":
-                                        dim.Suffix = triple.Item2;
-                                        break;
-                                    case "value":
-                                        dim.ValueOverride = triple.Item2;
-                                        break;
-                                }
-                                break;
-
-                            case Element element:
-                                if (triple.Item3 == "name")
-                                {
-                                    element.Name = triple.Item2;
-                                }
-                                break;
-
-                            case object _:
-                                continue;
-                        }
-                    }
-                    catch { }
+                    UpdateElement(unit);
                 }
 
-                if (_cantTranslate.Count > 0)
+                if (_cantUpdate.Count > 0)
                 {
-                    MessageBox.Show($"The following translations couldn't be applied due to forbidden symbols: \n{string.Join("\n", _cantTranslate)}.",
-                                        "Warning",
-                                        MessageBoxButton.OK,
-                                        MessageBoxImage.Warning);
+                    ShowCantTranslateMessage();
                 }
 
                 t.Commit();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                MessageBox.Show(e.Message,
-                    "Error updating elements",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                ShowTransactionErrorMessage(ex);
                 t.RollBack();
             }
         };
 
-        TranslationUtils.ClearTranslationCount();
-        ProgressWindowUtils.End();
-        ProgressWindowUtils.PW.Activate();
-        ProgressWindowUtils.PW.Focus();
+        FinalizeUpdate();
     }
 
     public string GetName()
     {
         return "Element Updater";
+    }
+
+    private void UpdateElement(TranslationUnit unit)
+    {
+        try
+        {
+            if (unit.Element == null 
+                || unit.TranslatedText == string.Empty 
+                || unit.TranslatedText == unit.OriginalText)
+            {
+                return;
+            }
+
+            if (unit.TranslatedText.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
+            {
+                AddUntranslatableSymbol(unit);
+                return;
+            }
+
+            UpdateElementTranslation(unit);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error while updating the value: {ex.Message}");
+        }
+    }
+
+    private void UpdateElementTranslation(TranslationUnit unit)
+    {
+        switch (unit.Element)
+        {
+            case Parameter param:
+                param.Set(unit.TranslatedText);
+                break;
+
+            case ScheduleField field:
+                SetScheduleField(unit, field);
+                break;
+
+            case TableSectionData tsd:
+                tsd.SetCellText(unit.TableSectionCoordinates.Row, unit.TableSectionCoordinates.Column, unit.TranslatedText);
+                break;
+
+            case TextNote textNote:
+                SetTextNoteText(unit, textNote);
+                break;
+
+            case Dimension dim:
+                SetDimensionText(unit, dim);
+                break;
+
+            case DimensionSegment dimSegment:
+                SetDimensionSegmentText(unit, dimSegment);
+                break;
+
+            case Element element:
+                if (unit.TranslationDetails == TranslationDetails.ElementName)
+                {
+                    SetElementName(unit, element);
+                }
+                break;
+
+            case object _:
+                break;
+        }
+    }
+
+    private void SetScheduleField(TranslationUnit unit, ScheduleField field)
+    {
+        field.ColumnHeading = unit.TranslatedText;
+    }
+
+    private void SetTextNoteText(TranslationUnit unit, TextNote textNote)
+    {
+        textNote.Text = unit.TranslatedText;
+    }
+
+    private void SetDimensionText(TranslationUnit unit, Dimension dim)
+    {
+        switch (unit.TranslationDetails)
+        {
+            case TranslationDetails.DimensionAbove:
+                dim.Above = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionBelow:
+                dim.Below = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionPrefix:
+                dim.Prefix = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionSuffix:
+                dim.Suffix = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionOverride:
+                dim.ValueOverride = unit.TranslatedText;
+                break;
+        }
+    }
+
+    private void SetDimensionSegmentText(TranslationUnit unit, DimensionSegment dim)
+    {
+        switch (unit.TranslationDetails)
+        {
+            case TranslationDetails.DimensionAbove:
+                dim.Above = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionBelow:
+                dim.Below = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionPrefix:
+                dim.Prefix = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionSuffix:
+                dim.Suffix = unit.TranslatedText;
+                break;
+            case TranslationDetails.DimensionOverride:
+                dim.ValueOverride = unit.TranslatedText;
+                break;
+        }
+    }
+
+    private void SetElementName(TranslationUnit unit, Element element)
+    {
+        element.Name = unit.TranslatedText;
+    }
+
+    private void AddUntranslatableSymbol(TranslationUnit unit)
+    {
+        _cantUpdate.Add($"{unit.TranslatedText} " +
+            $"(Symbol: \"{unit.TranslatedText.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", " +
+            $"ElementId: {unit.ElementId})");
+    }
+
+    private void ShowCantTranslateMessage()
+    {
+        MessageBox.Show($"These values weren't applied due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
+                                        "Warning",
+                                        MessageBoxButton.OK,
+                                        MessageBoxImage.Warning);
+    }
+
+    private void ShowTransactionErrorMessage(Exception ex)
+    {
+        MessageBox.Show(ex.Message,
+                        "Error updating elements",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+    }
+
+    private void FinalizeUpdate()
+    {
+        ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateFinished());
+
+        TranslationUnits.Clear();
+        _cantUpdate.Clear();
+        ProgressWindowUtils = null;
+
+        RevitUtils.ExEvent = null;
+        RevitUtils.ExEventHandler = null;
     }
 }

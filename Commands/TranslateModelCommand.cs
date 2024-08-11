@@ -4,15 +4,18 @@ using RevitTranslatorAddin.Models;
 using System.Windows;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
+using Autodesk.Revit.DB;
+using RevitTranslatorAddin.Utils.App;
+using Autodesk.Revit.UI.Selection;
 
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
 public class TranslateModelCommand : ExternalCommand
 {
-    private TranslationUtils _utils = null;
+    private TranslationUtils _translationUtils = null;
+    private ProgressWindowUtils _progressWindowUtils = null;
     private Models.Settings _settings = null;
-    private static ExternalEvent _exEvent = null;
     public override void Execute()
     {
         if (RevitUtils.Doc != Document)
@@ -27,58 +30,109 @@ public class TranslateModelCommand : ExternalCommand
             return;
         }
 
-        // only allow elements of user-visible categories
+        // only allow elements of user-visible categories via ElementMulticategoryFilter
+        var filter = CreateCategoryFilter();
+        var instances = GetModelInstances(filter);
+        int types = GetModelTypes(filter);
+
+        var elementCount = CountTotalElements(instances.Count, types);
+        var warningResult = ShowElementCountWarning(elementCount);
+
+        if (warningResult.Equals(MessageBoxResult.No))
+        {
+            return;
+        }
+
+        _progressWindowUtils = new ProgressWindowUtils();
+        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
+        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
+        _progressWindowUtils.Start();
+
+        RevitUtils.ExEventHandler = new ElementUpdateHandler();
+        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
+
+        var textRetriever = new ElementTextRetriever(_progressWindowUtils);
+        textRetriever.ProcessElements(instances);
+        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
+        var result = taskHandler.StartTranslation();
+
+        if (textRetriever.TranslationUnits.Count > 0)
+        {
+            if (!result.Completed)
+            {
+                var proceed = TranslationUtils.ProceedWithUpdate();
+                if (!proceed)
+                {
+                    return;
+                }
+            }
+
+            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+
+            RevitUtils.ExEvent.Raise();
+            RevitUtils.SetTemporaryFocus();
+        }
+        _progressWindowUtils.End();
+    }
+
+    private ElementMulticategoryFilter CreateCategoryFilter()
+    {
+        List<BuiltInCategory> categoryList = CreateCategoryList();
+        var filter = new ElementMulticategoryFilter(categoryList);
+        return filter;
+    }
+
+    private List<BuiltInCategory> CreateCategoryList()
+    {
         List<BuiltInCategory> categoryList = [];
+
         var categories = CategoriesModel.GetCategories();
         foreach (Category category in categories)
         {
             categoryList.Add(category.BuiltInCategory);
         }
-        var filter = new ElementMulticategoryFilter(categoryList);
 
-        List<ElementId> instances = new FilteredElementCollector(RevitUtils.Doc)
+        return categoryList;
+    }
+
+    private List<Element> GetModelInstances(ElementMulticategoryFilter filter)
+    {
+        List<Element> instances = new FilteredElementCollector(RevitUtils.Doc)
             .WherePasses(filter)
             .WhereElementIsNotElementType()
-            .ToElementIds()
             .ToList();
+
+        return instances;
+    }
+
+    private int GetModelTypes(ElementMulticategoryFilter filter)
+    {
         int types = new FilteredElementCollector(RevitUtils.Doc)
             .WherePasses(filter)
             .WhereElementIsElementType()
             .GetElementCount();
 
-        var rounded = (int)Math.Round((instances.Count + types) / 100d) * 100;
+        return types;
+    }
 
-        var result = MessageBox.Show($"You're about to translate all text properties of {rounded}+ elements. " +
-            $"It can be time-consuming and you might hit translation limits.\n\n" +
-            $"It will also translate elements such as view names or any annotations.\n" +
-            $"Consider selecting only necessary categories.\n\n" +
-            $"Are you sure you want to translate the whole model?", 
-            "Large number of translations!", 
-            MessageBoxButton.YesNo, 
-            MessageBoxImage.Warning);
+    private int CountTotalElements(int instCount, int typesCount)
+    {
+        var rounded = (int)Math.Round((instCount + typesCount) / 100d) * 100;
+        return rounded;
+    }
 
-        if (result == MessageBoxResult.No)
-        {
-            return;
-        }
+    private bool ShowElementCountWarning(int count)
+    {
+        var result = MessageBox.Show($"You're about to translate all text properties of {count}+ elements. " +
+                $"It can be time-consuming and you might hit translation limits.\n\n" +
+                $"It will also translate elements such as view names or any annotations.\n" +
+                $"Consider selecting only necessary categories.\n\n" +
+                $"Are you sure you want to translate the whole model?",
+                "Large number of translations!",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
 
-        _utils = new TranslationUtils(_settings);
-        ProgressWindowUtils.Start();
-
-        IExternalEventHandler handler = new ElementUpdateHandler();
-        _exEvent = ExternalEvent.Create(handler);
-        var finished = _utils.StartTranslation(instances);
-
-        if (TranslationUtils.Translations.Count > 0)
-        {
-            _exEvent.Raise();
-            RevitUtils.SetTemporaryFocus();
-        }
-        else
-        {
-            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
-            // otherwise, it's called from external event above
-            ProgressWindowUtils.End();
-        }
+        if (result == MessageBoxResult.Yes) { return true; }
+        else { return false; }
     }
 }

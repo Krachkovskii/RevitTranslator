@@ -9,7 +9,7 @@
                 Width="500"
                 Height="400"
                 ResizeMode="NoResize"
-                 ExtendsContentIntoTitleBar="True">
+                ExtendsContentIntoTitleBar="True">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -18,10 +18,6 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-
-    <Window.DataContext>
-        <vm:SettingsViewModel/>
-    </Window.DataContext>
 
     <Grid>
         <Grid.ColumnDefinitions>

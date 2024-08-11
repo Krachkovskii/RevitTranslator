@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.Utils.DeepL;
-using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.ViewModels;
 
@@ -20,8 +20,9 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     private bool _translationFinished = false;
     private string _buttonText = string.Empty;
     private double _progressBarOpacity = 1;
-
-    internal static CancellationTokenSource Cts = null;
+    private int _monthlyUsage = 0;
+    private int _monthlyLimit = 0;
+    internal static CancellationTokenSource Cts { get; set; } = null;
 
     public int Maximum
     {
@@ -123,6 +124,26 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    public int MonthlyUsage
+    {
+        get => _monthlyUsage;
+        set
+        {
+            _monthlyUsage = value;
+            OnPropertyChanged(nameof(MonthlyUsage));
+        }
+    }
+
+    public int MonthlyLimit
+    {
+        get => _monthlyLimit;
+        set
+        {
+            _monthlyLimit = value;
+            OnPropertyChanged(nameof(MonthlyLimit));
+        }
+    }
+
     public ICommand StopCommand
     {
         get;
@@ -136,6 +157,8 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     public ProgressWindowViewModel()
     {
         StopCommand = new RelayCommand(Stop);
+        MonthlyLimit = TranslationUtils.Limit;
+        MonthlyUsage = TranslationUtils.Usage;
         IsStopEnabled = true;
         ButtonText = "Stop translation";
     }
@@ -157,13 +180,35 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    internal void UpdateStarted()
+    {
+        ButtonText = "Updating Revit model...";
+        IsProgressBarIndeterminate = true;
+    }
+
+    internal void UpdateFinished()
+    {
+        TranslationUtils.ClearTranslationCount();
+
+        if (IsStopRequested)
+        {
+            ButtonText = "Translation interrupted | Elements updated";
+        }
+        else
+        {
+            ButtonText = "Elements translated!";
+        }
+
+        ProgressBarOpacity = 0.5;
+        IsProgressBarIndeterminate = false;
+    }
+
     private void Stop()
     {
         Cts.Cancel();
-        ButtonText = "Stopping...";
+        ButtonText = "Stopping translation...";
         IsStopEnabled = false;
         IsStopRequested = true;
-        ProgressBarOpacity = 0.5;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

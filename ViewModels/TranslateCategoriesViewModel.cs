@@ -2,17 +2,18 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
+using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.ViewModels;
 public class TranslateCategoriesViewModel : INotifyPropertyChanged
 {
-
-    private List<ListItem> _selectedCategories = [];
-    private readonly TranslationUtils _utils = null;
+    private readonly TranslationUtils _translationUtils = null;
+    private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
     public ObservableCollection<ListItem> Categories { get; } = [];
 
     private int _elementCount
@@ -49,6 +50,7 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
     }
 
     public ICommand SelectAllInGroupCommand => new RelayCommand<Tuple<bool, string>>(ExecuteSelectAllInGroup);
+
     /// <summary>
     /// Checks or unchecks all categories in selected Category Type.
     /// </summary>
@@ -72,6 +74,7 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
     }
 
     public ICommand TranslateSelectedCommand => new RelayCommand(TranslateSelected);
+
     /// <summary>
     /// Command for translation of all elements in selected categories. 
     /// Starts translation process and calls the raise of ExternalEvent to update Revit model.
@@ -85,27 +88,56 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         TranslateCategoriesCommand.Window.Close();
         TranslateCategoriesCommand.Window = null;
 
-        //ProgressWindowUtils.Start(RevitUtils.UIApp);
-        ProgressWindowUtils.Start();
+        _progressWindowUtils.Start();
 
-        var finished = _utils.StartTranslation(elements);
+//#if NET8_0_OR_GREATER
+        var textRetriever = new ElementTextRetriever(_progressWindowUtils);
+        textRetriever.ProcessElements(elements);
+        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
+        var result = taskHandler.StartTranslation();
 
-        if (TranslationUtils.Translations.Count > 0)
+        if (textRetriever.TranslationUnits.Count > 0)
         {
-            TranslateCategoriesCommand.TranslateCategoriesExternalEvent.Raise();
+            if (!result.Completed)
+            {
+                var proceed = TranslationUtils.ProceedWithUpdate();
+                if (!proceed)
+                {
+                    return;
+                }
+            }
+
+            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+
+            RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();
         }
-        else
-        {
-            // shutting down the window ONLY in case if there are no translations, i.e. event is not triggered
-            ProgressWindowUtils.End();
-        }
+        _progressWindowUtils.End();
 
-        // this line is being called directly from external event for appropriate timing.
-        //ProgressWindowUtils.End();
+//#else
+//        var finishedTask = Task.Run(() => _translationUtils.StartTranslationAsync(elements));
+//        var finished = finishedTask.GetAwaiter().GetResult();
+//        //var finished = _translationUtils.StartTranslation(elements);
+
+//        if (TranslationUtils.Translations.Count > 0)
+//        {
+//            if (!finished)
+//            {
+//                var proceed = TranslationUtils.ProceedWithUpdate();
+//                if (!proceed)
+//                {
+//                    return;
+//                }
+//            }
+
+//            RevitUtils.ExEvent.Raise();
+//            RevitUtils.SetTemporaryFocus();
+//        }
+//        ProgressWindowUtils.End();
+//#endif
     }
 
-    public TranslateCategoriesViewModel(TranslationUtils utils)
+    public TranslateCategoriesViewModel(TranslationUtils utils, ProgressWindowUtils windowUtils)
     {
 
         foreach (Category c in CategoriesModel.AllCategories)
@@ -113,7 +145,8 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
             Categories.Add(new ListItem(c, this));
         }
 
-        _utils = utils;
+        _translationUtils = utils;
+        _progressWindowUtils = windowUtils;
         TranslateButtonText = "Translate";
     }
 
