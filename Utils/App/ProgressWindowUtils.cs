@@ -32,7 +32,7 @@ public class ProgressWindowUtils
             PW = null;
             VM = null;
         }
-        VM = new ProgressWindowViewModel(TranslationUtils);
+        VM = new ProgressWindowViewModel();
         PW = new ProgressWindow(VM, this);
 
         PW.Activate();

@@ -15,7 +15,6 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
     private readonly TranslationUtils _translationUtils = null;
     private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
     public ObservableCollection<ListItem> Categories { get; } = [];
-
     private int _elementCount
     {
         set

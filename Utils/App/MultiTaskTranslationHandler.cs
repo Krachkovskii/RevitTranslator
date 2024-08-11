@@ -16,7 +16,7 @@ internal class MultiTaskTranslationHandler
     private readonly TranslationUtils _translationUtils = null;
     internal CancellationTokenHandler TokenHandler { get; private set; } = null;
     private readonly ProgressWindowUtils _progressWindowUtils = null;
-    private readonly TranslationProcessResult _processResult = new(false, TranslationProcessResult.AbortReasons.None, string.Empty);
+    private TranslationProcessResult _processResult { get; set; } = new(false, TranslationProcessResult.AbortReasons.None, string.Empty);
     internal MultiTaskTranslationHandler(TranslationUtils translationUtils, 
         List<TranslationUnit> units, 
         ProgressWindowUtils progressWindowUtils)
@@ -29,7 +29,8 @@ internal class MultiTaskTranslationHandler
     internal TranslationProcessResult StartTranslation()
     {
         CreateTranslationTasks();
-        
+
+        // this is executed after all tasks have finished
         TokenHandler.Clear();
 
         return _processResult;
@@ -37,9 +38,7 @@ internal class MultiTaskTranslationHandler
 
     private void CreateTranslationTasks()
     {
-        TokenHandler = new CancellationTokenHandler();
-        TokenHandler.Create();
-        _progressWindowUtils.TokenHandler = TokenHandler;
+        SetupTokenHandler();
         _progressWindowUtils.UpdateTotal(_translationUnits.Count);
 
         try
@@ -48,7 +47,7 @@ internal class MultiTaskTranslationHandler
             {
                 if (TokenHandler.Cts.Token.IsCancellationRequested)
                 {
-                    break;
+                    throw new OperationCanceledException();
                 }
                 AddTranslationTask(unit);
             }
@@ -78,11 +77,9 @@ internal class MultiTaskTranslationHandler
         _translationTasks.Add(Task.Run(async () =>
         {
             TokenHandler.Cts.Token.ThrowIfCancellationRequested();
-            var translated = await _translationUtils.TranslateTextAsync(unit.OriginalText,
-                                                                        TokenHandler.Cts.Token);
+            var translated = await _translationUtils.TranslateTextAsync(unit.OriginalText, TokenHandler.Cts.Token);
             unit.TranslatedText = translated;
-        }
-        ));
+        }, TokenHandler.Cts.Token));
     }
 
     private void HandleCanceledOperation()
@@ -101,15 +98,25 @@ internal class MultiTaskTranslationHandler
             _processResult.ErrorMessage = "Translation process was cancelled by user";
         }
 
-        _processResult.Completed = false;
-        _processResult.AbortReasonResult = TranslationProcessResult.AbortReasons.Other;
-        _processResult.ErrorMessage = ae.Message;
-    }
+        else { 
+            _processResult.Completed = false;
+            _processResult.AbortReasonResult = TranslationProcessResult.AbortReasons.Other;
+            _processResult.ErrorMessage = ae.Message;
+            }
+        }
 
-    private void HandleOtherExceptions(Exception ex)
+        private void HandleOtherExceptions(Exception ex)
     {
         _processResult.Completed = false;
         _processResult.AbortReasonResult = TranslationProcessResult.AbortReasons.Other;
         _processResult.ErrorMessage = ex.Message;
+    }
+
+    private void SetupTokenHandler()
+    {
+        TokenHandler = new CancellationTokenHandler();
+        TokenHandler.Create();
+        _progressWindowUtils.TokenHandler = TokenHandler;
+        _progressWindowUtils.VM.Cts = TokenHandler.Cts;
     }
 }

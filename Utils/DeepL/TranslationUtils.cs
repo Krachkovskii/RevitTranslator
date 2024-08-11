@@ -31,23 +31,6 @@ public class TranslationUtils
     internal static int CharacterCount { get; private set; } = 0;
     internal static int Usage { get; private set; } = 0;
     internal static int Limit { get; private set; } = 0;
-
-    internal CancellationToken token
-    {
-        get; set;
-    }
-
-    //TODO: switch from tuple to an object with corresponding properties for more clarity
-    /// <summary>
-    /// List of elements to translate, intended to use with asynchronous translation methods.
-    /// Each tuple stores three values:
-    /// - element to be translated, e.g. a parameter or a textbox; (object)
-    /// - translated text; (string)
-    /// - element-specific context for Revit elements that have multiple text fields, e.g. "above" or "header". (string)
-    /// </summary>
-
-    //internal static ConcurrentBag<(object, string, string, ElementId)> Translations { get; set; } = [];
-
     private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
 
     public TranslationUtils(Models.Settings settings, ProgressWindowUtils progressWindowUtils)
