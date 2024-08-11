@@ -160,6 +160,12 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         MonthlyLimit = TranslationUtils.Limit;
         MonthlyUsage = TranslationUtils.Usage;
         IsStopEnabled = true;
+        IsProgressBarIndeterminate = true;
+        ButtonText = "Extracting model data...";
+    }
+    internal void TranslationStarted()
+    {
+        IsProgressBarIndeterminate = false;
         ButtonText = "Stop translation";
     }
 

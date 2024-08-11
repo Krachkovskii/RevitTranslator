@@ -65,26 +65,6 @@ public class ProgressWindowUtils
         VM.TranslationsFinished();
     }
 
-    /// <summary>
-    /// Updates values of a ProgressWindow
-    /// </summary>
-    /// <param name="num">
-    /// Current number of translations
-    /// </param>
-    internal void Update(int num)
-    {
-        if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
-        {
-            PW.Dispatcher.Invoke(() =>
-            {
-                VM.Value = num;
-                VM.Maximum = TranslationUtils.TranslationsCount;
-                VM.CharacterCount = TranslationUtils.CharacterCount;
-                VM.MonthlyUsage = TranslationUtils.Usage + VM.CharacterCount;
-            });
-        }
-    }
-
     internal void UpdateTotal(int num)
     {
         if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
@@ -107,5 +87,13 @@ public class ProgressWindowUtils
                 VM.MonthlyUsage = TranslationUtils.Usage + TranslationUtils.CharacterCount;
             });
         }
+    }
+
+    internal void StartTranslation()
+    {
+        PW.Dispatcher.Invoke(() =>
+        {
+            VM.TranslationStarted();
+        });
     }
 }

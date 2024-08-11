@@ -39,6 +39,7 @@ internal class MultiTaskTranslationHandler
     private void CreateTranslationTasks()
     {
         SetupTokenHandler();
+        _progressWindowUtils.StartTranslation();
         _progressWindowUtils.UpdateTotal(_translationUnits.Count);
 
         try
