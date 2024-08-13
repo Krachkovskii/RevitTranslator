@@ -14,7 +14,11 @@ internal class TranslateCategoriesCommand : ExternalCommand
 {
     private TranslationUtils _translationUtils = null;
     private ProgressWindowUtils _progressWindowUtils = null;
-    private Models.Settings _settings = null;
+    private Models.DeeplSettings _settings = null;
+
+    /// <summary>
+    /// Window that displays all available categories and allows user to select all necessary categories
+    /// </summary>
     internal static TranslateCategoriesWindow Window { get; set; } = null;
 
     public override void Execute()
@@ -24,16 +28,12 @@ internal class TranslateCategoriesCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
-        _settings = Models.Settings.LoadFromJson();
+        CreateAndSetUtils();
 
-        if (!TranslationUtils.CanTranslate(_settings))
+        if (!_translationUtils.CanTranslate(_settings))
         {
             return;
         }
-
-        _progressWindowUtils = new ProgressWindowUtils();
-        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
-        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
 
         // initialising a class to fill static property that contains all categories
         new CategoriesModel();
@@ -63,5 +63,16 @@ internal class TranslateCategoriesCommand : ExternalCommand
             .ToList();
 
         return elements;
+    }
+
+    /// <summary>
+    /// Creates and sets all necessary utils, i.e. progress window, translation etc.
+    /// </summary>
+    private void CreateAndSetUtils()
+    {
+        _settings = Models.DeeplSettings.LoadFromJson();
+        _progressWindowUtils = new ProgressWindowUtils();
+        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
+        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
     }
 }

@@ -9,25 +9,8 @@ namespace RevitTranslatorAddin.ViewModels;
 
 public class SettingsViewModel : INotifyPropertyChanged
 {
-    private Models.Settings _settings;
+    private Models.DeeplSettings _settings;
     private int _previousSourceIndex = -1;
-    // TODO: Checkbox for paid plan, since it requires different API endpoint
-
-    //TODO: saving state of settings to enable or disable update button if nothing has changed (test below)
-    //private Tuple<string, int, int> _savedState = new(string.Empty, 0, 0);
-    //private Tuple<string, int, int> CurrentState
-    //{
-    //    set => StateDiffers = !value.Equals(_savedState);
-    //}
-    //private bool _stateDiffers = false;
-    //public bool StateDiffers { 
-    //    get => _stateDiffers; 
-    //    set 
-    //    {
-    //        _stateDiffers = value;
-    //        OnPropertyChanged(nameof(StateDiffers));
-    //    } 
-    //}
 
     private string _deeplApiKey;
     public string DeeplApiKey
@@ -37,7 +20,6 @@ public class SettingsViewModel : INotifyPropertyChanged
         {
             _deeplApiKey = value;
             OnPropertyChanged(nameof(DeeplApiKey));
-            //CurrentState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
         }
     }
 
@@ -52,7 +34,6 @@ public class SettingsViewModel : INotifyPropertyChanged
         {
             _selectedSourceLanguageIndex = value;
             OnPropertyChanged(nameof(SelectedSourceLanguageIndex));
-            //CurrentState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
         }
     }
 
@@ -66,7 +47,6 @@ public class SettingsViewModel : INotifyPropertyChanged
             {
                 _selectedTargetLanguageIndex = value;
                 OnPropertyChanged(nameof(SelectedTargetLanguageIndex));
-                //CurrentState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
             }
         }
     }
@@ -132,16 +112,27 @@ public class SettingsViewModel : INotifyPropertyChanged
         OpenLinkedinCommand = new RelayCommand<string>(OpenLinkedin);
         UpdateButtonText = "Save settings";
     }
-        
+
+    /// <summary>
+    /// Loads the settings file
+    /// </summary>
     private void LoadSettings()
     {
-        _settings = Models.Settings.LoadFromJson();
+        _settings = Models.DeeplSettings.LoadFromJson();
         DeeplApiKey = _settings.DeeplApiKey;
         _languages = _settings.Languages;
         Languages = new ObservableCollection<string>(_languages.Keys);
         IsPaidPlan = _settings.IsPaidPlan;
 
-        // loading source language
+        SetSourceLanguage();
+        SetTargetLanguage();
+    }
+
+    /// <summary>
+    /// Sets the source language
+    /// </summary>
+    private void SetSourceLanguage()
+    {
         if (_settings.SourceLanguage == null)
         {
             SelectedSourceLanguageIndex = -1;
@@ -163,8 +154,13 @@ public class SettingsViewModel : INotifyPropertyChanged
                 SelectedSourceLanguageIndex = _languages.IndexOfKey(_settings.SourceLanguage);
             }
         }
+    }
 
-        // loading target language
+    /// <summary>
+    /// Sets the target language
+    /// </summary>
+    private void SetTargetLanguage()
+    {
         if (_settings.TargetLanguage == null)
         {
             SelectedTargetLanguageIndex = -1;
@@ -179,15 +175,19 @@ public class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Saves settings file and checks if provided credentials are valid
+    /// </summary>
     private void SaveSettings()
     {
         _settings.DeeplApiKey = DeeplApiKey;
         _settings.SourceLanguage = SelectedSourceLanguageIndex == -1 ? null : Languages[SelectedSourceLanguageIndex];
         _settings.TargetLanguage = Languages[SelectedTargetLanguageIndex];
         _settings.SaveToJson();
-        //_savedState = Tuple.Create(DeeplApiKey, SelectedSourceLanguageIndex, SelectedTargetLanguageIndex);
 
-        if (!TranslationUtils.CanTranslate(Models.Settings.LoadFromJson()))
+        var translationUtils = new TranslationUtils(_settings, new Utils.App.ProgressWindowUtils());
+
+        if (!translationUtils.CanTranslate(_settings))
         {
             return;
         }
@@ -201,6 +201,9 @@ public class SettingsViewModel : INotifyPropertyChanged
         });
     }
 
+    /// <summary>
+    /// Switches "to" and "from" languages in the UI
+    /// </summary>
     private void SwitchLanguages()
     {
         if (IsAutoDetectChecked)
@@ -214,6 +217,10 @@ public class SettingsViewModel : INotifyPropertyChanged
         SelectedTargetLanguageIndex = index1;
     }
 
+    /// <summary>
+    /// Opens the link to my LinkedIn page in default browser
+    /// </summary>
+    /// <param name="uri"></param>
     private void OpenLinkedin(string uri)
     {
         if (Uri.TryCreate(uri, UriKind.Absolute, out var validUri))
@@ -226,17 +233,5 @@ public class SettingsViewModel : INotifyPropertyChanged
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    protected bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
-    {
-        if (!Equals(field, newValue))
-        {
-            field = newValue;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            return true;
-        }
-
-        return false;
     }
 }

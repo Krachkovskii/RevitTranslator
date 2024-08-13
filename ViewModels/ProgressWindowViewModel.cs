@@ -1,9 +1,6 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.Windows.Input;
-using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.Utils.DeepL;
 
 namespace RevitTranslatorAddin.ViewModels;
@@ -22,7 +19,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     private double _progressBarOpacity = 1;
     private int _monthlyUsage = 0;
     private int _monthlyLimit = 0;
-    internal static CancellationTokenSource Cts { get; set; } = null;
+    internal CancellationTokenSource Cts { get; set; } = null;
 
     public int Maximum
     {
@@ -160,10 +157,23 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         MonthlyLimit = TranslationUtils.Limit;
         MonthlyUsage = TranslationUtils.Usage;
         IsStopEnabled = true;
+        IsProgressBarIndeterminate = true;
+        ButtonText = "Extracting model data...";
+    }
+
+    /// <summary>
+    /// Represents the start of translation process
+    /// </summary>
+    internal void TranslationStartedStatus()
+    {
+        IsProgressBarIndeterminate = false;
         ButtonText = "Stop translation";
     }
 
-    internal void TranslationsFinished()
+    /// <summary>
+    /// Represents the end of translation process
+    /// </summary>
+    internal void TranslationsFinishedStatus()
     {
         if (IsStopEnabled)
         {
@@ -180,12 +190,18 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Represents the start of Revit model update
+    /// </summary>
     internal void UpdateStarted()
     {
         ButtonText = "Updating Revit model...";
         IsProgressBarIndeterminate = true;
     }
 
+    /// <summary>
+    /// Represents the end of Revit model update
+    /// </summary>
     internal void UpdateFinished()
     {
         TranslationUtils.ClearTranslationCount();
@@ -203,6 +219,9 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         IsProgressBarIndeterminate = false;
     }
 
+    /// <summary>
+    /// Cancels the translation process
+    /// </summary>
     private void Stop()
     {
         Cts.Cancel();

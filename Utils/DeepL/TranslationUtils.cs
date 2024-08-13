@@ -1,24 +1,38 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Windows;
-using System.Xml.Linq;
-using Autodesk.Revit.DB;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RevitTranslatorAddin.Utils.App;
-using RevitTranslatorAddin.Utils.Revit;
-using RevitTranslatorAddin.ViewModels;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RevitTranslatorAddin.Utils.DeepL;
 
+/// <summary>
+/// DeepL-related utils
+/// </summary>
 public class TranslationUtils
 {
-    private readonly Models.Settings _settings = null;
+    /// <summary>
+    /// Counter for completed translations for this run
+    /// </summary>
+    internal static int CompletedTranslationsCount { get; private set; } = 0;
+
+    /// <summary>
+    /// Counter for translated symbols for this run
+    /// </summary>
+    internal static int CharacterCount { get; private set; } = 0;
+
+    /// <summary>
+    /// Counter for translated symbols for current billing period
+    /// </summary>
+    internal static int Usage { get; private set; } = 0;
+
+    /// <summary>
+    /// Translation limits for current DeepL plan
+    /// </summary>
+    internal static int Limit { get; private set; } = 0;
+
+    private readonly Models.DeeplSettings _settings = null;
     private readonly string _baseApi = "https://api-free.deepl.com/v2/";
     private readonly string _apiTranslateUrl = null;
     private readonly string _apiUsageUrl = null;
@@ -26,32 +40,9 @@ public class TranslationUtils
     private static int _translationsCount = 0;
     private static int _completedTranslationsCount = 0;
     private static int _characterCount = 0;
-    internal static int CompletedTranslationsCount { get; private set; } = 0;
-    internal static int TranslationsCount { get; private set; } = 0;
-    internal static int CharacterCount { get; private set; } = 0;
-    internal static int Usage { get; private set; } = 0;
-    internal static int Limit { get; private set; } = 0;
-
-    internal CancellationToken token
-    {
-        get; set;
-    }
-
-    //TODO: switch from tuple to an object with corresponding properties for more clarity
-    /// <summary>
-    /// List of elements to translate, intended to use with asynchronous translation methods.
-    /// Each tuple stores three values:
-    /// - element to be translated, e.g. a parameter or a textbox; (object)
-    /// - translated text; (string)
-    /// - element-specific context for Revit elements that have multiple text fields, e.g. "above" or "header". (string)
-    /// </summary>
-
-    //internal static ConcurrentBag<(object, string, string, ElementId)> Translations { get; set; } = [];
-
-    internal static ConcurrentBag<TranslationUnit> Translations { get; set; } = [];
     private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
 
-    public TranslationUtils(Models.Settings settings, ProgressWindowUtils progressWindowUtils)
+    public TranslationUtils(Models.DeeplSettings settings, ProgressWindowUtils progressWindowUtils)
     {
         _settings = settings;
         _httpClient = new HttpClient();
@@ -73,23 +64,13 @@ public class TranslationUtils
     /// The Settings object containing the API key and target language.
     /// </param>
     /// <returns>
-    /// Bool
-    ///     True if translation can be performed, false otherwise.
+    /// True if translation can be performed, false otherwise.
     /// </returns>
-    public static bool CanTranslate(Models.Settings settings)
+    public bool CanTranslate(Models.DeeplSettings settings)
     {
         if (settings.DeeplApiKey == null || settings.TargetLanguage == null)
         {
-            System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
-                "Please make sure everything is correct:\n" +
-                "• API key\n" +
-                "• Target language\n" +
-                "• Paid/Free plan\n" +
-                "• Translation limits.",
-                "Incorrect settings",
-                System.Windows.MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-
+            ShowCantTranslateMessage();
             return false;
         }
 
@@ -109,7 +90,19 @@ public class TranslationUtils
 
         catch (Exception e)
         {
-            System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
+            ShowCantTranslateMessage();
+            Debug.WriteLine(e.Message);
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Shows MessageBox with translations that can't be updated due to illegal characters
+    /// </summary>
+    private void ShowCantTranslateMessage()
+    {
+        System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
                 "Please make sure everything is correct:\n" +
                 "• API key\n" +
                 "• Target language\n" +
@@ -118,11 +111,6 @@ public class TranslationUtils
                 "Incorrect settings",
                 System.Windows.MessageBoxButton.OK,
                 MessageBoxImage.Warning);
-            
-            Debug.WriteLine(e.Message);
-
-            return false;
-        }
     }
 
     //TODO: switch to returning (int, int); do not set properties inside the function. Instead, set properties in the main block
@@ -149,13 +137,11 @@ public class TranslationUtils
     /// This is a base method that simply returns translated text.
     /// </summary>
     /// <param name="text">
-    /// String
-    ///     Text to be translated.
+    /// Text to be translated.
     /// </param>
     /// <returns>
-    /// String
-    ///     Translated text.
-    ///     </returns>
+    /// Translated text.
+    /// </returns>
     private async Task<string> TranslateBaseAsync(string text, CancellationToken token)
     {
         var content = new FormUrlEncodedContent(
@@ -189,8 +175,6 @@ public class TranslationUtils
     /// </returns>
     internal async Task<string> TranslateTextAsync(string text, CancellationToken token)
     {
-        UpdateTranslationCounter();
-
         var translatedText = await TranslateBaseAsync(text, token);
 
         UpdateCharacterCounter(text);
@@ -199,18 +183,19 @@ public class TranslationUtils
         return translatedText;
     }
 
-    private void UpdateTranslationCounter() 
-    {
-        Interlocked.Increment(ref _translationsCount);
-        TranslationsCount = _translationsCount;
-    }
-
+    /// <summary>
+    /// Updates counter of translated characters for this run
+    /// </summary>
+    /// <param name="text"></param>
     private void UpdateCharacterCounter(string text)
     {
         Interlocked.Add(ref _characterCount, text.Length);
         CharacterCount = _characterCount;
     }
 
+    /// <summary>
+    /// Updates counter of finished translations
+    /// </summary>
     public void UpdateCompletedCounter()
     {
         var finished = Interlocked.Increment(ref _completedTranslationsCount);
@@ -228,9 +213,6 @@ public class TranslationUtils
         CompletedTranslationsCount = 0;
         _characterCount = 0;
         CharacterCount = 0;
-        TranslationsCount = 0;
-
-        Translations = new ConcurrentBag<TranslationUnit>();
     }
 
     /// <summary>

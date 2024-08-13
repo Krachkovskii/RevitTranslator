@@ -1,12 +1,15 @@
 ﻿using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Models;
+/// <summary>
+/// This class provides access to user-visible and user-modifiable categories
+/// </summary>
 public class CategoriesModel
 {
-    public static List<Category> AllCategories = [];
+    public static List<Category> AllValidCategories { get; private set; } = [];
     public CategoriesModel()
     {
-        AllCategories = GetCategories();
+        AllValidCategories = GetCategories();
     }
 
     /// <summary>

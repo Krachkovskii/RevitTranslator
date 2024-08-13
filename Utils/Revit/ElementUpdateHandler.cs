@@ -5,10 +5,24 @@ using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 
+/// <summary>
+/// This class handles update of elements in the model using Transaction
+/// </summary>
 public class ElementUpdateHandler : IExternalEventHandler
 {
+    /// <summary>
+    /// Units to be translated
+    /// </summary>
     internal static List<TranslationUnit> TranslationUnits { get; set; } = [];
+    
+    /// <summary>
+    /// Utils for the Progress window of current command
+    /// </summary>
     internal static ProgressWindowUtils ProgressWindowUtils { get; set; } = null;
+
+    /// <summary>
+    /// List of translations that can't be applied due to illegal characters
+    /// </summary>
     private readonly List<string> _cantUpdate = [];
     public void Execute(UIApplication app)
     {
@@ -46,6 +60,10 @@ public class ElementUpdateHandler : IExternalEventHandler
         return "Element Updater";
     }
 
+    /// <summary>
+    /// Updates individual element, performing a set of validation measures
+    /// </summary>
+    /// <param name="unit"></param>
     private void UpdateElement(TranslationUnit unit)
     {
         try
@@ -57,9 +75,9 @@ public class ElementUpdateHandler : IExternalEventHandler
                 return;
             }
 
-            if (unit.TranslatedText.Any(c => RevitUtils.ForbiddenSymbols.Contains(c)))
+            if (CheckIllegalCharacters(unit))
             {
-                AddUntranslatableSymbol(unit);
+                AddIllegalTranslation(unit);
                 return;
             }
 
@@ -71,6 +89,28 @@ public class ElementUpdateHandler : IExternalEventHandler
         }
     }
 
+    /// <summary>
+    /// Checks if translation is applied to parameter or element name. 
+    /// If yes, checks for illegal Revit characters
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <returns></returns>
+    private bool CheckIllegalCharacters(TranslationUnit unit)
+    {
+        if (unit.Element is Parameter p || unit.TranslationDetails == TranslationDetails.ElementName)
+        {
+            if(unit.TranslatedText.Any(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Updates the text value of the element
+    /// </summary>
+    /// <param name="unit"></param>
     private void UpdateElementTranslation(TranslationUnit unit)
     {
         switch (unit.Element)
@@ -84,7 +124,7 @@ public class ElementUpdateHandler : IExternalEventHandler
                 break;
 
             case TableSectionData tsd:
-                tsd.SetCellText(unit.TableSectionCoordinates.Row, unit.TableSectionCoordinates.Column, unit.TranslatedText);
+                tsd.SetCellText(unit.ScheduleCellCoordinates.Row, unit.ScheduleCellCoordinates.Column, unit.TranslatedText);
                 break;
 
             case TextNote textNote:
@@ -111,16 +151,31 @@ public class ElementUpdateHandler : IExternalEventHandler
         }
     }
 
+    /// <summary>
+    /// Updates the value of the Schedule field
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <param name="field"></param>
     private void SetScheduleField(TranslationUnit unit, ScheduleField field)
     {
         field.ColumnHeading = unit.TranslatedText;
     }
 
+    /// <summary>
+    /// Updates the text in Text note
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <param name="textNote"></param>
     private void SetTextNoteText(TranslationUnit unit, TextNote textNote)
     {
         textNote.Text = unit.TranslatedText;
     }
 
+    /// <summary>
+    /// Updates overrides of Dimension element
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <param name="dim"></param>
     private void SetDimensionText(TranslationUnit unit, Dimension dim)
     {
         switch (unit.TranslationDetails)
@@ -143,6 +198,11 @@ public class ElementUpdateHandler : IExternalEventHandler
         }
     }
 
+    /// <summary>
+    /// Updates overrides of DimensionSegment element
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <param name="dim"></param>
     private void SetDimensionSegmentText(TranslationUnit unit, DimensionSegment dim)
     {
         switch (unit.TranslationDetails)
@@ -165,26 +225,42 @@ public class ElementUpdateHandler : IExternalEventHandler
         }
     }
 
+    /// <summary>
+    /// Updates the Name property of the element
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <param name="element"></param>
     private void SetElementName(TranslationUnit unit, Element element)
     {
         element.Name = unit.TranslatedText;
     }
 
-    private void AddUntranslatableSymbol(TranslationUnit unit)
+    /// <summary>
+    /// Adds report about translation with illegal characters
+    /// </summary>
+    /// <param name="unit"></param>
+    private void AddIllegalTranslation(TranslationUnit unit)
     {
         _cantUpdate.Add($"{unit.TranslatedText} " +
-            $"(Symbol: \"{unit.TranslatedText.FirstOrDefault(c => RevitUtils.ForbiddenSymbols.Contains(c))}\", " +
+            $"(Symbol: \"{unit.TranslatedText.FirstOrDefault(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c))}\", " +
             $"ElementId: {unit.ElementId})");
     }
 
+    /// <summary>
+    /// Shows message with all translations that can't be updated due to illegal characters
+    /// </summary>
     private void ShowCantTranslateMessage()
     {
-        MessageBox.Show($"These values weren't applied due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
+        MessageBox.Show($"These translations weren't updated due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
                                         "Warning",
                                         MessageBoxButton.OK,
                                         MessageBoxImage.Warning);
     }
 
+    /// <summary>
+    /// Shows error message about a faulty transaction
+    /// </summary>
+    /// <param name="ex"></param>
     private void ShowTransactionErrorMessage(Exception ex)
     {
         MessageBox.Show(ex.Message,
@@ -193,6 +269,9 @@ public class ElementUpdateHandler : IExternalEventHandler
                         MessageBoxImage.Error);
     }
 
+    /// <summary>
+    /// Clears all necessary values
+    /// </summary>
     private void FinalizeUpdate()
     {
         ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateFinished());

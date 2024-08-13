@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace RevitTranslatorAddin.Utils.Revit;
 
-namespace RevitTranslatorAddin.Utils.Revit;
+/// <summary>
+/// Represents translation attribute for elements that have multiple text properties
+/// </summary>
 public enum TranslationDetails
 {
     None,

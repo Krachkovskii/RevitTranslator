@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace RevitTranslatorAddin.Utils.App;
+/// <summary>
+/// Utilities for text validation
+/// </summary>
 internal class ValidationUtils
 {
+    /// <summary>
+    /// Preset regex to avoid initialization on every call
+    /// </summary>
     private static readonly Regex NumberOnlyRegex = new(@"^\d+$");
 
     /// <summary>
@@ -23,4 +24,13 @@ internal class ValidationUtils
     {
         return !(string.IsNullOrWhiteSpace(input) || NumberOnlyRegex.IsMatch(input));
     }
+
+    /// <summary>
+    /// Characters that can't be used in certain Revit text properties.
+    /// </summary>
+    internal static readonly List<char> ForbiddenParameterSymbols = new()
+    {
+        '\\', ':', '{', '}', '[', ']', '|', ';', '<', '>', '?', '`', '~'
+    };
+
 }

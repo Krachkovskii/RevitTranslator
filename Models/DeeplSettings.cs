@@ -5,13 +5,19 @@ using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Models;
 
-public class Settings
+/// <summary>
+/// DeepL translation settings
+/// </summary>
+public class DeeplSettings
 {
     public string DeeplApiKey { get; set; } = null;
     public string SourceLanguage { get; set; } = "English";
     public string TargetLanguage { get; set; } = "Italian";
-    public List<string> IgnoreParameters { get; set; } = [];
-    public List<string> IgnoreValues { get; set; } = [];
+
+    // TODO: implement blacklist for parameters and words
+    //public List<string> IgnoreParameters { get; set; } = [];
+    //public List<string> IgnoreValues { get; set; } = [];
+    
     public bool IsPaidPlan = false;
     public SortedList<string, string> Languages { get; set; } = DeeplLanguageCodes.LanguageCodes;
     private static string _jsonPath = string.Empty;
@@ -20,7 +26,7 @@ public class Settings
     /// Loads the settings from a JSON file.
     /// </summary>
     /// <returns>An instance of the Settings class with the loaded settings.</returns>
-    public static Settings LoadFromJson()
+    public static DeeplSettings LoadFromJson()
     {
         if (_jsonPath == string.Empty)
         {
@@ -30,14 +36,17 @@ public class Settings
         try
         {
             var json = File.ReadAllText(_jsonPath);
-            return JsonConvert.DeserializeObject<Settings>(json);
+            return JsonConvert.DeserializeObject<DeeplSettings>(json);
         }
         catch
         {
-            return new Settings();
+            return new DeeplSettings();
         }
     }
 
+    /// <summary>
+    /// Saves the class instance to JSON file
+    /// </summary>
     public void SaveToJson()
     {
         var json = JsonConvert.SerializeObject(this, Formatting.Indented);

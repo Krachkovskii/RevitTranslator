@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Utils.App;
+/// <summary>
+/// This class describes a Revit-related unit of translation, 
+/// which includes reference to the element, original text, translation etc.
+/// </summary>
 public class TranslationUnit
 {
     /// <summary>
@@ -40,7 +39,7 @@ public class TranslationUnit
     /// <summary>
     /// Optional: TableSectionData coordinates (row, column).
     /// </summary>
-    public TableSectionCoordinates TableSectionCoordinates { get; internal set; } = null;
+    public ScheduleCellCoordinates ScheduleCellCoordinates { get; internal set; } = null;
 
     /// <summary>
     /// Optional: Additional details of the translation, e.g. Dimension Override or Element Name.
@@ -64,10 +63,10 @@ public class TranslationUnit
         TranslationDetails = details;
     }
 
-    public TranslationUnit(object element, string originalText, TableSectionCoordinates cellCoordinates)
+    public TranslationUnit(object element, string originalText, ScheduleCellCoordinates cellCoordinates)
     {
         OriginalText = originalText;
         Element = element;
-        TableSectionCoordinates = cellCoordinates;
+        ScheduleCellCoordinates = cellCoordinates;
     }
 }

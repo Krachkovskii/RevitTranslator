@@ -2,10 +2,7 @@
 using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using RevitTranslatorAddin.Utils.App;
-using System.Collections.Generic;
 
 namespace RevitTranslatorAddin.Commands;
 
@@ -13,7 +10,7 @@ namespace RevitTranslatorAddin.Commands;
 public class TranslateSelectionCommand : ExternalCommand
 {
     private TranslationUtils _translationUtils = null;
-    private Models.Settings _settings = null;
+    private Models.DeeplSettings _settings = null;
     private ProgressWindowUtils _progressWindowUtils = null;
 
     public override void Execute()
@@ -23,24 +20,22 @@ public class TranslateSelectionCommand : ExternalCommand
             RevitUtils.SetUtils(UiApplication);
         }
 
-        _settings = Models.Settings.LoadFromJson();
+        CreateAndSetUtils();
 
-        if (!TranslationUtils.CanTranslate(_settings))
+        if (!_translationUtils.CanTranslate(_settings))
         {
             return;
         }
 
-        CreateUtils();
         CreateAndAssignEvents();
 
         _progressWindowUtils.Start();
 
         List<Element> selection = GetCurrentSelection();
 
-        var textRetriever = new ElementTextRetriever(_progressWindowUtils);
-        textRetriever.ProcessElements(selection);
+        var textRetriever = new ElementTextRetriever(_progressWindowUtils, selection);
         var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
-        var result = taskHandler.StartTranslation();
+        var result = taskHandler.PerformTranslation();
 
         if (textRetriever.TranslationUnits.Count > 0)
         {
@@ -62,6 +57,12 @@ public class TranslateSelectionCommand : ExternalCommand
         _progressWindowUtils.End();
     }
 
+    /// <summary>
+    /// Gets Revit elements that are currently selected in the UI
+    /// </summary>
+    /// <returns>
+    /// List of Elements
+    /// </returns>
     private List<Element> GetCurrentSelection()
     {
         var ids = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
@@ -70,13 +71,20 @@ public class TranslateSelectionCommand : ExternalCommand
         return elements;
     }
 
-    private void CreateUtils()
+    /// <summary>
+    /// Creates and sets all necessary utils, i.e. progress window, translation etc.
+    /// </summary>
+    private void CreateAndSetUtils()
     {
+        _settings = Models.DeeplSettings.LoadFromJson();
         _progressWindowUtils = new ProgressWindowUtils();
         ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
         _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
     }
 
+    /// <summary>
+    /// Creates and assigns External Event and its Handler
+    /// </summary>
     private void CreateAndAssignEvents()
     {
         RevitUtils.ExEventHandler = new ElementUpdateHandler();
