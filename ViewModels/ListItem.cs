@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 
 namespace RevitTranslatorAddin.ViewModels;
+
 /// <summary>
 /// ListItem for a ListBox in Categories window.
 /// Represents a Revit Category and contains Name, Type and Category properties, 
@@ -11,17 +12,26 @@ public class ListItem : INotifyPropertyChanged
 {
     private readonly TranslateCategoriesViewModel _viewModel;
 
+    /// <summary>
+    /// Name of the category
+    /// </summary>
     public string Name
     {
         get; private set;
     }
 
+    /// <summary>
+    /// CategoryType of the category
+    /// </summary>
     public string Type
     {
         get; private set;
     }
 
     private Category _category;
+    /// <summary>
+    /// The category
+    /// </summary>
     public Category Category
     {
         get => _category;
@@ -41,6 +51,10 @@ public class ListItem : INotifyPropertyChanged
     }
 
     private bool _isSelected;
+    
+    /// <summary>
+    /// Whether the category is selected in the UI
+    /// </summary>
     public bool IsSelected
     {
         get => _isSelected;

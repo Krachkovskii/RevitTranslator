@@ -1,6 +1,10 @@
 ﻿using Newtonsoft.Json;
 
 namespace RevitTranslatorAddin.Utils.DeepL;
+
+/// <summary>
+/// Handles response from DeepL API with text translation.
+/// </summary>
 public class Translation
 {
     [JsonProperty("detected_source_language")]

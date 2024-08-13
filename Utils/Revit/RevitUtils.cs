@@ -7,7 +7,8 @@ using Autodesk.Windows;
 namespace RevitTranslatorAddin.Utils.Revit;
 
 /// <summary>
-/// Represents active Revit context. Updates every time a command is being executed.
+/// Represents active Revit context and general Revit-related methods. 
+/// Context is updated every time a command is being executed.
 /// </summary>
 internal class RevitUtils
 {
@@ -18,14 +19,6 @@ internal class RevitUtils
 
     internal static ExternalEvent ExEvent = null;
     internal static IExternalEventHandler ExEventHandler = null;
-
-    /// <summary>
-    /// Characters that can't be used in certain Revit text properties.
-    /// </summary>
-    internal static readonly List<char> ForbiddenSymbols = new()
-    {
-        '\\', ':', '{', '}', '[', ']', '|', ';', '<', '>', '?', '`', '~'
-    };
 
     internal static void SetUtils(UIApplication uiapp)
     {
@@ -90,6 +83,11 @@ internal class RevitUtils
         return revitWindow;
     }
 
+    /// <summary>
+    /// Gets corresponding elements for all provided ElementIds
+    /// </summary>
+    /// <param name="ids"></param>
+    /// <returns></returns>
     internal static List<Element> GetElementsFromIds(List<ElementId> ids)
     {
         var elements = new List<Element>();

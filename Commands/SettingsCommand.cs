@@ -7,6 +7,7 @@ namespace RevitTranslatorAddin.Commands;
 
 [UsedImplicitly]
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+
 public class SettingsCommand : ExternalCommand
 {
     public override void Execute()

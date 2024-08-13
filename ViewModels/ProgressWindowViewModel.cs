@@ -1,9 +1,6 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.Windows.Input;
-using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.Utils.DeepL;
 
 namespace RevitTranslatorAddin.ViewModels;
@@ -163,13 +160,20 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         IsProgressBarIndeterminate = true;
         ButtonText = "Extracting model data...";
     }
-    internal void TranslationStarted()
+
+    /// <summary>
+    /// Represents the start of translation process
+    /// </summary>
+    internal void TranslationStartedStatus()
     {
         IsProgressBarIndeterminate = false;
         ButtonText = "Stop translation";
     }
 
-    internal void TranslationsFinished()
+    /// <summary>
+    /// Represents the end of translation process
+    /// </summary>
+    internal void TranslationsFinishedStatus()
     {
         if (IsStopEnabled)
         {
@@ -186,12 +190,18 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Represents the start of Revit model update
+    /// </summary>
     internal void UpdateStarted()
     {
         ButtonText = "Updating Revit model...";
         IsProgressBarIndeterminate = true;
     }
 
+    /// <summary>
+    /// Represents the end of Revit model update
+    /// </summary>
     internal void UpdateFinished()
     {
         TranslationUtils.ClearTranslationCount();
@@ -209,6 +219,9 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
         IsProgressBarIndeterminate = false;
     }
 
+    /// <summary>
+    /// Cancels the translation process
+    /// </summary>
     private void Stop()
     {
         Cts.Cancel();

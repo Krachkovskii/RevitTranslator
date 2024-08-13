@@ -1,32 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using RevitTranslatorAddin.Utils.DeepL;
-using RevitTranslatorAddin.ViewModels;
+﻿using RevitTranslatorAddin.Utils.DeepL;
 
 namespace RevitTranslatorAddin.Utils.App;
+/// <summary>
+/// This class handles creation and management of concurrent translation tasks.
+/// </summary>
 internal class MultiTaskTranslationHandler
 {
     private readonly List<Task> _translationTasks = [];
     private readonly List<TranslationUnit> _translationUnits = [];
     private readonly TranslationUtils _translationUtils = null;
-    internal CancellationTokenHandler TokenHandler { get; private set; } = null;
     private readonly ProgressWindowUtils _progressWindowUtils = null;
     private TranslationProcessResult _processResult { get; set; } = new(false, TranslationProcessResult.AbortReasons.None, string.Empty);
+    
+    /// <summary>
+    /// Token handler for this instance
+    /// </summary>
+    internal CancellationTokenHandler TokenHandler { get; private set; } = null;
+
+
     internal MultiTaskTranslationHandler(TranslationUtils translationUtils, 
-        List<TranslationUnit> units, 
-        ProgressWindowUtils progressWindowUtils)
+                                            List<TranslationUnit> units, 
+                                            ProgressWindowUtils progressWindowUtils)
     {
         _translationUtils = translationUtils;
         _translationUnits = units;
         _progressWindowUtils = progressWindowUtils;
     }
 
-    internal TranslationProcessResult StartTranslation()
+    /// <summary>
+    /// Perform translation of all available translation units
+    /// </summary>
+    /// <returns></returns>
+    internal TranslationProcessResult PerformTranslation()
     {
         CreateTranslationTasks();
 
@@ -36,10 +41,13 @@ internal class MultiTaskTranslationHandler
         return _processResult;
     }
 
+    /// <summary>
+    /// Creates translation tasks and handles cancellation exceptions
+    /// </summary>
     private void CreateTranslationTasks()
     {
         SetupTokenHandler();
-        _progressWindowUtils.StartTranslation();
+        _progressWindowUtils.StartTranslationStatus();
         _progressWindowUtils.UpdateTotal(_translationUnits.Count);
 
         try
@@ -73,6 +81,10 @@ internal class MultiTaskTranslationHandler
         }
     }
 
+    /// <summary>
+    /// Starts translation task and adds it to the list of tasks
+    /// </summary>
+    /// <param name="unit"></param>
     private void AddTranslationTask(TranslationUnit unit)
     {
         _translationTasks.Add(Task.Run(async () =>
@@ -113,6 +125,9 @@ internal class MultiTaskTranslationHandler
         _processResult.ErrorMessage = ex.Message;
     }
 
+    /// <summary>
+    /// Sets up all necessary properties for cancellation tokens across the project.
+    /// </summary>
     private void SetupTokenHandler()
     {
         TokenHandler = new CancellationTokenHandler();

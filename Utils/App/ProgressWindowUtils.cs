@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Windows.Threading;
+﻿using System.Windows.Threading;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.ViewModels;
 using RevitTranslatorAddin.Views;
@@ -11,12 +10,22 @@ namespace RevitTranslatorAddin.Utils.App;
 /// </summary>
 public class ProgressWindowUtils
 {
+    /// <summary>
+    /// Current ViewModel instance.
+    /// </summary>
     internal ProgressWindowViewModel VM { get; set; } = null;
+    
+    /// <summary>
+    /// Current View instance.
+    /// </summary>
     internal ProgressWindow PW { get; set; } = null;
-    internal AutoResetEvent WindowClosedEvent { get; set; } = new AutoResetEvent(false);
-    internal ManualResetEvent WindowReadyEvent { get; set; } = new ManualResetEvent(false);
+    
+    /// <summary>
+    /// Handler for CancellationToken.
+    /// </summary>
     internal CancellationTokenHandler TokenHandler { get; set; } = null;
-    internal TranslationUtils TranslationUtils { get; set; } = null;
+    private AutoResetEvent _windowClosedEvent { get; set; } = new AutoResetEvent(false);
+    private ManualResetEvent _windowReadyEvent { get; set; } = new ManualResetEvent(false);
 
     internal ProgressWindowUtils()
     {
@@ -38,8 +47,8 @@ public class ProgressWindowUtils
         PW.Activate();
         PW.Focus();
 
-        PW.Closed += (s, e) => WindowClosedEvent.Set();
-        PW.Loaded += (s, e) => WindowReadyEvent.Set();
+        PW.Closed += (s, e) => _windowClosedEvent.Set();
+        PW.Loaded += (s, e) => _windowReadyEvent.Set();
 
         PW.Show();
         Dispatcher.Run();
@@ -54,7 +63,7 @@ public class ProgressWindowUtils
         windowThread.SetApartmentState(ApartmentState.STA);
         windowThread.Start();
 
-        WindowReadyEvent.WaitOne();
+        _windowReadyEvent.WaitOne();
     }
 
     /// <summary>
@@ -62,9 +71,13 @@ public class ProgressWindowUtils
     /// </summary>
     internal void End()
     {
-        VM.TranslationsFinished();
+        VM.TranslationsFinishedStatus();
     }
 
+    /// <summary>
+    /// Updates total number of translations to be performed
+    /// </summary>
+    /// <param name="num"></param>
     internal void UpdateTotal(int num)
     {
         if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
@@ -76,6 +89,10 @@ public class ProgressWindowUtils
         }
     }
 
+    /// <summary>
+    /// Updates current number of completed translations
+    /// </summary>
+    /// <param name="num"></param>
     internal void UpdateCurrent(int num)
     {
         if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
@@ -89,11 +106,14 @@ public class ProgressWindowUtils
         }
     }
 
-    internal void StartTranslation()
+    /// <summary>
+    /// Invokes "Fetching data..." state for Progress window
+    /// </summary>
+    internal void StartTranslationStatus()
     {
         PW.Dispatcher.Invoke(() =>
         {
-            VM.TranslationStarted();
+            VM.TranslationStartedStatus();
         });
     }
 }

@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Autodesk.Revit.UI;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
 using RevitTranslatorAddin.Utils.App;
@@ -15,6 +14,9 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
     private readonly TranslationUtils _translationUtils = null;
     private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
     public ObservableCollection<ListItem> Categories { get; } = [];
+    /// <summary>
+    /// Counts the number of elements in all selected categories
+    /// </summary>
     private int _elementCount
     {
         set
@@ -89,10 +91,9 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
 
         _progressWindowUtils.Start();
 
-        var textRetriever = new ElementTextRetriever(_progressWindowUtils);
-        textRetriever.ProcessElements(elements);
+        var textRetriever = new ElementTextRetriever(_progressWindowUtils, elements);
         var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
-        var result = taskHandler.StartTranslation();
+        var result = taskHandler.PerformTranslation();
 
         if (textRetriever.TranslationUnits.Count > 0)
         {
@@ -113,10 +114,11 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         _progressWindowUtils.End();
     }
 
+
     public TranslateCategoriesViewModel(TranslationUtils utils, ProgressWindowUtils windowUtils)
     {
 
-        foreach (Category c in CategoriesModel.AllCategories)
+        foreach (Category c in CategoriesModel.AllValidCategories)
         {
             Categories.Add(new ListItem(c, this));
         }

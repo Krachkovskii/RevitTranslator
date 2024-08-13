@@ -14,7 +14,11 @@ internal class TranslateCategoriesCommand : ExternalCommand
 {
     private TranslationUtils _translationUtils = null;
     private ProgressWindowUtils _progressWindowUtils = null;
-    private Models.Settings _settings = null;
+    private Models.DeeplSettings _settings = null;
+
+    /// <summary>
+    /// Window that displays all available categories and allows user to select all necessary categories
+    /// </summary>
     internal static TranslateCategoriesWindow Window { get; set; } = null;
 
     public override void Execute()
@@ -60,12 +64,15 @@ internal class TranslateCategoriesCommand : ExternalCommand
 
         return elements;
     }
+
+    /// <summary>
+    /// Creates and sets all necessary utils, i.e. progress window, translation etc.
+    /// </summary>
     private void CreateAndSetUtils()
     {
-        _settings = Models.Settings.LoadFromJson();
+        _settings = Models.DeeplSettings.LoadFromJson();
         _progressWindowUtils = new ProgressWindowUtils();
         ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
         _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
-        _progressWindowUtils.TranslationUtils = _translationUtils;
     }
 }
