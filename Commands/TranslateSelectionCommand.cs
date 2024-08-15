@@ -34,7 +34,7 @@ public class TranslateSelectionCommand : ExternalCommand
         List<Element> selection = GetCurrentSelection();
 
         var textRetriever = new ElementTextRetriever(_progressWindowUtils, selection);
-        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
+        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnitGroups, _progressWindowUtils);
         var result = taskHandler.PerformTranslation();
 
         if (textRetriever.TranslationUnits.Count > 0)
@@ -50,6 +50,7 @@ public class TranslateSelectionCommand : ExternalCommand
             }
 
             ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+            ElementUpdateHandler.TranslationUnitGroups = textRetriever.TranslationUnitGroups;
 
             RevitUtils.ExEvent.Raise();
             RevitUtils.SetTemporaryFocus();

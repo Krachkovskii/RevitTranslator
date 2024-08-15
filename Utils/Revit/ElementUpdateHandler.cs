@@ -14,7 +14,9 @@ public class ElementUpdateHandler : IExternalEventHandler
     /// Units to be translated
     /// </summary>
     internal static List<TranslationUnit> TranslationUnits { get; set; } = [];
-    
+
+    internal static List<TranslationUnitGroup> TranslationUnitGroups { get; set; } = [];
+
     /// <summary>
     /// Utils for the Progress window of current command
     /// </summary>
@@ -28,7 +30,23 @@ public class ElementUpdateHandler : IExternalEventHandler
     {
         ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateStarted());
 
-        using (var t = new Transaction(app.ActiveUIDocument.Document, "Update Element Translations"))
+        //RunMainDocTransaction();
+
+        foreach (var group in TranslationUnitGroups)
+        {
+            RunTranslationUpdate(group);
+            if (group.Document.IsFamilyDocument)
+            {
+                FamilyTextRetriever.LoadFamilyDocument(group.Document);
+            }
+        }
+
+        FinalizeUpdate();
+    }
+
+    private void RunMainDocTransaction()
+    {
+        using (var t = new Transaction(RevitUtils.Doc, "Update Element Translations"))
         {
             t.Start();
             try
@@ -40,7 +58,7 @@ public class ElementUpdateHandler : IExternalEventHandler
 
                 if (_cantUpdate.Count > 0)
                 {
-                    ShowCantTranslateMessage();
+                    ShowCantTranslateMessage(RevitUtils.Doc);
                 }
 
                 t.Commit();
@@ -51,8 +69,33 @@ public class ElementUpdateHandler : IExternalEventHandler
                 t.RollBack();
             }
         };
+    }
 
-        FinalizeUpdate();
+    private void RunTranslationUpdate(TranslationUnitGroup group)
+    {
+        using (var t = new Transaction(group.Document, "Update Element Translations"))
+        {
+            t.Start();
+            try
+            {
+                foreach (var unit in group.TranslationUnits)
+                {
+                    UpdateElement(unit);
+                }
+
+                if (_cantUpdate.Count > 0)
+                {
+                    ShowCantTranslateMessage(group.Document);
+                }
+
+                t.Commit();
+            }
+            catch (Exception ex)
+            {
+                ShowTransactionErrorMessage(ex);
+                t.RollBack();
+            }
+        };
     }
 
     public string GetName()
@@ -249,9 +292,9 @@ public class ElementUpdateHandler : IExternalEventHandler
     /// <summary>
     /// Shows message with all translations that can't be updated due to illegal characters
     /// </summary>
-    private void ShowCantTranslateMessage()
+    private void ShowCantTranslateMessage(Document doc)
     {
-        MessageBox.Show($"These translations weren't updated due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
+        MessageBox.Show($"These translations in document \"{doc.Title}\" weren't updated due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
                                         "Warning",
                                         MessageBoxButton.OK,
                                         MessageBoxImage.Warning);

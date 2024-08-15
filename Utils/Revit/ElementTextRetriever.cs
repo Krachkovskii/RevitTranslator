@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using RevitTranslatorAddin.Utils.DeepL;
-using RevitTranslatorAddin.Models;
-using Newtonsoft.Json.Linq;
-using RevitTranslatorAddin.ViewModels;
-using RevitTranslatorAddin.Utils.App;
-using Autodesk.Revit.DB;
-using System.Xml.Linq;
+﻿using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 /// <summary>
@@ -19,40 +7,81 @@ namespace RevitTranslatorAddin.Utils.Revit;
 internal class ElementTextRetriever
 {
     internal List<TranslationUnit> TranslationUnits { get; } = [];
-    private HashSet<Element> _elementTypes { get; } = [];
+    internal List<TranslationUnitGroup> TranslationUnitGroups { get; } = [];
+    private HashSet<ElementType> _elementTypes { get; } = [];
+    private HashSet<Family> _families { get; } = [];
     private readonly ProgressWindowUtils _progressWindowUtils = null;
 
     internal ElementTextRetriever(ProgressWindowUtils windowUtils, List<Element> elements)
     {
         _progressWindowUtils = windowUtils;
-        ProcessElements(elements);
+        CreateDefaultTranslationUnitGroup();
+        ProcessAllElements(elements);
+    }
+
+    private void CreateDefaultTranslationUnitGroup()
+    {
+        var tug = new TranslationUnitGroup(RevitUtils.Doc);
+        AddTranslationUnitGroupToList(tug);
     }
 
     /// <summary>
     /// Extracts text from all provided elements
     /// </summary>
     /// <param name="elements"></param>
-    private void ProcessElements(List<Element> elements)
+    private void ProcessAllElements(List<Element> elements)
     {
         foreach (Element element in elements) 
         {
-            ProcessElement(element);
+            ProcessSingleElement(element);
         }
 
-        ProcessElementTypes();
+        ProcessAllElementTypes(_elementTypes);
+        ProcessAllElementFamilies(_families);
+    }
+
+    /// <summary>
+    /// Processes all available ElementTypes
+    /// </summary>
+    private void ProcessAllElementTypes(HashSet<ElementType> types)
+    {
+        foreach (var type in types)
+        {
+            ProcessElementParameters(type);
+        }
+    }
+
+    private void ProcessAllElementFamilies(HashSet<Family> families)
+    {
+        foreach (var family in families)
+        {
+            ProcessSingleElementFamily(family);
+        }
+    }
+
+    private void ProcessSingleElementFamily(Family family)
+    {
+        var familyTextRetriever = new FamilyTextRetriever(family);
+        var elements = familyTextRetriever.ExtractedElements;
+
+        AddTranslationUnitGroupToList(familyTextRetriever.UnitGroup);
+
+        foreach (Element element in elements)
+        {
+            ProcessSingleElement(element);
+        }
     }
 
     /// <summary>
     /// Extracts text from individual element
     /// </summary>
     /// <param name="element"></param>
-    private void ProcessElement(object element)
+    private void ProcessSingleElement(object element)
     {
         switch (element)
         {
             case TextNote note:
-                var noteUnit = GetTextFromTextBlock(note);
-                AddTranslationUnitToList(noteUnit);
+                ProcessTextBlock(note);
                 break;
 
             case ElementType elementType:
@@ -72,11 +101,30 @@ internal class ElementTextRetriever
                 break;
 
             case Element el:
-                ProcessElementParameters(el);
+                ProcessElement(el);
                 break;
 
             case object _:
                 return;
+        }
+    }
+
+    private void ProcessElement(Element el)
+    {
+        if (el.Category.BuiltInCategory == BuiltInCategory.OST_TitleBlocks)
+        {
+            AddElementFamilyToList(el, _families);
+        }
+
+        ProcessElementParameters(el);
+    }
+
+    private void AddElementFamilyToList(Element el, HashSet<Family> families)
+    {
+        var family = FamilyTextRetriever.GetFamilyFromInstance(el as FamilyInstance);
+        if (family != null)
+        {
+            families.Add(family);
         }
     }
 
@@ -85,10 +133,11 @@ internal class ElementTextRetriever
     /// </summary>
     /// <param name="note"></param>
     /// <returns></returns>
-    private TranslationUnit GetTextFromTextBlock(TextNote note)
+    private void ProcessTextBlock(TextNote note)
     {
         var text = note.Text;
-        return new TranslationUnit(note, text);
+        var unit = new TranslationUnit(note, text);
+        AddTranslationUnitToList(unit);
     }
 
     /// <summary>
@@ -383,17 +432,6 @@ internal class ElementTextRetriever
     }
 
     /// <summary>
-    /// Processes all available ElementTypes
-    /// </summary>
-    private void ProcessElementTypes()
-    {
-        foreach (var type in _elementTypes)
-        {
-            ProcessElementParameters(type);
-        }
-    }
-
-    /// <summary>
     /// Extracts text from all Field Headers of a Schedule
     /// </summary>
     /// <param name="s">Schedule to process</param>
@@ -441,5 +479,20 @@ internal class ElementTextRetriever
     private void AddTranslationUnitToList(TranslationUnit unit)
     {
         TranslationUnits.Add(unit);
+
+        // Adding the unit to the group with matching document
+        foreach (var unitGroup in TranslationUnitGroups)
+        {
+            if ( unitGroup.Document.Equals(((Element)unit.Element).Document) )
+            {
+                unitGroup.TranslationUnits.Add(unit);
+                break;
+            }
+        }
+    }
+
+    private void AddTranslationUnitGroupToList(TranslationUnitGroup tug)
+    {
+        TranslationUnitGroups.Add(tug);
     }
 }

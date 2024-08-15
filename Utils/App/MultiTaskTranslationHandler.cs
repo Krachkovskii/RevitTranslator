@@ -6,6 +6,11 @@ namespace RevitTranslatorAddin.Utils.App;
 /// </summary>
 internal class MultiTaskTranslationHandler
 {
+    private List<TranslationUnitGroup> _unitGroups { get; set; }
+    private int _totalTranslationCount = 0;
+    private bool _test = true;
+
+
     private readonly List<Task> _translationTasks = [];
     private readonly List<TranslationUnit> _translationUnits = [];
     private readonly TranslationUtils _translationUtils = null;
@@ -25,6 +30,26 @@ internal class MultiTaskTranslationHandler
         _translationUtils = translationUtils;
         _translationUnits = units;
         _progressWindowUtils = progressWindowUtils;
+    }
+
+    internal MultiTaskTranslationHandler(TranslationUtils translationUtils, 
+                                            List<TranslationUnitGroup> unitGroups, 
+                                            ProgressWindowUtils progressWindowUtils)
+    {
+        _translationUtils = translationUtils;
+        _progressWindowUtils = progressWindowUtils;
+        _unitGroups = unitGroups;
+        _totalTranslationCount = CalculateTotalTranslations(_unitGroups);
+    }
+
+    private int CalculateTotalTranslations(List<TranslationUnitGroup> unitGroups)
+    {
+        var i = 0;
+        foreach (var group in unitGroups)
+        {
+            i += group.TranslationUnits.Count;
+        }
+        return i;
     }
 
     /// <summary>
@@ -48,21 +73,49 @@ internal class MultiTaskTranslationHandler
     {
         SetupTokenHandler();
         _progressWindowUtils.StartTranslationStatus();
-        _progressWindowUtils.UpdateTotal(_translationUnits.Count);
+
+        
+        
 
         try
         {
-            foreach (var unit in _translationUnits)
+            //test
+            if (_test)
             {
-                if (TokenHandler.Cts.Token.IsCancellationRequested)
+                _progressWindowUtils.UpdateTotal(_totalTranslationCount);
+
+                foreach (var group in _unitGroups)
                 {
-                    throw new OperationCanceledException();
+                    foreach (var unit in group.TranslationUnits)
+                    {
+                        if (TokenHandler.Cts.Token.IsCancellationRequested)
+                        {
+                            throw new OperationCanceledException();
+                        }
+                        AddTranslationTask(unit);
+                    } 
                 }
-                AddTranslationTask(unit);
+
+                Task.WaitAll(_translationTasks.ToArray());
+                _processResult.Completed = true;
             }
 
-            Task.WaitAll(_translationTasks.ToArray());
-            _processResult.Completed = true;
+            else
+            {
+                _progressWindowUtils.UpdateTotal(_translationUnits.Count);
+
+                foreach (var unit in _translationUnits)
+                {
+                    if (TokenHandler.Cts.Token.IsCancellationRequested)
+                    {
+                        throw new OperationCanceledException();
+                    }
+                    AddTranslationTask(unit);
+                }
+
+                Task.WaitAll(_translationTasks.ToArray());
+                _processResult.Completed = true;
+            }
         }
 
         catch (OperationCanceledException)
