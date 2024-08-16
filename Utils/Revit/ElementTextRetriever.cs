@@ -1,4 +1,5 @@
-﻿using RevitTranslatorAddin.Utils.App;
+﻿using System.Diagnostics;
+using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 /// <summary>
@@ -15,14 +16,17 @@ internal class ElementTextRetriever
     internal ElementTextRetriever(ProgressWindowUtils windowUtils, List<Element> elements)
     {
         _progressWindowUtils = windowUtils;
-        CreateDefaultTranslationUnitGroup();
+        CreateActiveDocUnitGroup();
         ProcessAllElements(elements);
     }
 
-    private void CreateDefaultTranslationUnitGroup()
+    /// <summary>
+    /// Creates TranslationUnitGroup for the current document
+    /// </summary>
+    private void CreateActiveDocUnitGroup()
     {
         var tug = new TranslationUnitGroup(RevitUtils.Doc);
-        AddTranslationUnitGroupToList(tug);
+        AddUnitGroupToList(tug);
     }
 
     /// <summary>
@@ -64,7 +68,7 @@ internal class ElementTextRetriever
         var familyTextRetriever = new FamilyTextRetriever(family);
         var elements = familyTextRetriever.ExtractedElements;
 
-        AddTranslationUnitGroupToList(familyTextRetriever.UnitGroup);
+        AddUnitGroupToList(familyTextRetriever.UnitGroup);
 
         foreach (Element element in elements)
         {
@@ -137,9 +141,10 @@ internal class ElementTextRetriever
     {
         var text = note.Text;
         var unit = new TranslationUnit(note, text);
-        AddTranslationUnitToList(unit);
+        AddTranslationUnitToGroup(unit);
     }
 
+    #region Schedule Processing
     /// <summary>
     /// Extracts text from Schedule element (currently only field headers and name)
     /// </summary>
@@ -150,6 +155,50 @@ internal class ElementTextRetriever
         ProcessElementName(schedule);
     }
 
+
+    /// <summary>
+    /// Extracts text from all Field Headers of a Schedule
+    /// </summary>
+    /// <param name="s">Schedule to process</param>
+    private void ProcessScheduleHeaders(ViewSchedule s)
+    {
+        var sd = s.Definition;
+        var fieldCount = sd.GetFieldCount();
+        for (var i = 0; i < fieldCount; i++)
+        {
+            var unit = ProcessScheduleHeader(sd, s, i);
+            if (unit != null)
+            {
+                AddTranslationUnitToGroup(unit);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extracts the name of the field header
+    /// </summary>
+    /// <param name="sd">Schedule's Definition</param>
+    /// <param name="s">The schedule</param>
+    /// <param name="fieldIndex">Index of a field to be processed</param>
+    /// <returns></returns>
+    private TranslationUnit ProcessScheduleHeader(ScheduleDefinition sd, ViewSchedule s, int fieldIndex)
+    {
+        var field = sd.GetField(fieldIndex);
+        var header = field.ColumnHeading;
+
+        if (!ValidationUtils.IsTextOnly(header))
+        {
+            return null;
+        }
+
+        var unit = new TranslationUnit(field, header);
+        unit.ParentElement = s;
+
+        return unit;
+    }
+#endregion
+
+    #region Dimension Processing
     /// <summary>
     /// Extracts all overrides from Dimension element
     /// </summary>
@@ -281,7 +330,7 @@ internal class ElementTextRetriever
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionAbove);
-        AddTranslationUnitToList(dimensionUnit);
+        AddTranslationUnitToGroup(dimensionUnit);
     }
 
     /// <summary>
@@ -299,7 +348,7 @@ internal class ElementTextRetriever
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionBelow);
-        AddTranslationUnitToList(dimensionUnit);
+        AddTranslationUnitToGroup(dimensionUnit);
     }
 
     /// <summary>
@@ -317,7 +366,7 @@ internal class ElementTextRetriever
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionPrefix);
-        AddTranslationUnitToList(dimensionUnit);
+        AddTranslationUnitToGroup(dimensionUnit);
     }
 
     /// <summary>
@@ -335,7 +384,7 @@ internal class ElementTextRetriever
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionSuffix);
-        AddTranslationUnitToList(dimensionUnit);
+        AddTranslationUnitToGroup(dimensionUnit);
     }
 
     /// <summary>
@@ -353,9 +402,11 @@ internal class ElementTextRetriever
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionOverride);
-        AddTranslationUnitToList(dimensionUnit); 
+        AddTranslationUnitToGroup(dimensionUnit); 
     }
+    #endregion
 
+    #region Parameter Processing
     /// <summary>
     /// Process all element's parameters, including name
     /// </summary>
@@ -411,8 +462,9 @@ internal class ElementTextRetriever
         var unit = new TranslationUnit(param, value);
         unit.ParentElement = param.Element;
 
-        AddTranslationUnitToList(unit);
+        AddTranslationUnitToGroup(unit);
     }
+    #endregion
 
     /// <summary>
     /// Extracts the Name property of an Element
@@ -428,62 +480,34 @@ internal class ElementTextRetriever
         }
 
         var unit = new TranslationUnit(el, name, TranslationDetails.ElementName);
-        AddTranslationUnitToList(unit);
+        AddTranslationUnitToGroup(unit);
     }
 
-    /// <summary>
-    /// Extracts text from all Field Headers of a Schedule
-    /// </summary>
-    /// <param name="s">Schedule to process</param>
-    private void ProcessScheduleHeaders(ViewSchedule s)
-    {
-        var sd = s.Definition;
-        var fieldCount = sd.GetFieldCount();
-        for (var i = 0; i < fieldCount; i++)
-        {
-            var unit = ProcessScheduleHeader(sd, s, i);
-            if (unit != null)
-            {
-                AddTranslationUnitToList(unit);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Extracts the name of the field header
-    /// </summary>
-    /// <param name="sd">Schedule's Definition</param>
-    /// <param name="s">The schedule</param>
-    /// <param name="fieldIndex">Index of a field to be processed</param>
-    /// <returns></returns>
-    private TranslationUnit ProcessScheduleHeader(ScheduleDefinition sd, ViewSchedule s, int fieldIndex)
-    {
-        var field = sd.GetField(fieldIndex);
-        var header = field.ColumnHeading;
-
-        if (!ValidationUtils.IsTextOnly(header))
-        {
-            return null;
-        }
-
-        var unit = new TranslationUnit(field, header);
-        unit.ParentElement = s;
-
-        return unit;
-    }
 
     /// <summary>
     /// Adds a Unit to the list of units to be translated
     /// </summary>
     /// <param name="unit"></param>
-    private void AddTranslationUnitToList(TranslationUnit unit)
+    private void AddTranslationUnitToGroup(TranslationUnit unit)
     {
-        TranslationUnits.Add(unit);
+        Element el;
+
+        if (unit.Element is Element element)
+        {
+            el = element;
+        }
+        else
+        {
+            el = (Element)unit.ParentElement;
+        }
+
+        Debug.WriteLine($"Element: {unit.Element}");
+        Debug.WriteLine($"Parent Element: {unit.ParentElement}");
 
         // Adding the unit to the group with matching document
         foreach (var unitGroup in TranslationUnitGroups)
         {
-            if ( unitGroup.Document.Equals(((Element)unit.Element).Document) )
+            if ( unitGroup.Document.Equals(el.Document) )
             {
                 unitGroup.TranslationUnits.Add(unit);
                 break;
@@ -491,7 +515,11 @@ internal class ElementTextRetriever
         }
     }
 
-    private void AddTranslationUnitGroupToList(TranslationUnitGroup tug)
+    /// <summary>
+    /// Adds the group to the list of TranslationUnitGroups
+    /// </summary>
+    /// <param name="tug"></param>
+    private void AddUnitGroupToList(TranslationUnitGroup tug)
     {
         TranslationUnitGroups.Add(tug);
     }

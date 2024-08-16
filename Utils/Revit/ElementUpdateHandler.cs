@@ -73,7 +73,7 @@ public class ElementUpdateHandler : IExternalEventHandler
 
     private void RunTranslationUpdate(TranslationUnitGroup group)
     {
-        using (var t = new Transaction(group.Document, "Update Element Translations"))
+        using (var t = new Transaction(group.Document, $"Update Document {group.Document.Title}"))
         {
             t.Start();
             try

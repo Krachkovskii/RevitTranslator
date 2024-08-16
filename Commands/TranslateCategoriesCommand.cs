@@ -25,7 +25,7 @@ internal class TranslateCategoriesCommand : ExternalCommand
     {
         if (RevitUtils.Doc != Document)
         {
-            RevitUtils.SetUtils(UiApplication);
+            RevitUtils.SetRevitUtils(UiApplication);
         }
 
         CreateAndSetUtils();
@@ -42,8 +42,7 @@ internal class TranslateCategoriesCommand : ExternalCommand
         Window = new TranslateCategoriesWindow(viewModel);
         Window.Show();
 
-        RevitUtils.ExEventHandler = new ElementUpdateHandler();
-        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
+        RevitUtils.CreateAndAssignEvents();
     }
 
     /// <summary>

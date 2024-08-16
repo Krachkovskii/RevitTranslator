@@ -14,7 +14,7 @@ public class SettingsCommand : ExternalCommand
     {
         if (RevitUtils.Doc != Document)
         {
-            RevitUtils.SetUtils(UiApplication);
+            RevitUtils.SetRevitUtils(UiApplication);
         }
 
         var viewModel = new SettingsViewModel();

@@ -7,7 +7,7 @@ namespace RevitTranslatorAddin.Utils.App;
 internal class MultiTaskTranslationHandler
 {
     private List<TranslationUnitGroup> _unitGroups { get; set; }
-    private int _totalTranslationCount = 0;
+    internal int TotalTranslationCount { get; private set; } = 0;
     private bool _test = true;
 
 
@@ -39,7 +39,7 @@ internal class MultiTaskTranslationHandler
         _translationUtils = translationUtils;
         _progressWindowUtils = progressWindowUtils;
         _unitGroups = unitGroups;
-        _totalTranslationCount = CalculateTotalTranslations(_unitGroups);
+        TotalTranslationCount = CalculateTotalTranslations(_unitGroups);
     }
 
     private int CalculateTotalTranslations(List<TranslationUnitGroup> unitGroups)
@@ -74,15 +74,12 @@ internal class MultiTaskTranslationHandler
         SetupTokenHandler();
         _progressWindowUtils.StartTranslationStatus();
 
-        
-        
-
         try
         {
             //test
             if (_test)
             {
-                _progressWindowUtils.UpdateTotal(_totalTranslationCount);
+                _progressWindowUtils.UpdateTotal(TotalTranslationCount);
 
                 foreach (var group in _unitGroups)
                 {
@@ -96,7 +93,6 @@ internal class MultiTaskTranslationHandler
                     } 
                 }
 
-                Task.WaitAll(_translationTasks.ToArray());
                 _processResult.Completed = true;
             }
 
@@ -131,6 +127,10 @@ internal class MultiTaskTranslationHandler
         catch (Exception ex)
         {
             HandleOtherExceptions(ex);
+        }
+        finally
+        {
+            Task.WaitAll(_translationTasks.ToArray());
         }
     }
 

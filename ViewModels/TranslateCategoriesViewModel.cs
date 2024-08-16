@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Autodesk.Revit.UI.Selection;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
 using RevitTranslatorAddin.Utils.App;
@@ -89,29 +90,31 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         TranslateCategoriesCommand.Window.Close();
         TranslateCategoriesCommand.Window = null;
 
-        _progressWindowUtils.Start();
+        RevitUtils.StartCommandTranslation(elements, _progressWindowUtils, _translationUtils, false);
 
-        var textRetriever = new ElementTextRetriever(_progressWindowUtils, elements);
-        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
-        var result = taskHandler.PerformTranslation();
+        //_progressWindowUtils.Start();
 
-        if (textRetriever.TranslationUnits.Count > 0)
-        {
-            if (!result.Completed)
-            {
-                var proceed = TranslationUtils.ProceedWithUpdate();
-                if (!proceed)
-                {
-                    return;
-                }
-            }
+        //var textRetriever = new ElementTextRetriever(_progressWindowUtils, elements);
+        //var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnitGroups, _progressWindowUtils);
+        //var result = taskHandler.PerformTranslation();
 
-            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+        //if (taskHandler.TotalTranslationCount > 0)
+        //{
+        //    if (!result.Completed)
+        //    {
+        //        var proceed = TranslationUtils.ProceedWithUpdate();
+        //        if (!proceed)
+        //        {
+        //            return;
+        //        }
+        //    }
 
-            RevitUtils.ExEvent.Raise();
-            RevitUtils.SetTemporaryFocus();
-        }
-        _progressWindowUtils.End();
+        //    ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+
+        //    RevitUtils.ExEvent.Raise();
+        //    RevitUtils.SetTemporaryFocus();
+        //}
+        //_progressWindowUtils.End();
     }
 
 

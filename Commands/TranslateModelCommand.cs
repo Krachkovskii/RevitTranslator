@@ -5,6 +5,7 @@ using System.Windows;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
 using RevitTranslatorAddin.Utils.App;
+using Autodesk.Revit.UI.Selection;
 
 namespace RevitTranslatorAddin.Commands;
 
@@ -18,7 +19,7 @@ public class TranslateModelCommand : ExternalCommand
     {
         if (RevitUtils.Doc != Document)
         {
-            RevitUtils.SetUtils(UiApplication);
+            RevitUtils.SetRevitUtils(UiApplication);
         }
 
         CreateAndSetUtils();
@@ -41,32 +42,36 @@ public class TranslateModelCommand : ExternalCommand
             return;
         }
 
-        _progressWindowUtils.Start();
+        RevitUtils.StartCommandTranslation(instances, _progressWindowUtils, _translationUtils, true);
 
-        RevitUtils.ExEventHandler = new ElementUpdateHandler();
-        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
+        //RevitUtils.ExEventHandler = new ElementUpdateHandler();
+        //RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
 
-        var textRetriever = new ElementTextRetriever(_progressWindowUtils, instances);
-        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
-        var result = taskHandler.PerformTranslation();
+        //_progressWindowUtils.Start();
 
-        if (textRetriever.TranslationUnits.Count > 0)
-        {
-            if (!result.Completed)
-            {
-                var proceed = TranslationUtils.ProceedWithUpdate();
-                if (!proceed)
-                {
-                    return;
-                }
-            }
 
-            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
 
-            RevitUtils.ExEvent.Raise();
-            RevitUtils.SetTemporaryFocus();
-        }
-        _progressWindowUtils.End();
+        //var textRetriever = new ElementTextRetriever(_progressWindowUtils, instances);
+        //var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
+        //var result = taskHandler.PerformTranslation();
+
+        //if (textRetriever.TranslationUnits.Count > 0)
+        //{
+        //    if (!result.Completed)
+        //    {
+        //        var proceed = TranslationUtils.ProceedWithUpdate();
+        //        if (!proceed)
+        //        {
+        //            return;
+        //        }
+        //    }
+
+        //    ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+
+        //    RevitUtils.ExEvent.Raise();
+        //    RevitUtils.SetTemporaryFocus();
+        //}
+        //_progressWindowUtils.End();
     }
 
     /// <summary>

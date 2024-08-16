@@ -17,7 +17,7 @@ public class TranslateSelectionCommand : ExternalCommand
     {
         if (RevitUtils.Doc != Document)
         {
-            RevitUtils.SetUtils(UiApplication);
+            RevitUtils.SetRevitUtils(UiApplication);
         }
 
         CreateAndSetUtils();
@@ -27,35 +27,37 @@ public class TranslateSelectionCommand : ExternalCommand
             return;
         }
 
-        CreateAndAssignEvents();
+        var selection = GetCurrentSelection();
 
-        _progressWindowUtils.Start();
+        RevitUtils.StartCommandTranslation(selection, _progressWindowUtils, _translationUtils, true);
 
-        List<Element> selection = GetCurrentSelection();
+        //CreateAndAssignEvents();
 
-        var textRetriever = new ElementTextRetriever(_progressWindowUtils, selection);
-        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnitGroups, _progressWindowUtils);
-        var result = taskHandler.PerformTranslation();
+        //_progressWindowUtils.Start();
 
-        if (textRetriever.TranslationUnits.Count > 0)
-        {
+        //var textRetriever = new ElementTextRetriever(_progressWindowUtils, selection);
+        //var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnitGroups, _progressWindowUtils);
+        //var result = taskHandler.PerformTranslation();
 
-            if (!result.Completed)
-            {
-                var proceed = TranslationUtils.ProceedWithUpdate();
-                if (!proceed)
-                {
-                    return;
-                } 
-            }
+        //if (textRetriever.TranslationUnits.Count > 0)
+        //{
 
-            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
-            ElementUpdateHandler.TranslationUnitGroups = textRetriever.TranslationUnitGroups;
+        //    if (!result.Completed)
+        //    {
+        //        var proceed = TranslationUtils.ProceedWithUpdate();
+        //        if (!proceed)
+        //        {
+        //            return;
+        //        } 
+        //    }
 
-            RevitUtils.ExEvent.Raise();
-            RevitUtils.SetTemporaryFocus();
-        }
-        _progressWindowUtils.End();
+        //    ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
+        //    ElementUpdateHandler.TranslationUnitGroups = textRetriever.TranslationUnitGroups;
+
+        //    RevitUtils.ExEvent.Raise();
+        //    RevitUtils.SetTemporaryFocus();
+        //}
+        //_progressWindowUtils.End();
     }
 
     /// <summary>
