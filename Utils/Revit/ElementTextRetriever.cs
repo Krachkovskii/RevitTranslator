@@ -84,7 +84,7 @@ internal class ElementTextRetriever
     {
         switch (element)
         {
-            case TextNote note:
+            case TextElement note:
                 ProcessTextBlock(note);
                 break;
 
@@ -133,11 +133,11 @@ internal class ElementTextRetriever
     }
 
     /// <summary>
-    /// Extracts text from TextNote element
+    /// Extracts text from TextElement element
     /// </summary>
     /// <param name="note"></param>
     /// <returns></returns>
-    private void ProcessTextBlock(TextNote note)
+    private void ProcessTextBlock(TextElement note)
     {
         var text = note.Text;
         var unit = new TranslationUnit(note, text);
@@ -186,7 +186,7 @@ internal class ElementTextRetriever
         var field = sd.GetField(fieldIndex);
         var header = field.ColumnHeading;
 
-        if (!ValidationUtils.IsTextOnly(header))
+        if (!ValidationUtils.HasText(header))
         {
             return null;
         }
@@ -324,7 +324,7 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionAbove, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
@@ -342,7 +342,7 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionBelow, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
@@ -360,7 +360,7 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionPrefix, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
@@ -378,7 +378,7 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionPrefix, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
@@ -396,7 +396,7 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionOverride, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
@@ -454,7 +454,7 @@ internal class ElementTextRetriever
     {
         var value = param.AsString();
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
@@ -474,7 +474,7 @@ internal class ElementTextRetriever
     {
         var name = el.Name;
         
-        if (!ValidationUtils.IsTextOnly(name))
+        if (!ValidationUtils.HasText(name))
         {
             return;
         }

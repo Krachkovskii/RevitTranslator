@@ -1,8 +1,11 @@
-﻿using System.Windows.Threading;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Windows.Threading;
 using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.ViewModels;
 using RevitTranslatorAddin.Views;
 
+[assembly: InternalsVisibleTo("RevitTranslatorAddin.Tests")]
 namespace RevitTranslatorAddin.Utils.App;
 
 /// <summary>
@@ -13,28 +16,26 @@ public class ProgressWindowUtils
     /// <summary>
     /// Current ViewModel instance.
     /// </summary>
-    internal ProgressWindowViewModel VM { get; set; } = null;
+    public ProgressWindowViewModel VM { get; private set; } = null;
     
     /// <summary>
     /// Current View instance.
     /// </summary>
-    internal ProgressWindow PW { get; set; } = null;
+    public ProgressWindow PW { get; private set; } = null;
     
     /// <summary>
     /// Handler for CancellationToken.
     /// </summary>
-    internal CancellationTokenHandler TokenHandler { get; set; } = null;
+    public CancellationTokenHandler TokenHandler { get; set; } = null;
     private AutoResetEvent _windowClosedEvent { get; set; } = new AutoResetEvent(false);
     private ManualResetEvent _windowReadyEvent { get; set; } = new ManualResetEvent(false);
 
-    internal ProgressWindowUtils()
-    {
-    }
+    public ProgressWindowUtils() {}
 
     /// <summary>
     /// Sets up a new instance of a ProgressWindow
     /// </summary>
-    private void ShowProgressWindow()
+    private  void ShowProgressWindow()
     {
         if (VM != null || PW != null)
         {
@@ -57,7 +58,7 @@ public class ProgressWindowUtils
     /// <summary>
     /// Creates an instance of a ProgressWindow on a separate thread
     /// </summary>
-    internal void Start()
+    public void Start()
     {
         var windowThread = new Thread(ShowProgressWindow);
         windowThread.SetApartmentState(ApartmentState.STA);
@@ -69,8 +70,14 @@ public class ProgressWindowUtils
     /// <summary>
     /// Indicates the end of translation process, changing the state of progress window
     /// </summary>
-    internal void End()
+    public void End()
     {
+        if (VM == null)
+        {
+            Debug.WriteLine("ViewModel of a progressWindow is null");
+            return;
+        }
+
         VM.TranslationsFinishedStatus();
     }
 
@@ -78,8 +85,14 @@ public class ProgressWindowUtils
     /// Updates total number of translations to be performed
     /// </summary>
     /// <param name="num"></param>
-    internal void UpdateTotal(int num)
+    public void UpdateTotal(int num)
     {
+        if (PW == null || VM == null)
+        {
+            Debug.WriteLine("ProgressWindow or its ViewModel is null");
+            return;
+        }
+
         if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
         {
             PW.Dispatcher.Invoke(() =>
@@ -93,8 +106,14 @@ public class ProgressWindowUtils
     /// Updates current number of completed translations
     /// </summary>
     /// <param name="num"></param>
-    internal void UpdateCurrent(int num)
+    public void UpdateCurrent(int num)
     {
+        if (PW == null || VM == null)
+        {
+            Debug.WriteLine("ProgressWindow or its ViewModel is null");
+            return;
+        }
+
         if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
         {
             PW.Dispatcher.Invoke(() =>
@@ -109,8 +128,14 @@ public class ProgressWindowUtils
     /// <summary>
     /// Invokes "Fetching data..." state for Progress window
     /// </summary>
-    internal void StartTranslationStatus()
+    public void StartTranslationStatus()
     {
+        if (PW == null || VM == null)
+        {
+            Debug.WriteLine("ProgressWindow or its ViewModel is null");
+            return;
+        }
+
         PW.Dispatcher.Invoke(() =>
         {
             VM.TranslationStartedStatus();

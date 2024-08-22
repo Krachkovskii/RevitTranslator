@@ -74,7 +74,7 @@ It uses asynchronous translation methods, so the total number of translations in
 ### Currently, the following elements are translated:
 * Elements, i.e. system and downloadable families, views, etc.: Name of the element, all text-based Instance and Type parameters
 * Dimensions: all override values
-* TextNotes: text contents
+* TextElements: text contents
 * Schedules: titles and field headers
 
 # Afterword

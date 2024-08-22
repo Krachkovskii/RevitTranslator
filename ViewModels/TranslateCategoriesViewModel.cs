@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Autodesk.Revit.UI.Selection;
 using RevitTranslatorAddin.Commands;
 using RevitTranslatorAddin.Models;
 using RevitTranslatorAddin.Utils.App;
@@ -90,31 +89,7 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         TranslateCategoriesCommand.Window.Close();
         TranslateCategoriesCommand.Window = null;
 
-        RevitUtils.StartCommandTranslation(elements, _progressWindowUtils, _translationUtils, false);
-
-        //_progressWindowUtils.Start();
-
-        //var textRetriever = new ElementTextRetriever(_progressWindowUtils, elements);
-        //var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnitGroups, _progressWindowUtils);
-        //var result = taskHandler.PerformTranslation();
-
-        //if (taskHandler.TotalTranslationCount > 0)
-        //{
-        //    if (!result.Completed)
-        //    {
-        //        var proceed = TranslationUtils.ProceedWithUpdate();
-        //        if (!proceed)
-        //        {
-        //            return;
-        //        }
-        //    }
-
-        //    ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
-
-        //    RevitUtils.ExEvent.Raise();
-        //    RevitUtils.SetTemporaryFocus();
-        //}
-        //_progressWindowUtils.End();
+        RevitUtils.StartCommandTranslation(elements, _progressWindowUtils, _translationUtils, false, false);
     }
 
 

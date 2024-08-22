@@ -1,11 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
-using Autodesk.Windows;
 using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.Utils.DeepL;
+using RevitTranslatorAddin.Utils.ElementTextRetrievers;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 
@@ -15,13 +13,86 @@ namespace RevitTranslatorAddin.Utils.Revit;
 /// </summary>
 internal class RevitUtils
 {
-    internal static UIApplication UIApp = null;
     internal static Autodesk.Revit.ApplicationServices.Application App = null;
-    internal static UIDocument UIDoc = null;
     internal static Document Doc = null;
 
-    internal static ExternalEvent ExEvent = null;
+    /// <summary>
+    /// ExternalEvent to be associated with 
+    /// </summary>
+    internal static ExternalEvent ExEvent { get; private set; } = null;
     internal static IExternalEventHandler ExEventHandler = null;
+    internal static UIApplication UIApp = null;
+    internal static UIDocument UIDoc = null;
+    internal static void CreateAndAssignEvents()
+    {
+        ExEventHandler = new ElementUpdateHandler();
+        ExEvent = ExternalEvent.Create(ExEventHandler);
+    }
+
+    /// <summary>
+    /// Gets Revit elements that are currently selected in the UI
+    /// </summary>
+    /// <returns>
+    /// List of Elements
+    /// </returns>
+    internal static List<Element> GetCurrentSelection()
+    {
+        var ids = UIDoc.Selection.GetElementIds().ToList();
+        var elements = GetElementsFromIds(ids);
+
+        return elements;
+    }
+
+    /// <summary>
+    /// Gets corresponding elements for all provided ElementIds
+    /// </summary>
+    /// <param name="ids"></param>
+    /// <returns></returns>
+    internal static List<Element> GetElementsFromIds(IEnumerable<ElementId> ids)
+    {
+        var elements = new List<Element>();
+
+        foreach (var id in ids)
+        {
+            var el = Doc.GetElement(id);
+            if (el != null)
+            {
+                elements.Add(el);
+            }
+        }
+
+        return elements;
+    }
+
+    /// <summary>
+    /// Gets all unique tagged elements for all tags in provided list of elements.
+    /// </summary>
+    /// <param name="tags">
+    /// Elements to process. Can contain any elements, but only IndependentTags will be processed.
+    /// </param>
+    /// <returns>
+    /// Unique tagged elements.
+    /// </returns>
+    internal static HashSet<Element> GetTaggedElements(IEnumerable<Element> tags)
+    {
+        var set = new HashSet<Element>();
+
+        foreach (var t in tags)
+        {
+            if (t is not IndependentTag tag)
+            {
+                continue;
+            }
+
+            var tagElementIds = tag.GetTaggedLocalElementIds();
+            var taggedElements = GetElementsFromIds(tagElementIds);
+            var tagElements = tag.GetTaggedLocalElements().ToList();
+            set.UnionWith(taggedElements);
+        }
+
+        set.RemoveWhere(n => n == null);
+        return set;
+    }
 
     internal static void SetRevitUtils(UIApplication uiapp)
     {
@@ -31,8 +102,16 @@ internal class RevitUtils
         Doc = UIDoc.Document;
     }
 
-    internal static void StartCommandTranslation(List<Element> elements, ProgressWindowUtils pwUtils, TranslationUtils tUtils, bool callFromContext)
+    internal static void StartCommandTranslation(List<Element> elements, ProgressWindowUtils pwUtils, TranslationUtils tUtils, bool callFromContext, bool translateProjectParameters)
     {
+        if (elements == null 
+            || elements.Count == 0
+            || pwUtils == null
+            || tUtils == null)
+        {
+            return;
+        }
+
         if (callFromContext)
         {
             CreateAndAssignEvents();
@@ -40,8 +119,9 @@ internal class RevitUtils
 
         pwUtils.Start();
 
-        var textRetriever = new ElementTextRetriever(pwUtils, elements);
-        var taskHandler = new MultiTaskTranslationHandler(tUtils, textRetriever.TranslationUnitGroups, pwUtils);
+        var textRetriever = new BatchTextRetriever(elements, translateProjectParameters);
+        var taskHandler = new MultiTaskTranslationHandler(tUtils, textRetriever.UnitGroups, pwUtils);
+
         var result = taskHandler.PerformTranslation();
 
         if (taskHandler.TotalTranslationCount > 0)
@@ -56,8 +136,7 @@ internal class RevitUtils
                 }
             }
 
-            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
-            ElementUpdateHandler.TranslationUnitGroups = textRetriever.TranslationUnitGroups;
+            ElementUpdateHandler.TranslationUnitGroups = textRetriever.UnitGroups;
 
             ExEvent.Raise();
             SetTemporaryFocus();
@@ -65,23 +144,7 @@ internal class RevitUtils
         pwUtils.End();
     }
 
-    internal static void CreateAndAssignEvents()
-    {
-        ExEventHandler = new ElementUpdateHandler();
-        ExEvent = ExternalEvent.Create(ExEventHandler);
-    }
-
-    // This method was generated by Claude, since Jeremy's approach doesn't seem to work in R25.
-    // This approach seems to work well in both R23 and R25.
-    [DllImport("user32.dll")]
-    static extern IntPtr GetForegroundWindow();
-
-    [DllImport("user32.dll")]
-    static extern bool SetForegroundWindow(IntPtr hWnd);
-
-    [DllImport("user32.dll")]
-    static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
-
+    #region Revit Window activator
     /// <summary>
     /// Sets focus on the main Revit window momentarily.
     /// </summary>
@@ -126,24 +189,15 @@ internal class RevitUtils
         return revitWindow;
     }
 
-    /// <summary>
-    /// Gets corresponding elements for all provided ElementIds
-    /// </summary>
-    /// <param name="ids"></param>
-    /// <returns></returns>
-    internal static List<Element> GetElementsFromIds(List<ElementId> ids)
-    {
-        var elements = new List<Element>();
-        
-        foreach (ElementId id in ids)
-        {
-            var el = Doc.GetElement(id);
-            if (el != null)
-            {
-                elements.Add(el);
-            }
-        }
+    // This method was generated by Claude, since Jeremy's approach doesn't seem to work in R25.
+    // This approach seems to work well in both R23 and R25.
+    [DllImport("user32.dll")]
+    static extern IntPtr GetForegroundWindow();
 
-        return elements;
-    }
+    [DllImport("user32.dll")]
+    static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
+    [DllImport("user32.dll")]
+    static extern bool SetForegroundWindow(IntPtr hWnd);
+    #endregion
 }

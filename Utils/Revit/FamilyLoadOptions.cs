@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RevitTranslatorAddin.Utils.Revit;
+﻿namespace RevitTranslatorAddin.Utils.Revit;
 internal class FamilyLoadOptions : IFamilyLoadOptions
 {
     bool IFamilyLoadOptions.OnFamilyFound(bool familyInUse, out bool overwriteParameterValues)

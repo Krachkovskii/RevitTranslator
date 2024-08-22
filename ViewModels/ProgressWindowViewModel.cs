@@ -19,7 +19,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     private double _progressBarOpacity = 1;
     private int _monthlyUsage = 0;
     private int _monthlyLimit = 0;
-    internal CancellationTokenSource Cts { get; set; } = null;
+    public CancellationTokenSource Cts { get; set; } = null;
 
     public int Maximum
     {
@@ -164,7 +164,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     /// <summary>
     /// Represents the start of translation process
     /// </summary>
-    internal void TranslationStartedStatus()
+    public void TranslationStartedStatus()
     {
         IsProgressBarIndeterminate = false;
         ButtonText = "Stop translation";
@@ -173,7 +173,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     /// <summary>
     /// Represents the end of translation process
     /// </summary>
-    internal void TranslationsFinishedStatus()
+    public void TranslationsFinishedStatus()
     {
         if (IsStopEnabled)
         {
@@ -193,7 +193,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     /// <summary>
     /// Represents the start of Revit model update
     /// </summary>
-    internal void UpdateStarted()
+    public void UpdateStarted()
     {
         ButtonText = "Updating Revit model...";
         IsProgressBarIndeterminate = true;
@@ -202,7 +202,7 @@ public class ProgressWindowViewModel : INotifyPropertyChanged
     /// <summary>
     /// Represents the end of Revit model update
     /// </summary>
-    internal void UpdateFinished()
+    public void UpdateFinished()
     {
         TranslationUtils.ClearTranslationCount();
 

@@ -6,10 +6,8 @@ namespace RevitTranslatorAddin.Utils.App;
 /// </summary>
 internal class MultiTaskTranslationHandler
 {
-    private List<TranslationUnitGroup> _unitGroups { get; set; }
+    private List<TranslationUnitGroup> _unitGroups { get; set; } = null;
     internal int TotalTranslationCount { get; private set; } = 0;
-    private bool _test = true;
-
 
     private readonly List<Task> _translationTasks = [];
     private readonly List<TranslationUnit> _translationUnits = [];
@@ -21,16 +19,6 @@ internal class MultiTaskTranslationHandler
     /// Token handler for this instance
     /// </summary>
     internal CancellationTokenHandler TokenHandler { get; private set; } = null;
-
-
-    internal MultiTaskTranslationHandler(TranslationUtils translationUtils, 
-                                            List<TranslationUnit> units, 
-                                            ProgressWindowUtils progressWindowUtils)
-    {
-        _translationUtils = translationUtils;
-        _translationUnits = units;
-        _progressWindowUtils = progressWindowUtils;
-    }
 
     internal MultiTaskTranslationHandler(TranslationUtils translationUtils, 
                                             List<TranslationUnitGroup> unitGroups, 
@@ -44,12 +32,7 @@ internal class MultiTaskTranslationHandler
 
     private int CalculateTotalTranslations(List<TranslationUnitGroup> unitGroups)
     {
-        var i = 0;
-        foreach (var group in unitGroups)
-        {
-            i += group.TranslationUnits.Count;
-        }
-        return i;
+        return unitGroups.Sum(x => x.TranslationUnits.Count);
     }
 
     /// <summary>
@@ -76,42 +59,19 @@ internal class MultiTaskTranslationHandler
 
         try
         {
-            //test
-            if (_test)
+            _progressWindowUtils.UpdateTotal(TotalTranslationCount);
+
+            foreach (var group in _unitGroups)
             {
-                _progressWindowUtils.UpdateTotal(TotalTranslationCount);
-
-                foreach (var group in _unitGroups)
+                foreach (var unit in group.TranslationUnits)
                 {
-                    foreach (var unit in group.TranslationUnits)
-                    {
-                        if (TokenHandler.Cts.Token.IsCancellationRequested)
-                        {
-                            throw new OperationCanceledException();
-                        }
-                        AddTranslationTask(unit);
-                    } 
-                }
-
-                _processResult.Completed = true;
-            }
-
-            else
-            {
-                _progressWindowUtils.UpdateTotal(_translationUnits.Count);
-
-                foreach (var unit in _translationUnits)
-                {
-                    if (TokenHandler.Cts.Token.IsCancellationRequested)
-                    {
-                        throw new OperationCanceledException();
-                    }
+                    TokenHandler.Cts.Token.ThrowIfCancellationRequested();
                     AddTranslationTask(unit);
-                }
-
-                Task.WaitAll(_translationTasks.ToArray());
-                _processResult.Completed = true;
+                } 
             }
+
+            Task.WaitAll(_translationTasks.ToArray());
+            _processResult.Completed = true;
         }
 
         catch (OperationCanceledException)
@@ -127,10 +87,6 @@ internal class MultiTaskTranslationHandler
         catch (Exception ex)
         {
             HandleOtherExceptions(ex);
-        }
-        finally
-        {
-            Task.WaitAll(_translationTasks.ToArray());
         }
     }
 
@@ -157,21 +113,22 @@ internal class MultiTaskTranslationHandler
 
     private void HandleAggregateException(AggregateException ae)
     {
+        _processResult.Completed = false;
+
         if (ae.InnerExceptions.Any(e => e is OperationCanceledException))
         {
-            _processResult.Completed = false;
             _processResult.AbortReasonResult = TranslationProcessResult.AbortReasons.Canceled;
             _processResult.ErrorMessage = "Translation process was cancelled by user";
         }
 
-        else { 
-            _processResult.Completed = false;
+        else 
+        { 
             _processResult.AbortReasonResult = TranslationProcessResult.AbortReasons.Other;
             _processResult.ErrorMessage = ae.Message;
-            }
         }
+    }
 
-        private void HandleOtherExceptions(Exception ex)
+    private void HandleOtherExceptions(Exception ex)
     {
         _processResult.Completed = false;
         _processResult.AbortReasonResult = TranslationProcessResult.AbortReasons.Other;

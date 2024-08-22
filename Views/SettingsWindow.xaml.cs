@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using System.Windows.Media;
 using System.Windows.Input;
-using RevitTranslatorAddin.ViewModels; 
+using System.Windows.Media;
+using RevitTranslatorAddin.ViewModels;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 

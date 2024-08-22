@@ -1,9 +1,7 @@
-﻿using Autodesk.Revit.UI;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Windows.Media.Imaging;
+using Autodesk.Revit.UI;
 using Nice3point.Revit.Toolkit.External;
-using JetBrains.Annotations;
-using RevitTranslatorAddin.Utils;
 
 namespace RevitTranslatorAddin;
 /// <summary>

@@ -1,21 +1,13 @@
-﻿using Autodesk.Revit.UI;
-using Nice3point.Revit.Toolkit.External;
-using RevitTranslatorAddin.Models;
-using RevitTranslatorAddin.Utils.DeepL;
+﻿using RevitTranslatorAddin.Models;
 using RevitTranslatorAddin.Utils.Revit;
-using RevitTranslatorAddin.Utils.App;
 using RevitTranslatorAddin.ViewModels;
 using RevitTranslatorAddin.Views;
 
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-internal class TranslateCategoriesCommand : ExternalCommand
+internal class TranslateCategoriesCommand : BaseCommand
 {
-    private TranslationUtils _translationUtils = null;
-    private ProgressWindowUtils _progressWindowUtils = null;
-    private Models.DeeplSettings _settings = null;
-
     /// <summary>
     /// Window that displays all available categories and allows user to select all necessary categories
     /// </summary>
@@ -35,7 +27,7 @@ internal class TranslateCategoriesCommand : ExternalCommand
             return;
         }
 
-        // initialising a class to fill static property that contains all categories
+        // initializing a class to fill static property that contains all categories
         new CategoriesModel();
 
         var viewModel = new TranslateCategoriesViewModel(_translationUtils, _progressWindowUtils);
@@ -62,16 +54,5 @@ internal class TranslateCategoriesCommand : ExternalCommand
             .ToList();
 
         return elements;
-    }
-
-    /// <summary>
-    /// Creates and sets all necessary utils, i.e. progress window, translation etc.
-    /// </summary>
-    private void CreateAndSetUtils()
-    {
-        _settings = Models.DeeplSettings.LoadFromJson();
-        _progressWindowUtils = new ProgressWindowUtils();
-        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
-        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
     }
 }

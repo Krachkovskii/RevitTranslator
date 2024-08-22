@@ -10,7 +10,7 @@ namespace RevitTranslatorAddin.Views;
 /// </summary>
 public partial class ProgressWindow : Window
 {
-    private ProgressWindowUtils _progressWindowUtils = null;
+    private readonly ProgressWindowUtils _progressWindowUtils = null;
     public ProgressWindow(ProgressWindowViewModel viewModel, ProgressWindowUtils progressWindowUtils)
     {
         InitializeComponent();
