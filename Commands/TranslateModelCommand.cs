@@ -1,24 +1,17 @@
-﻿using Autodesk.Revit.UI;
-using Nice3point.Revit.Toolkit.External;
+﻿using System.Windows;
 using RevitTranslatorAddin.Models;
-using System.Windows;
-using RevitTranslatorAddin.Utils.DeepL;
 using RevitTranslatorAddin.Utils.Revit;
-using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-public class TranslateModelCommand : ExternalCommand
+public class TranslateModelCommand : BaseTranslationCommand
 {
-    private TranslationUtils _translationUtils = null;
-    private ProgressWindowUtils _progressWindowUtils = null;
-    private Models.DeeplSettings _settings = null;
     public override void Execute()
     {
         if (RevitUtils.Doc != Document)
         {
-            RevitUtils.SetUtils(UiApplication);
+            RevitUtils.SetRevitUtils(UiApplication);
         }
 
         CreateAndSetUtils();
@@ -31,7 +24,7 @@ public class TranslateModelCommand : ExternalCommand
         // only allow elements of user-visible categories via ElementMulticategoryFilter
         var filter = CreateCategoryFilter();
         var instances = GetModelInstances(filter);
-        int types = CountModelTypes(filter);
+        int types = CountElementTypes(filter);
 
         var elementCount = CountTotalElements(instances.Count, types);
         var warningResult = ShowElementCountWarning(elementCount);
@@ -41,32 +34,19 @@ public class TranslateModelCommand : ExternalCommand
             return;
         }
 
-        _progressWindowUtils.Start();
+        StartCommandTranslation(instances, _progressWindowUtils, _translationUtils, true, true);
+    }
 
-        RevitUtils.ExEventHandler = new ElementUpdateHandler();
-        RevitUtils.ExEvent = ExternalEvent.Create(RevitUtils.ExEventHandler);
-
-        var textRetriever = new ElementTextRetriever(_progressWindowUtils, instances);
-        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
-        var result = taskHandler.PerformTranslation();
-
-        if (textRetriever.TranslationUnits.Count > 0)
-        {
-            if (!result.Completed)
-            {
-                var proceed = TranslationUtils.ProceedWithUpdate();
-                if (!proceed)
-                {
-                    return;
-                }
-            }
-
-            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
-
-            RevitUtils.ExEvent.Raise();
-            RevitUtils.SetTemporaryFocus();
-        }
-        _progressWindowUtils.End();
+    /// <summary>
+    /// Calculates the approximate number of elements that can be used for translation
+    /// </summary>
+    /// <param name="instCount"></param>
+    /// <param name="typesCount"></param>
+    /// <returns></returns>
+    private static int CountTotalElements(int instCount, int typesCount)
+    {
+        var rounded = (int)Math.Round((instCount + typesCount) / 100d) * 100;
+        return rounded;
     }
 
     /// <summary>
@@ -74,7 +54,7 @@ public class TranslateModelCommand : ExternalCommand
     /// </summary>
     /// <returns>
     /// The filter</returns>
-    private ElementMulticategoryFilter CreateCategoryFilter()
+    private static ElementMulticategoryFilter CreateCategoryFilter()
     {
         List<BuiltInCategory> categoryList = CreateCategoryList();
         var filter = new ElementMulticategoryFilter(categoryList);
@@ -85,7 +65,7 @@ public class TranslateModelCommand : ExternalCommand
     /// Gets BuiltInCategory for all valid categories
     /// </summary>
     /// <returns></returns>
-    private List<BuiltInCategory> CreateCategoryList()
+    private static List<BuiltInCategory> CreateCategoryList()
     {
         List<BuiltInCategory> categoryList = [];
 
@@ -99,53 +79,11 @@ public class TranslateModelCommand : ExternalCommand
     }
 
     /// <summary>
-    /// Get all element instances of valid categories
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    private List<Element> GetModelInstances(ElementMulticategoryFilter filter)
-    {
-        List<Element> instances = new FilteredElementCollector(RevitUtils.Doc)
-            .WherePasses(filter)
-            .WhereElementIsNotElementType()
-            .ToList();
-
-        return instances;
-    }
-
-    /// <summary>
-    /// Counts all Element Types of valuid categories
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    private int CountModelTypes(ElementMulticategoryFilter filter)
-    {
-        int types = new FilteredElementCollector(RevitUtils.Doc)
-            .WherePasses(filter)
-            .WhereElementIsElementType()
-            .GetElementCount();
-
-        return types;
-    }
-
-    /// <summary>
-    /// Calculates the approximate number of elements that can be used for translation
-    /// </summary>
-    /// <param name="instCount"></param>
-    /// <param name="typesCount"></param>
-    /// <returns></returns>
-    private int CountTotalElements(int instCount, int typesCount)
-    {
-        var rounded = (int)Math.Round((instCount + typesCount) / 100d) * 100;
-        return rounded;
-    }
-
-    /// <summary>
     /// Shows the warning that contains approximate number of elements. Allows to cancel the operation.
     /// </summary>
     /// <param name="count"></param>
     /// <returns></returns>
-    private bool ShowElementCountWarning(int count)
+    private static bool ShowElementCountWarning(int count)
     {
         var result = MessageBox.Show($"You're about to translate all text properties of {count}+ elements. " +
                 $"It can be time-consuming and you might hit translation limits.\n\n" +
@@ -161,13 +99,32 @@ public class TranslateModelCommand : ExternalCommand
     }
 
     /// <summary>
-    /// Creates and sets all necessary utils, i.e. progress window, translation etc.
+    /// Counts all Element Types of valid categories
     /// </summary>
-    private void CreateAndSetUtils()
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    private static int CountElementTypes(ElementMulticategoryFilter filter)
     {
-        _settings = Models.DeeplSettings.LoadFromJson();
-        _progressWindowUtils = new ProgressWindowUtils();
-        ElementUpdateHandler.ProgressWindowUtils = _progressWindowUtils;
-        _translationUtils = new TranslationUtils(_settings, _progressWindowUtils);
+        int types = new FilteredElementCollector(RevitUtils.Doc)
+            .WherePasses(filter)
+            .WhereElementIsElementType()
+            .GetElementCount();
+
+        return types;
+    }
+
+    /// <summary>
+    /// Get all element instances of valid categories
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    private List<Element> GetModelInstances(ElementMulticategoryFilter filter)
+    {
+        var instances = new FilteredElementCollector(RevitUtils.Doc)
+            .WherePasses(filter)
+            .WhereElementIsNotElementType()
+            .ToList();
+
+        return instances;
     }
 }

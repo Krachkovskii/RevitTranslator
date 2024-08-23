@@ -1,16 +1,16 @@
 ﻿namespace RevitTranslatorAddin.Utils.Revit;
 /// <summary>
-/// This class handles filtering of all user-visible and modifiable categories
+/// Retrieve and filter all user-visible and modifiable categories
 /// </summary>
 internal class CategoryFilter
 {
     /// <summary>
     /// Special categories that still need to be used even if they don't pass main filters.
     /// </summary>
-    private static readonly HashSet<BuiltInCategory> SpecialCategories = new HashSet<BuiltInCategory>
-    {
+    private static readonly HashSet<BuiltInCategory> SpecialCategories =
+    [
         BuiltInCategory.OST_Materials
-    };
+    ];
 
     /// <summary>
     /// Gets all valid categories that can be used to extract user-modifiable elements
@@ -33,16 +33,6 @@ internal class CategoryFilter
     }
 
     /// <summary>
-    /// Checks if a category is valid or special category
-    /// </summary>
-    /// <param name="category"></param>
-    /// <returns></returns>
-    private static bool IsValidCategory(Category category)
-    {
-        return IsRegularValidCategory(category) || IsSpecialCategory(category);
-    }
-
-    /// <summary>
     /// Applies filters to see if category is valid for use
     /// </summary>
     /// <param name="category"></param>
@@ -52,8 +42,7 @@ internal class CategoryFilter
         return category.BuiltInCategory != BuiltInCategory.INVALID
             && category.IsVisibleInUI
             && category.Parent == null
-            && category.CategoryType != CategoryType.Invalid
-            && !category.Name.Contains("Tag", StringComparison.OrdinalIgnoreCase);
+            && category.CategoryType != CategoryType.Invalid;
     }
 
     /// <summary>
@@ -64,5 +53,15 @@ internal class CategoryFilter
     private static bool IsSpecialCategory(Category category)
     {
         return SpecialCategories.Contains(category.BuiltInCategory);
+    }
+
+    /// <summary>
+    /// Checks if a category is valid or special category
+    /// </summary>
+    /// <param name="category"></param>
+    /// <returns></returns>
+    private static bool IsValidCategory(Category category)
+    {
+        return IsRegularValidCategory(category) || IsSpecialCategory(category);
     }
 }

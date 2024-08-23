@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using RevitTranslatorAddin.Utils.DeepL;
-using RevitTranslatorAddin.Models;
-using Newtonsoft.Json.Linq;
-using RevitTranslatorAddin.ViewModels;
+﻿using System.Diagnostics;
 using RevitTranslatorAddin.Utils.App;
-using Autodesk.Revit.DB;
-using System.Xml.Linq;
 
 namespace RevitTranslatorAddin.Utils.Revit;
 /// <summary>
@@ -19,40 +8,84 @@ namespace RevitTranslatorAddin.Utils.Revit;
 internal class ElementTextRetriever
 {
     internal List<TranslationUnit> TranslationUnits { get; } = [];
-    private HashSet<Element> _elementTypes { get; } = [];
+    internal List<TranslationUnitGroup> TranslationUnitGroups { get; } = [];
+    private HashSet<ElementType> _elementTypes { get; } = [];
+    private HashSet<Family> _families { get; } = [];
     private readonly ProgressWindowUtils _progressWindowUtils = null;
 
     internal ElementTextRetriever(ProgressWindowUtils windowUtils, List<Element> elements)
     {
         _progressWindowUtils = windowUtils;
-        ProcessElements(elements);
+        CreateActiveDocUnitGroup();
+        ProcessAllElements(elements);
+    }
+
+    /// <summary>
+    /// Creates TranslationUnitGroup for the current document
+    /// </summary>
+    private void CreateActiveDocUnitGroup()
+    {
+        var tug = new TranslationUnitGroup(RevitUtils.Doc);
+        AddUnitGroupToList(tug);
     }
 
     /// <summary>
     /// Extracts text from all provided elements
     /// </summary>
     /// <param name="elements"></param>
-    private void ProcessElements(List<Element> elements)
+    private void ProcessAllElements(List<Element> elements)
     {
         foreach (Element element in elements) 
         {
-            ProcessElement(element);
+            ProcessSingleElement(element);
         }
 
-        ProcessElementTypes();
+        ProcessAllElementTypes(_elementTypes);
+        ProcessAllElementFamilies(_families);
+    }
+
+    /// <summary>
+    /// Processes all available ElementTypes
+    /// </summary>
+    private void ProcessAllElementTypes(HashSet<ElementType> types)
+    {
+        foreach (var type in types)
+        {
+            ProcessElementParameters(type);
+        }
+    }
+
+    private void ProcessAllElementFamilies(HashSet<Family> families)
+    {
+        foreach (var family in families)
+        {
+            ProcessSingleElementFamily(family);
+        }
+    }
+
+    private void ProcessSingleElementFamily(Family family)
+    {
+        var familyTextRetriever = new FamilyTextRetriever(family);
+        var elements = familyTextRetriever.ExtractedElements;
+
+        AddUnitGroupToList(familyTextRetriever.UnitGroup);
+
+        foreach (Element element in elements)
+        {
+            ProcessSingleElement(element);
+        }
     }
 
     /// <summary>
     /// Extracts text from individual element
     /// </summary>
     /// <param name="element"></param>
-    private void ProcessElement(object element)
+    private void ProcessSingleElement(object element)
     {
         switch (element)
         {
-            case TextNote note:
-                var noteUnit = GetTextFromTextBlock(note);
-                AddTranslationUnitToList(noteUnit);
+            case TextElement note:
+                ProcessTextBlock(note);
                 break;
 
             case ElementType elementType:
@@ -72,7 +105,7 @@ internal class ElementTextRetriever
                 break;
 
             case Element el:
-                ProcessElementParameters(el);
+                ProcessElement(el);
                 break;
 
             case object _:
@@ -80,17 +113,38 @@ internal class ElementTextRetriever
         }
     }
 
+    private void ProcessElement(Element el)
+    {
+        if (el.Category.BuiltInCategory == BuiltInCategory.OST_TitleBlocks)
+        {
+            AddElementFamilyToList(el, _families);
+        }
+
+        ProcessElementParameters(el);
+    }
+
+    private void AddElementFamilyToList(Element el, HashSet<Family> families)
+    {
+        var family = FamilyTextRetriever.GetFamilyFromInstance(el as FamilyInstance);
+        if (family != null)
+        {
+            families.Add(family);
+        }
+    }
+
     /// <summary>
-    /// Extracts text from TextNote element
+    /// Extracts text from TextElement element
     /// </summary>
     /// <param name="note"></param>
     /// <returns></returns>
-    private TranslationUnit GetTextFromTextBlock(TextNote note)
+    private void ProcessTextBlock(TextElement note)
     {
         var text = note.Text;
-        return new TranslationUnit(note, text);
+        var unit = new TranslationUnit(note, text);
+        AddTranslationUnitToGroup(unit);
     }
 
+    #region Schedule Processing
     /// <summary>
     /// Extracts text from Schedule element (currently only field headers and name)
     /// </summary>
@@ -101,6 +155,50 @@ internal class ElementTextRetriever
         ProcessElementName(schedule);
     }
 
+
+    /// <summary>
+    /// Extracts text from all Field Headers of a Schedule
+    /// </summary>
+    /// <param name="s">Schedule to process</param>
+    private void ProcessScheduleHeaders(ViewSchedule s)
+    {
+        var sd = s.Definition;
+        var fieldCount = sd.GetFieldCount();
+        for (var i = 0; i < fieldCount; i++)
+        {
+            var unit = ProcessScheduleHeader(sd, s, i);
+            if (unit != null)
+            {
+                AddTranslationUnitToGroup(unit);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extracts the name of the field header
+    /// </summary>
+    /// <param name="sd">Schedule's Definition</param>
+    /// <param name="s">The schedule</param>
+    /// <param name="fieldIndex">Index of a field to be processed</param>
+    /// <returns></returns>
+    private TranslationUnit ProcessScheduleHeader(ScheduleDefinition sd, ViewSchedule s, int fieldIndex)
+    {
+        var field = sd.GetField(fieldIndex);
+        var header = field.ColumnHeading;
+
+        if (!ValidationUtils.HasText(header))
+        {
+            return null;
+        }
+
+        var unit = new TranslationUnit(field, header);
+        unit.ParentElement = s;
+
+        return unit;
+    }
+#endregion
+
+    #region Dimension Processing
     /// <summary>
     /// Extracts all overrides from Dimension element
     /// </summary>
@@ -226,13 +324,13 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionAbove, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionAbove);
-        AddTranslationUnitToList(dimensionUnit);
+        AddTranslationUnitToGroup(dimensionUnit);
     }
 
     /// <summary>
@@ -244,13 +342,13 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionBelow, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionBelow);
-        AddTranslationUnitToList(dimensionUnit);
+        AddTranslationUnitToGroup(dimensionUnit);
     }
 
     /// <summary>
@@ -262,13 +360,13 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionPrefix, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionPrefix);
-        AddTranslationUnitToList(dimensionUnit);
+        AddTranslationUnitToGroup(dimensionUnit);
     }
 
     /// <summary>
@@ -280,13 +378,13 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionPrefix, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionSuffix);
-        AddTranslationUnitToList(dimensionUnit);
+        AddTranslationUnitToGroup(dimensionUnit);
     }
 
     /// <summary>
@@ -298,15 +396,17 @@ internal class ElementTextRetriever
     {
         var value = ExtractDimensionText(dim, TranslationDetails.DimensionOverride, isSingleSegment);
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
 
         var dimensionUnit = new TranslationUnit(dim, value, TranslationDetails.DimensionOverride);
-        AddTranslationUnitToList(dimensionUnit); 
+        AddTranslationUnitToGroup(dimensionUnit); 
     }
+    #endregion
 
+    #region Parameter Processing
     /// <summary>
     /// Process all element's parameters, including name
     /// </summary>
@@ -354,7 +454,7 @@ internal class ElementTextRetriever
     {
         var value = param.AsString();
 
-        if (!ValidationUtils.IsTextOnly(value))
+        if (!ValidationUtils.HasText(value))
         {
             return;
         }
@@ -362,8 +462,9 @@ internal class ElementTextRetriever
         var unit = new TranslationUnit(param, value);
         unit.ParentElement = param.Element;
 
-        AddTranslationUnitToList(unit);
+        AddTranslationUnitToGroup(unit);
     }
+    #endregion
 
     /// <summary>
     /// Extracts the Name property of an Element
@@ -373,73 +474,53 @@ internal class ElementTextRetriever
     {
         var name = el.Name;
         
-        if (!ValidationUtils.IsTextOnly(name))
+        if (!ValidationUtils.HasText(name))
         {
             return;
         }
 
         var unit = new TranslationUnit(el, name, TranslationDetails.ElementName);
-        AddTranslationUnitToList(unit);
+        AddTranslationUnitToGroup(unit);
     }
 
-    /// <summary>
-    /// Processes all available ElementTypes
-    /// </summary>
-    private void ProcessElementTypes()
-    {
-        foreach (var type in _elementTypes)
-        {
-            ProcessElementParameters(type);
-        }
-    }
-
-    /// <summary>
-    /// Extracts text from all Field Headers of a Schedule
-    /// </summary>
-    /// <param name="s">Schedule to process</param>
-    private void ProcessScheduleHeaders(ViewSchedule s)
-    {
-        var sd = s.Definition;
-        var fieldCount = sd.GetFieldCount();
-        for (var i = 0; i < fieldCount; i++)
-        {
-            var unit = ProcessScheduleHeader(sd, s, i);
-            if (unit != null)
-            {
-                AddTranslationUnitToList(unit);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Extracts the name of the field header
-    /// </summary>
-    /// <param name="sd">Schedule's Definition</param>
-    /// <param name="s">The schedule</param>
-    /// <param name="fieldIndex">Index of a field to be processed</param>
-    /// <returns></returns>
-    private TranslationUnit ProcessScheduleHeader(ScheduleDefinition sd, ViewSchedule s, int fieldIndex)
-    {
-        var field = sd.GetField(fieldIndex);
-        var header = field.ColumnHeading;
-
-        if (!ValidationUtils.IsTextOnly(header))
-        {
-            return null;
-        }
-
-        var unit = new TranslationUnit(field, header);
-        unit.ParentElement = s;
-
-        return unit;
-    }
 
     /// <summary>
     /// Adds a Unit to the list of units to be translated
     /// </summary>
     /// <param name="unit"></param>
-    private void AddTranslationUnitToList(TranslationUnit unit)
+    private void AddTranslationUnitToGroup(TranslationUnit unit)
     {
-        TranslationUnits.Add(unit);
+        Element el;
+
+        if (unit.Element is Element element)
+        {
+            el = element;
+        }
+        else
+        {
+            el = (Element)unit.ParentElement;
+        }
+
+        Debug.WriteLine($"Element: {unit.Element}");
+        Debug.WriteLine($"Parent Element: {unit.ParentElement}");
+
+        // Adding the unit to the group with matching document
+        foreach (var unitGroup in TranslationUnitGroups)
+        {
+            if ( unitGroup.Document.Equals(el.Document) )
+            {
+                unitGroup.TranslationUnits.Add(unit);
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Adds the group to the list of TranslationUnitGroups
+    /// </summary>
+    /// <param name="tug"></param>
+    private void AddUnitGroupToList(TranslationUnitGroup tug)
+    {
+        TranslationUnitGroups.Add(tug);
     }
 }

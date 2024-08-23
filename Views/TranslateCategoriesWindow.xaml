@@ -108,7 +108,7 @@
             </ListBox.ItemContainerStyle>
         </ListBox>
 
-        <Button Content="{Binding TranslateButtonText}"
+        <Button Content="{Binding MainButtonText}"
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 Grid.Row="5"

@@ -12,8 +12,37 @@ namespace RevitTranslatorAddin.ViewModels;
 public class TranslateCategoriesViewModel : INotifyPropertyChanged
 {
     private readonly TranslationUtils _translationUtils = null;
-    private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
+    private string _mainButtonText;
+    public TranslateCategoriesViewModel(TranslationUtils utils, ProgressWindowUtils windowUtils)
+    {
+
+        foreach (Category c in CategoriesModel.AllValidCategories)
+        {
+            Categories.Add(new ListItem(c, this));
+        }
+
+        _translationUtils = utils;
+        _progressWindowUtils = windowUtils;
+        MainButtonText = "Translate";
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
     public ObservableCollection<ListItem> Categories { get; } = [];
+    public ICommand SelectAllInGroupCommand => new RelayCommand<Tuple<bool, string>>(ExecuteSelectAllInGroup);
+    
+    public string MainButtonText
+    {
+        get => _mainButtonText;
+        set
+        {
+            _mainButtonText = value;
+            OnPropertyChanged(nameof(MainButtonText));
+        }
+    }
+
+    public ICommand TranslateSelectedCommand => new RelayCommand(TranslateSelected);
+    
     /// <summary>
     /// Counts the number of elements in all selected categories
     /// </summary>
@@ -25,32 +54,39 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
             {
                 if (Categories.Where(item => item.IsSelected).Any())
                 {
-                    TranslateButtonText = "No elements of selected categories";
+                    MainButtonText = "No elements of selected categories";
                 }
                 else
                 {
-                    TranslateButtonText = "Select Categories to translate";
+                    MainButtonText = "Select Categories to translate";
                 }
             }
             else
             {
-                TranslateButtonText = $"Translate {value} elements";
+                MainButtonText = $"Translate {value} elements";
             }
-        } 
-    }
-
-    private string _translateButtonText;
-    public string TranslateButtonText
-    {
-        get => _translateButtonText;
-        set
-        {
-            _translateButtonText = value;
-            OnPropertyChanged(nameof(TranslateButtonText));
         }
     }
 
-    public ICommand SelectAllInGroupCommand => new RelayCommand<Tuple<bool, string>>(ExecuteSelectAllInGroup);
+    private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
+    /// <summary>
+    /// Counts the number of elements in selected categories and asynchronously updates the value.
+    /// </summary>
+    internal void CountElements()
+    {
+        Task.Run(() =>
+        {
+            var categories = Categories.Where(item => item.IsSelected).Select(c => c.Category.BuiltInCategory).ToList();
+            var count = TranslateCategoriesCommand.GetElementsFromCategories(categories).Count;
+
+            _elementCount = count;
+        });
+    }
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
     /// <summary>
     /// Checks or unchecks all categories in selected Category Type.
@@ -73,9 +109,6 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
             }
         }
     }
-
-    public ICommand TranslateSelectedCommand => new RelayCommand(TranslateSelected);
-
     /// <summary>
     /// Command for translation of all elements in selected categories. 
     /// Starts translation process and calls the raise of ExternalEvent to update Revit model.
@@ -89,63 +122,7 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         TranslateCategoriesCommand.Window.Close();
         TranslateCategoriesCommand.Window = null;
 
-        _progressWindowUtils.Start();
-
-        var textRetriever = new ElementTextRetriever(_progressWindowUtils, elements);
-        var taskHandler = new MultiTaskTranslationHandler(_translationUtils, textRetriever.TranslationUnits, _progressWindowUtils);
-        var result = taskHandler.PerformTranslation();
-
-        if (textRetriever.TranslationUnits.Count > 0)
-        {
-            if (!result.Completed)
-            {
-                var proceed = TranslationUtils.ProceedWithUpdate();
-                if (!proceed)
-                {
-                    return;
-                }
-            }
-
-            ElementUpdateHandler.TranslationUnits = textRetriever.TranslationUnits;
-
-            RevitUtils.ExEvent.Raise();
-            RevitUtils.SetTemporaryFocus();
-        }
-        _progressWindowUtils.End();
-    }
-
-
-    public TranslateCategoriesViewModel(TranslationUtils utils, ProgressWindowUtils windowUtils)
-    {
-
-        foreach (Category c in CategoriesModel.AllValidCategories)
-        {
-            Categories.Add(new ListItem(c, this));
-        }
-
-        _translationUtils = utils;
-        _progressWindowUtils = windowUtils;
-        TranslateButtonText = "Translate";
-    }
-
-    /// <summary>
-    /// Counts the number of elements in selected categories and asynchronously updates the value.
-    /// </summary>
-    internal void CountElements()
-    {
-        Task.Run(() =>
-        {
-            var categories = Categories.Where(item => item.IsSelected).Select(c => c.Category.BuiltInCategory).ToList();
-            var count = TranslateCategoriesCommand.GetElementsFromCategories(categories).Count;
-
-            _elementCount = count;
-        });
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        BaseTranslationCommand.StartCommandTranslation(elements, _progressWindowUtils, _translationUtils, false, false);
     }
 }
 

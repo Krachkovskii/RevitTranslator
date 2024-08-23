@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RevitTranslatorAddin.Utils.DeepL;
+﻿namespace RevitTranslatorAddin.Utils.DeepL;
 internal class DeeplLanguageCodes
 {
     // Source: https://developers.deepl.com/docs/v/en/resources/supported-languages

@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Utils.App;
 /// <summary>
@@ -20,7 +21,7 @@ internal class ValidationUtils
     /// <returns>
     /// Bool that indicates whether the input contains only numbers
     /// </returns>
-    internal static bool IsTextOnly(string input)
+    internal static bool HasText(string input)
     {
         return !(string.IsNullOrWhiteSpace(input) || NumberOnlyRegex.IsMatch(input));
     }
@@ -30,7 +31,51 @@ internal class ValidationUtils
     /// </summary>
     internal static readonly List<char> ForbiddenParameterSymbols = new()
     {
+
         '\\', ':', '{', '}', '[', ']', '|', ';', '<', '>', '?', '`', '~'
     };
 
+    /// <summary>
+    /// Checks if an element is valid for family translation.
+    /// Usually, it's downloadable families, such as annotations or titleblocks.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <returns></returns>
+    internal static bool IsValidForFamilyEdit(Element element)
+    {
+        if (element == null)
+        {
+            return false;
+        }
+
+        if (element.Category?.BuiltInCategory == BuiltInCategory.OST_TitleBlocks)
+        {
+            return true;
+        }
+
+        if (element is IndependentTag)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if translation is applied to parameter or element name. 
+    /// If yes, checks for illegal Revit characters
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <returns></returns>
+    internal static bool NameHasIllegalCharacters(TranslationUnit unit)
+    {
+        if (unit.Element is Parameter p || unit.TranslationDetails == TranslationDetails.ElementName)
+        {
+            if (unit.TranslatedText.Any(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
