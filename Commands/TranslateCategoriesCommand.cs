@@ -6,7 +6,7 @@ using RevitTranslatorAddin.Views;
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-internal class TranslateCategoriesCommand : BaseCommand
+internal class TranslateCategoriesCommand : BaseTranslationCommand
 {
     /// <summary>
     /// Window that displays all available categories and allows user to select all necessary categories

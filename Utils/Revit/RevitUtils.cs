@@ -14,15 +14,32 @@ namespace RevitTranslatorAddin.Utils.Revit;
 internal class RevitUtils
 {
     internal static Autodesk.Revit.ApplicationServices.Application App = null;
-    internal static Document Doc = null;
+    
+    /// <summary>
+    /// Active document at the moment of command's start.
+    /// </summary>
+    internal static Document Doc { get; private set; } = null;
 
     /// <summary>
-    /// ExternalEvent to be associated with 
+    /// ExternalEvent to be associated with current command.
     /// </summary>
     internal static ExternalEvent ExEvent { get; private set; } = null;
-    internal static IExternalEventHandler ExEventHandler = null;
-    internal static UIApplication UIApp = null;
-    internal static UIDocument UIDoc = null;
+
+    /// <summary>
+    /// ExternalEventHandler that handles the execution of current command.
+    /// </summary>
+    internal static IExternalEventHandler ExEventHandler { get; private set; } = null;
+    
+    internal static UIApplication UIApp { get; private set; } = null;
+    
+    /// <summary>
+    /// UIDocument for the active document.
+    /// </summary>
+    internal static UIDocument UIDoc { get; private set; } = null;
+    
+    /// <summary>
+    /// Creates and assigns ExternalEvent and its handler.
+    /// </summary>
     internal static void CreateAndAssignEvents()
     {
         ExEventHandler = new ElementUpdateHandler();
@@ -30,70 +47,9 @@ internal class RevitUtils
     }
 
     /// <summary>
-    /// Gets Revit elements that are currently selected in the UI
+    /// Sets the current Revit context at the time of Command execution.
     /// </summary>
-    /// <returns>
-    /// List of Elements
-    /// </returns>
-    internal static List<Element> GetCurrentSelection()
-    {
-        var ids = UIDoc.Selection.GetElementIds().ToList();
-        var elements = GetElementsFromIds(ids);
-
-        return elements;
-    }
-
-    /// <summary>
-    /// Gets corresponding elements for all provided ElementIds
-    /// </summary>
-    /// <param name="ids"></param>
-    /// <returns></returns>
-    internal static List<Element> GetElementsFromIds(IEnumerable<ElementId> ids)
-    {
-        var elements = new List<Element>();
-
-        foreach (var id in ids)
-        {
-            var el = Doc.GetElement(id);
-            if (el != null)
-            {
-                elements.Add(el);
-            }
-        }
-
-        return elements;
-    }
-
-    /// <summary>
-    /// Gets all unique tagged elements for all tags in provided list of elements.
-    /// </summary>
-    /// <param name="tags">
-    /// Elements to process. Can contain any elements, but only IndependentTags will be processed.
-    /// </param>
-    /// <returns>
-    /// Unique tagged elements.
-    /// </returns>
-    internal static HashSet<Element> GetTaggedElements(IEnumerable<Element> tags)
-    {
-        var set = new HashSet<Element>();
-
-        foreach (var t in tags)
-        {
-            if (t is not IndependentTag tag)
-            {
-                continue;
-            }
-
-            var tagElementIds = tag.GetTaggedLocalElementIds();
-            var taggedElements = GetElementsFromIds(tagElementIds);
-            var tagElements = tag.GetTaggedLocalElements().ToList();
-            set.UnionWith(taggedElements);
-        }
-
-        set.RemoveWhere(n => n == null);
-        return set;
-    }
-
+    /// <param name="uiapp"></param>
     internal static void SetRevitUtils(UIApplication uiapp)
     {
         UIApp = uiapp;
@@ -102,6 +58,14 @@ internal class RevitUtils
         Doc = UIDoc.Document;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="elements">Elements to process.</param>
+    /// <param name="pwUtils">ProgressWindowUtils object for this run.</param>
+    /// <param name="tUtils">TranslationUtils for this run.</param>
+    /// <param name="callFromContext">True if called from Command; false if called from UI thread, e.g. ViewModel</param>
+    /// <param name="translateProjectParameters">If true, project parameters will be considered.</param>
     internal static void StartCommandTranslation(List<Element> elements, ProgressWindowUtils pwUtils, TranslationUtils tUtils, bool callFromContext, bool translateProjectParameters)
     {
         if (elements == null 

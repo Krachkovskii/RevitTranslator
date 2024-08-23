@@ -4,7 +4,7 @@ using RevitTranslatorAddin.Utils.Revit;
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-public class TranslateSelectionCommand : BaseCommand
+public class TranslateSelectionCommand : BaseTranslationCommand
 {
     public override void Execute()
     {
@@ -20,13 +20,13 @@ public class TranslateSelectionCommand : BaseCommand
             return;
         }
 
-        var selection = RevitUtils.GetCurrentSelection();
+        var selection = ElementRetriever.GetCurrentSelection();
         if (selection.Count == 0)
         {
             MessageBox.Show("Nothing was selected.");
             return;
         }
 
-        RevitUtils.StartCommandTranslation(selection, _progressWindowUtils, _translationUtils, true, false);
+        StartCommandTranslation(selection, _progressWindowUtils, _translationUtils, true, false);
     }
 }

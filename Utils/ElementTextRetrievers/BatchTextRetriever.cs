@@ -15,7 +15,7 @@ internal class BatchTextRetriever : BaseElementTextRetriever
 
     public BatchTextRetriever(List<Element> elements, bool translateProjectParameters)
     {
-        TaggedElements = RevitUtils.GetTaggedElements(elements);
+        TaggedElements = ElementRetriever.GetTaggedElements(elements);
         HashSet<Element> instancesTypesFamilies = elements.ToHashSet();
         instancesTypesFamilies.UnionWith(TaggedElements);
 

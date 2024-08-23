@@ -5,7 +5,7 @@ using RevitTranslatorAddin.Utils.Revit;
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-public class TranslateModelCommand : BaseCommand
+public class TranslateModelCommand : BaseTranslationCommand
 {
     public override void Execute()
     {
@@ -34,7 +34,7 @@ public class TranslateModelCommand : BaseCommand
             return;
         }
 
-        RevitUtils.StartCommandTranslation(instances, _progressWindowUtils, _translationUtils, true, true);
+        StartCommandTranslation(instances, _progressWindowUtils, _translationUtils, true, true);
     }
 
     /// <summary>

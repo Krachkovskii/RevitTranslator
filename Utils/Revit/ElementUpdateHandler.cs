@@ -32,10 +32,12 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
         _cantUpdate.Clear();
         ProgressWindowUtils = null;
         TranslationUnitGroups = null;
-
-        RevitUtils.ExEventHandler = null;
     }
 
+    /// <summary>
+    /// Main entry point for Revit event.
+    /// </summary>
+    /// <param name="app"></param>
     public void Execute(UIApplication app)
     {
         ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateStarted());
@@ -90,6 +92,10 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
             $"ElementId: {unit.ElementId})");
     }
 
+    /// <summary>
+    /// Updates all elements associated with this group.
+    /// </summary>
+    /// <param name="group"></param>
     private void RunTranslationUpdate(TranslationUnitGroup group)
     {
         using (var t = new Transaction(group.Document, $"Update Document {group.Document.Title}"))
@@ -233,7 +239,7 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
     }
 
     /// <summary>
-    /// Updates the text value of the element
+    /// Updates text value of the element
     /// </summary>
     /// <param name="unit"></param>
     private void UpdateElementTranslation(TranslationUnit unit)

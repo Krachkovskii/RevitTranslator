@@ -122,7 +122,7 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
         TranslateCategoriesCommand.Window.Close();
         TranslateCategoriesCommand.Window = null;
 
-        RevitUtils.StartCommandTranslation(elements, _progressWindowUtils, _translationUtils, false, false);
+        BaseTranslationCommand.StartCommandTranslation(elements, _progressWindowUtils, _translationUtils, false, false);
     }
 }
 
