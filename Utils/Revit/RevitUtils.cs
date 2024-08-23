@@ -122,7 +122,7 @@ internal class RevitUtils
         var textRetriever = new BatchTextRetriever(elements, translateProjectParameters);
         var taskHandler = new MultiTaskTranslationHandler(tUtils, textRetriever.UnitGroups, pwUtils);
 
-        var result = taskHandler.PerformTranslation();
+        var result = taskHandler.TranslateUnits();
 
         if (taskHandler.TotalTranslationCount > 0)
         {
@@ -141,7 +141,7 @@ internal class RevitUtils
             ExEvent.Raise();
             SetTemporaryFocus();
         }
-        pwUtils.End();
+        pwUtils.Dispose();
     }
 
     #region Revit Window activator

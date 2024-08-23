@@ -22,6 +22,6 @@ public partial class ProgressWindow : Window
     private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
     {
         TranslationUtils.ClearTranslationCount();
-        _progressWindowUtils.End();
+        _progressWindowUtils.Dispose();
     }
 }

@@ -12,35 +12,21 @@ namespace RevitTranslatorAddin.Utils.DeepL;
 /// </summary>
 public class TranslationUtils
 {
-    /// <summary>
-    /// Counter for completed translations for this run
-    /// </summary>
-    internal static int CompletedTranslationsCount { get; private set; } = 0;
+    private static int _characterCount = 0;
 
-    /// <summary>
-    /// Counter for translated symbols for this run
-    /// </summary>
-    internal static int CharacterCount { get; private set; } = 0;
+    private static int _completedTranslationsCount = 0;
 
-    /// <summary>
-    /// Counter for translated symbols for current billing period
-    /// </summary>
-    internal static int Usage { get; private set; } = 0;
+    private static int _translationsCount = 0;
 
-    /// <summary>
-    /// Translation limits for current DeepL plan
-    /// </summary>
-    internal static int Limit { get; private set; } = 0;
+    private readonly string _apiTranslateUrl = null;
+
+    private readonly string _apiUsageUrl = null;
+
+    private readonly string _baseApi = "https://api-free.deepl.com/v2/";
+
+    private readonly HttpClient _httpClient = null;
 
     private readonly Models.DeeplSettings _settings = null;
-    private readonly string _baseApi = "https://api-free.deepl.com/v2/";
-    private readonly string _apiTranslateUrl = null;
-    private readonly string _apiUsageUrl = null;
-    private readonly HttpClient _httpClient = null;
-    private static int _translationsCount = 0;
-    private static int _completedTranslationsCount = 0;
-    private static int _characterCount = 0;
-    private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
 
     public TranslationUtils(Models.DeeplSettings settings, ProgressWindowUtils progressWindowUtils)
     {
@@ -53,9 +39,28 @@ public class TranslationUtils
         _apiUsageUrl = $"{_baseApi}usage";
         _progressWindowUtils = progressWindowUtils;
 
-        Task.Run( () => GetUsageAsync() ).Wait();
+        Task.Run(() => GetUsageAsync()).Wait();
     }
 
+    /// <summary>
+    /// Counter for translated symbols for this run
+    /// </summary>
+    internal static int CharacterCount { get; private set; } = 0;
+
+    /// <summary>
+    /// Counter for completed translations for this run
+    /// </summary>
+    internal static int CompletedTranslationsCount { get; private set; } = 0;
+    /// <summary>
+    /// Translation limits for current DeepL plan
+    /// </summary>
+    internal static int Limit { get; private set; } = 0;
+
+    /// <summary>
+    /// Counter for translated symbols for current billing period
+    /// </summary>
+    internal static int Usage { get; private set; } = 0;
+    private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
     /// <summary>
     /// Checks if translation can be performed based on the provided settings. 
     /// This method attempts to translate a single word.
@@ -97,22 +102,6 @@ public class TranslationUtils
         }
     }
 
-    /// <summary>
-    /// Shows MessageBox with translations that can't be updated due to illegal characters
-    /// </summary>
-    private void ShowCantTranslateMessage()
-    {
-        System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
-                "Please make sure everything is correct:\n" +
-                "• API key\n" +
-                "• Target language\n" +
-                "• Paid/Free plan\n" +
-                "• Translation limits.",
-                "Incorrect settings",
-                System.Windows.MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-    }
-
     //TODO: switch to returning (int, int); do not set properties inside the function. Instead, set properties in the main block
     /// <summary>
     /// Retrieves monthly usage and limits for this API key. Sets corresponding properties.
@@ -130,67 +119,6 @@ public class TranslationUtils
 
         Usage = usage.CharacterCount;
         Limit = usage.CharacterLimit;
-    }
-
-    /// <summary>
-    /// Translates a given text using the DeepL translation API.
-    /// This is a base method that simply returns translated text.
-    /// </summary>
-    /// <param name="text">
-    /// Text to be translated.
-    /// </param>
-    /// <returns>
-    /// Translated text.
-    /// </returns>
-    private async Task<string> TranslateBaseAsync(string text, CancellationToken token)
-    {
-        var content = new FormUrlEncodedContent(
-        [
-            new KeyValuePair<string, string>("auth_key", _settings.DeeplApiKey),
-            new KeyValuePair<string, string>("text", text),
-            new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"),
-            new KeyValuePair<string, string>("target_lang", _settings.Languages[_settings.TargetLanguage]),
-            new KeyValuePair<string, string>("source_lang", _settings.SourceLanguage == null ? null : _settings.Languages[_settings.SourceLanguage])
-        ]);
-
-        var response = await _httpClient.PostAsync(_apiTranslateUrl, content);
-        response.EnsureSuccessStatusCode();
-        var responseBody = await response.Content.ReadAsStringAsync();
-
-        var translationResult = JsonConvert.DeserializeObject<TranslationResult>(responseBody);
-
-        return translationResult?.Translations?[0]?.Text;
-    }
-
-    /// <summary>
-    /// Translates a given text using the DeepL translation API.
-    /// This method is responsible for updating the translation count, calling the base translation method,
-    /// and updating the progress window.
-    /// </summary>
-    /// <param name="text">
-    /// The text to be translated.
-    /// </param>
-    /// <returns>
-    /// Translated text.
-    /// </returns>
-    internal async Task<string> TranslateTextAsync(string text, CancellationToken token)
-    {
-        var translatedText = await TranslateBaseAsync(text, token);
-
-        UpdateCharacterCounter(text);
-        UpdateCompletedCounter();
-
-        return translatedText;
-    }
-
-    /// <summary>
-    /// Updates counter of translated characters for this run
-    /// </summary>
-    /// <param name="text"></param>
-    private void UpdateCharacterCounter(string text)
-    {
-        Interlocked.Add(ref _characterCount, text.Length);
-        CharacterCount = _characterCount;
     }
 
     /// <summary>
@@ -236,5 +164,80 @@ public class TranslationUtils
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Translates a given text using the DeepL translation API.
+    /// This method is responsible for updating the translation count, calling the base translation method,
+    /// and updating the progress window.
+    /// </summary>
+    /// <param name="text">
+    /// The text to be translated.
+    /// </param>
+    /// <returns>
+    /// Translated text.
+    /// </returns>
+    internal async Task<string> TranslateTextAsync(string text, CancellationToken token)
+    {
+        var translatedText = await TranslateBaseAsync(text, token);
+
+        UpdateCharacterCounter(text);
+        UpdateCompletedCounter();
+
+        return translatedText;
+    }
+
+    /// <summary>
+    /// Shows MessageBox with translations that can't be updated due to illegal characters
+    /// </summary>
+    private void ShowCantTranslateMessage()
+    {
+        System.Windows.MessageBox.Show("Your settings configuration cannot be used for translation.\n" +
+                "Please make sure everything is correct:\n" +
+                "• API key\n" +
+                "• Target language\n" +
+                "• Paid/Free plan\n" +
+                "• Translation limits.",
+                "Incorrect settings",
+                System.Windows.MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+    }
+    /// <summary>
+    /// Translates a given text using the DeepL translation API.
+    /// This is a base method that simply returns translated text.
+    /// </summary>
+    /// <param name="text">
+    /// Text to be translated.
+    /// </param>
+    /// <returns>
+    /// Translated text.
+    /// </returns>
+    private async Task<string> TranslateBaseAsync(string text, CancellationToken token)
+    {
+        var content = new FormUrlEncodedContent(
+        [
+            new KeyValuePair<string, string>("auth_key", _settings.DeeplApiKey),
+            new KeyValuePair<string, string>("text", text),
+            new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"),
+            new KeyValuePair<string, string>("target_lang", _settings.Languages[_settings.TargetLanguage]),
+            new KeyValuePair<string, string>("source_lang", _settings.SourceLanguage == null ? null : _settings.Languages[_settings.SourceLanguage])
+        ]);
+
+        var response = await _httpClient.PostAsync(_apiTranslateUrl, content);
+        response.EnsureSuccessStatusCode();
+        var responseBody = await response.Content.ReadAsStringAsync();
+
+        var translationResult = JsonConvert.DeserializeObject<TranslationResult>(responseBody);
+
+        return translationResult?.Translations?[0]?.Text;
+    }
+    /// <summary>
+    /// Updates counter of translated characters for this run
+    /// </summary>
+    /// <param name="text"></param>
+    private void UpdateCharacterCounter(string text)
+    {
+        Interlocked.Add(ref _characterCount, text.Length);
+        CharacterCount = _characterCount;
     }
 }

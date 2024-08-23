@@ -10,7 +10,6 @@ internal class MultiTaskTranslationHandler
     internal int TotalTranslationCount { get; private set; } = 0;
 
     private readonly List<Task> _translationTasks = [];
-    private readonly List<TranslationUnit> _translationUnits = [];
     private readonly TranslationUtils _translationUtils = null;
     private readonly ProgressWindowUtils _progressWindowUtils = null;
     private TranslationProcessResult _processResult { get; set; } = new(false, TranslationProcessResult.AbortReasons.None, string.Empty);
@@ -30,6 +29,13 @@ internal class MultiTaskTranslationHandler
         TotalTranslationCount = CalculateTotalTranslations(_unitGroups);
     }
 
+    /// <summary>
+    /// Calculates total number of units across all unit groups.
+    /// </summary>
+    /// <param name="unitGroups"></param>
+    /// <returns>
+    /// Total number of translation units.
+    /// </returns>
     private int CalculateTotalTranslations(List<TranslationUnitGroup> unitGroups)
     {
         return unitGroups.Sum(x => x.TranslationUnits.Count);
@@ -38,13 +44,15 @@ internal class MultiTaskTranslationHandler
     /// <summary>
     /// Perform translation of all available translation units
     /// </summary>
-    /// <returns></returns>
-    internal TranslationProcessResult PerformTranslation()
+    /// <returns>
+    /// State of translation process via TranslationProcessResult object.
+    /// </returns>
+    internal TranslationProcessResult TranslateUnits()
     {
-        CreateTranslationTasks();
+        CreateTranslationTasks(_unitGroups);
 
         // this is executed after all tasks have finished
-        TokenHandler.Clear();
+        TokenHandler.Dispose();
 
         return _processResult;
     }
@@ -52,7 +60,7 @@ internal class MultiTaskTranslationHandler
     /// <summary>
     /// Creates translation tasks and handles cancellation exceptions
     /// </summary>
-    private void CreateTranslationTasks()
+    private void CreateTranslationTasks(List<TranslationUnitGroup> unitGroups)
     {
         SetupTokenHandler();
         _progressWindowUtils.StartTranslationStatus();
@@ -61,12 +69,12 @@ internal class MultiTaskTranslationHandler
         {
             _progressWindowUtils.UpdateTotal(TotalTranslationCount);
 
-            foreach (var group in _unitGroups)
+            foreach (var group in unitGroups)
             {
                 foreach (var unit in group.TranslationUnits)
                 {
                     TokenHandler.Cts.Token.ThrowIfCancellationRequested();
-                    AddTranslationTask(unit);
+                    AddTranslationTask(_translationTasks, unit);
                 } 
             }
 
@@ -94,9 +102,9 @@ internal class MultiTaskTranslationHandler
     /// Starts translation task and adds it to the list of tasks
     /// </summary>
     /// <param name="unit"></param>
-    private void AddTranslationTask(TranslationUnit unit)
+    private void AddTranslationTask(List<Task> translationTasks, TranslationUnit unit)
     {
-        _translationTasks.Add(Task.Run(async () =>
+        translationTasks.Add(Task.Run(async () =>
         {
             TokenHandler.Cts.Token.ThrowIfCancellationRequested();
             var translated = await _translationUtils.TranslateTextAsync(unit.OriginalText, TokenHandler.Cts.Token);

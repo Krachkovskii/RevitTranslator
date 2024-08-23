@@ -116,6 +116,7 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
             }
         };
     }
+    
     /// <summary>
     /// Updates overrides of DimensionSegment element
     /// </summary>

@@ -19,8 +19,20 @@ internal class GenericElementTextRetriever : BaseElementTextRetriever
             return;
         }
 
-        ProcessElementName(element);
         ProcessElementParameters(element);
+
+        if (element is ElementType)
+        {
+            ProcessElementName(element);
+        }
+        else if (element is ViewSchedule schedule)
+        {
+            ProcessElementName(schedule);
+        }
+        else if (element is ScheduleSheetInstance scheduleInstance)
+        {
+            ProcessElementName( RevitUtils.Doc.GetElement( scheduleInstance.ScheduleId ));
+        }
     }
 
     /// <summary>

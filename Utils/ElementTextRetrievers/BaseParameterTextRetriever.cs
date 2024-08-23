@@ -16,17 +16,15 @@ internal class BaseParameterTextRetriever : BaseElementTextRetriever
     /// </returns>
     internal static bool CanUseParameter(Parameter param)
     {
-        Debug.WriteLine($"Parameter \"{param.Definition.Name}\"; Storage Type: {param.StorageType.ToString()}; IsReadOnly: {param.IsReadOnly}; HasValue: {param.HasValue}");
-        Debug.Write("Can be used? ");
         if (param.StorageType == StorageType.String
             && !param.IsReadOnly
             && param.HasValue
-            && !param.Definition.Name.Contains("GUID"))
+            && !param.Definition.Name.Contains("GUID")
+            && !param.Definition.Name.Equals("Text Font"))
         {
-            Debug.WriteLine("YES!");
             return true;
         }
-        Debug.WriteLine("NO!");
+
         return false;
     }
 

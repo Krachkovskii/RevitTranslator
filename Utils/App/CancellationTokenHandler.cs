@@ -2,7 +2,7 @@
 /// <summary>
 /// This class handles cancellation token, its creation and disposal
 /// </summary>
-public class CancellationTokenHandler
+public class CancellationTokenHandler : IDisposable
 {
     /// <summary>
     /// Active CancellationTokenSource
@@ -20,7 +20,7 @@ public class CancellationTokenHandler
     /// <summary>
     /// Disposes and resets the CancellationTokenSource
     /// </summary>
-    public void Clear()
+    public void Dispose()
     {
         Cts.Dispose();
         Cts = null;

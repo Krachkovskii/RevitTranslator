@@ -11,48 +11,41 @@ namespace RevitTranslatorAddin.Utils.App;
 /// <summary>
 /// This class handles updates, initiation and closing of a progress window.
 /// </summary>
-public class ProgressWindowUtils
+public class ProgressWindowUtils : IDisposable
 {
-    /// <summary>
-    /// Current ViewModel instance.
-    /// </summary>
-    public ProgressWindowViewModel VM { get; private set; } = null;
-    
+    public ProgressWindowUtils()
+    {
+    }
+
     /// <summary>
     /// Current View instance.
     /// </summary>
     public ProgressWindow PW { get; private set; } = null;
-    
+
     /// <summary>
     /// Handler for CancellationToken.
     /// </summary>
     public CancellationTokenHandler TokenHandler { get; set; } = null;
-    private AutoResetEvent _windowClosedEvent { get; set; } = new AutoResetEvent(false);
-    private ManualResetEvent _windowReadyEvent { get; set; } = new ManualResetEvent(false);
-
-    public ProgressWindowUtils() {}
 
     /// <summary>
-    /// Sets up a new instance of a ProgressWindow
+    /// Current ViewModel instance.
     /// </summary>
-    private  void ShowProgressWindow()
+    public ProgressWindowViewModel VM { get; private set; } = null;
+    private AutoResetEvent _windowClosedEvent { get; set; } = new AutoResetEvent(false);
+    private ManualResetEvent _windowReadyEvent { get; set; } = new ManualResetEvent(false);
+    
+    /// <summary>
+    /// Indicates the end of translation process, changing the state of progress window
+    /// </summary>
+    public void Dispose()
     {
-        if (VM != null || PW != null)
+        if (VM == null)
         {
-            PW = null;
-            VM = null;
+            Debug.WriteLine("ViewModel of a progressWindow is null");
+            return;
         }
-        VM = new ProgressWindowViewModel();
-        PW = new ProgressWindow(VM, this);
 
-        PW.Activate();
-        PW.Focus();
-
-        PW.Closed += (s, e) => _windowClosedEvent.Set();
-        PW.Loaded += (s, e) => _windowReadyEvent.Set();
-
-        PW.Show();
-        Dispatcher.Run();
+        VM.TranslationsFinishedStatus();
     }
 
     /// <summary>
@@ -68,24 +61,9 @@ public class ProgressWindowUtils
     }
 
     /// <summary>
-    /// Indicates the end of translation process, changing the state of progress window
+    /// Invokes "Fetching data..." state for Progress window
     /// </summary>
-    public void End()
-    {
-        if (VM == null)
-        {
-            Debug.WriteLine("ViewModel of a progressWindow is null");
-            return;
-        }
-
-        VM.TranslationsFinishedStatus();
-    }
-
-    /// <summary>
-    /// Updates total number of translations to be performed
-    /// </summary>
-    /// <param name="num"></param>
-    public void UpdateTotal(int num)
+    public void StartTranslationStatus()
     {
         if (PW == null || VM == null)
         {
@@ -93,13 +71,10 @@ public class ProgressWindowUtils
             return;
         }
 
-        if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
+        PW.Dispatcher.Invoke(() =>
         {
-            PW.Dispatcher.Invoke(() =>
-            {
-                VM.Maximum = num;
-            });
-        }
+            VM.TranslationStartedStatus();
+        });
     }
 
     /// <summary>
@@ -126,9 +101,10 @@ public class ProgressWindowUtils
     }
 
     /// <summary>
-    /// Invokes "Fetching data..." state for Progress window
+    /// Updates total number of translations to be performed
     /// </summary>
-    public void StartTranslationStatus()
+    /// <param name="num"></param>
+    public void UpdateTotal(int num)
     {
         if (PW == null || VM == null)
         {
@@ -136,9 +112,35 @@ public class ProgressWindowUtils
             return;
         }
 
-        PW.Dispatcher.Invoke(() =>
+        if (TokenHandler.Cts != null && !TokenHandler.Cts.IsCancellationRequested)
         {
-            VM.TranslationStartedStatus();
-        });
+            PW.Dispatcher.Invoke(() =>
+            {
+                VM.Maximum = num;
+            });
+        }
+    }
+
+    /// <summary>
+    /// Sets up a new instance of a ProgressWindow
+    /// </summary>
+    private void ShowProgressWindow()
+    {
+        if (VM != null || PW != null)
+        {
+            PW = null;
+            VM = null;
+        }
+        VM = new ProgressWindowViewModel();
+        PW = new ProgressWindow(VM, this);
+
+        PW.Activate();
+        PW.Focus();
+
+        PW.Closed += (s, e) => _windowClosedEvent.Set();
+        PW.Loaded += (s, e) => _windowReadyEvent.Set();
+
+        PW.Show();
+        Dispatcher.Run();
     }
 }
