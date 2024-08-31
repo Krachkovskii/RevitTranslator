@@ -36,7 +36,7 @@ public enum TranslationDetails
     DimensionSuffix,
 
     /// <summary>
-    /// Value override of dimension
+    /// CurrentValue override of dimension
     /// </summary>
     DimensionOverride,
 

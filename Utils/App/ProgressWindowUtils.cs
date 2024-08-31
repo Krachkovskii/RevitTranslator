@@ -93,7 +93,7 @@ public class ProgressWindowUtils : IDisposable
         {
             PW.Dispatcher.Invoke(() =>
             {
-                VM.Value = num;
+                VM.CurrentValue = num;
                 VM.CharacterCount = TranslationUtils.CharacterCount;
                 VM.MonthlyUsage = TranslationUtils.Usage + TranslationUtils.CharacterCount;
             });

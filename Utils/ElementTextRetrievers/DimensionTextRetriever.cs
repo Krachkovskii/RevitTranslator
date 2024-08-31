@@ -207,7 +207,7 @@ public class DimensionTextRetriever : BaseElementTextRetriever
     }
 
     /// <summary>
-    /// Process Value override of a Dimension element
+    /// Process CurrentValue override of a Dimension element
     /// </summary>
     /// <param name="dim">Dimension or DimensionSegment</param>
     /// <param name="isSingleSegment"></param>

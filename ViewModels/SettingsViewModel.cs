@@ -7,51 +7,26 @@ using RevitTranslatorAddin.Utils.DeepL;
 
 namespace RevitTranslatorAddin.ViewModels;
 
-public class SettingsViewModel : INotifyPropertyChanged
+public partial class SettingsViewModel : ObservableObject
 {
-    private Models.DeeplSettings _settings;
-    private int _previousSourceIndex = -1;
-
-    private string _deeplApiKey;
-    public string DeeplApiKey
-    {
-        get => _deeplApiKey;
-        set
-        {
-            _deeplApiKey = value;
-            OnPropertyChanged(nameof(DeeplApiKey));
-        }
-    }
-
+    [ObservableProperty] private string _deeplApiKey;
+    [ObservableProperty] private bool _isAutoDetectChecked = true;
+    [ObservableProperty] private bool _isPaidPlan;
     private SortedList<string, string> _languages;
-    public ObservableCollection<string> Languages { get; private set; } = [];
-
-    private int _selectedSourceLanguageIndex;
-    public int SelectedSourceLanguageIndex
+    private int _previousSourceIndex = -1;
+    [ObservableProperty] private int _selectedSourceLanguageIndex;
+    [ObservableProperty] private int _selectedTargetLanguageIndex;
+    private Models.DeeplSettings _settings;
+    public SettingsViewModel()
     {
-        get => _selectedSourceLanguageIndex;
-        set
-        {
-            _selectedSourceLanguageIndex = value;
-            OnPropertyChanged(nameof(SelectedSourceLanguageIndex));
-        }
+        LoadSettings();
+        SaveCommand = new RelayCommand(SaveSettings);
+        OpenLinkedinCommand = new RelayCommand<string>(OpenLinkedin);
+        UpdateButtonText = "Save settings";
     }
 
-    private int _selectedTargetLanguageIndex;
-    public int SelectedTargetLanguageIndex
-    {
-        get => _selectedTargetLanguageIndex;
-        set
-        {
-            if (_selectedTargetLanguageIndex != value)
-            {
-                _selectedTargetLanguageIndex = value;
-                OnPropertyChanged(nameof(SelectedTargetLanguageIndex));
-            }
-        }
-    }
+    public event PropertyChangedEventHandler PropertyChanged;
 
-    private bool _isAutoDetectChecked = true;
     public bool IsAutoDetectChecked
     {
         get => _isAutoDetectChecked;
@@ -77,40 +52,24 @@ public class SettingsViewModel : INotifyPropertyChanged
     }
 
     public bool IsSourceComboBoxEnabled => !IsAutoDetectChecked;
+    public ObservableCollection<string> Languages { get; private set; } = [];
+    public ICommand OpenLinkedinCommand
+    {
+        get;
+    }
 
-    private string _updateButtonText;
+    public ICommand SaveCommand
+    {
+        get;
+    }
+
     public string UpdateButtonText
     {
-        get => _updateButtonText;
-        set
-        {
-            _updateButtonText = value;
-            OnPropertyChanged(nameof(UpdateButtonText));
-        }
+        get; set;
     }
-
-    private bool _isPaidPlan;
-    public bool IsPaidPlan
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
-        get => _isPaidPlan;
-        set 
-        {
-            _isPaidPlan = value;
-            OnPropertyChanged(nameof(IsPaidPlan));
-        }
-    }
-
-    public ICommand SaveCommand { get; }
-    public ICommand SwitchLanguagesCommand { get; }
-    public ICommand OpenLinkedinCommand { get; }
-
-    public SettingsViewModel()
-    {
-        LoadSettings();
-        SaveCommand = new RelayCommand(SaveSettings);
-        SwitchLanguagesCommand = new RelayCommand(SwitchLanguages);
-        OpenLinkedinCommand = new RelayCommand<string>(OpenLinkedin);
-        UpdateButtonText = "Save settings";
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     /// <summary>
@@ -126,6 +85,44 @@ public class SettingsViewModel : INotifyPropertyChanged
 
         SetSourceLanguage();
         SetTargetLanguage();
+    }
+
+    /// <summary>
+    /// Opens the link to my LinkedIn page in default browser
+    /// </summary>
+    /// <param name="uri"></param>
+    private void OpenLinkedin(string uri)
+    {
+        if (Uri.TryCreate(uri, UriKind.Absolute, out var validUri))
+        {
+            Process.Start(new ProcessStartInfo(validUri.AbsoluteUri) { UseShellExecute = true });
+        }
+    }
+
+    /// <summary>
+    /// Saves settings file and checks if provided credentials are valid
+    /// </summary>
+    private void SaveSettings()
+    {
+        _settings.DeeplApiKey = DeeplApiKey;
+        _settings.SourceLanguage = SelectedSourceLanguageIndex == -1 ? null : Languages[SelectedSourceLanguageIndex];
+        _settings.TargetLanguage = Languages[SelectedTargetLanguageIndex];
+        _settings.SaveToJson();
+
+        var translationUtils = new TranslationUtils(_settings, new Utils.App.ProgressWindowUtils());
+
+        if (!translationUtils.CanTranslate(_settings))
+        {
+            return;
+        }
+
+        UpdateButtonText = "Settings saved!";
+
+        Task.Run(async () =>
+        {
+            await Task.Delay(2000);
+            UpdateButtonText = "Save settings";
+        });
     }
 
     /// <summary>
@@ -174,36 +171,10 @@ public class SettingsViewModel : INotifyPropertyChanged
             SelectedTargetLanguageIndex = _languages.IndexOfKey(_settings.TargetLanguage);
         }
     }
-
-    /// <summary>
-    /// Saves settings file and checks if provided credentials are valid
-    /// </summary>
-    private void SaveSettings()
-    {
-        _settings.DeeplApiKey = DeeplApiKey;
-        _settings.SourceLanguage = SelectedSourceLanguageIndex == -1 ? null : Languages[SelectedSourceLanguageIndex];
-        _settings.TargetLanguage = Languages[SelectedTargetLanguageIndex];
-        _settings.SaveToJson();
-
-        var translationUtils = new TranslationUtils(_settings, new Utils.App.ProgressWindowUtils());
-
-        if (!translationUtils.CanTranslate(_settings))
-        {
-            return;
-        }
-        
-        UpdateButtonText = "Settings saved!";
-
-        Task.Run(async () =>
-        {
-            await Task.Delay(2000);
-            UpdateButtonText = "Save settings";
-        });
-    }
-
     /// <summary>
     /// Switches "to" and "from" languages in the UI
     /// </summary>
+    [RelayCommand]
     private void SwitchLanguages()
     {
         if (IsAutoDetectChecked)
@@ -215,23 +186,5 @@ public class SettingsViewModel : INotifyPropertyChanged
 
         SelectedSourceLanguageIndex = index2;
         SelectedTargetLanguageIndex = index1;
-    }
-
-    /// <summary>
-    /// Opens the link to my LinkedIn page in default browser
-    /// </summary>
-    /// <param name="uri"></param>
-    private void OpenLinkedin(string uri)
-    {
-        if (Uri.TryCreate(uri, UriKind.Absolute, out var validUri))
-        {
-            Process.Start(new ProcessStartInfo(validUri.AbsoluteUri) { UseShellExecute = true });
-        }
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
