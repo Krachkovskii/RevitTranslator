@@ -47,11 +47,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Utils\Revit\ElementTextRetriever.cs" />
-      <Compile Remove="Utils\Revit\FamilyTextRetriever.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Remove="Resources\Icons\AllIcon32.png" />
       <None Remove="Resources\Icons\CategoryIcon32.png" />
       <None Remove="Resources\Icons\SelectionIcon32.png" />
@@ -71,20 +66,6 @@
 		<PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" />
 		<PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" />
     </ItemGroup>
-
-	<!--<ItemGroup Condition="$(Configuration.Contains('R25'))">
-		<PackageReference Include="Nice3point.Revit.Toolkit" Version="2025.*" />
-		<PackageReference Include="Nice3point.Revit.Extensions" Version="2025.*" />
-		<PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2025.*" />
-		<PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2025.*" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(!Configuration.Contains('R25'))">
-		<PackageReference Include="Nice3point.Revit.Toolkit" Version="2024.*" />
-		<PackageReference Include="Nice3point.Revit.Extensions" Version="2024.*" />
-		<PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2024.*" />
-		<PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2024.*" />
-	</ItemGroup>-->
 	
     <ItemGroup>
       <Reference Include="AdWindows">

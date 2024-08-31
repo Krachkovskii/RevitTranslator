@@ -39,6 +39,12 @@ public class TranslationUtils
         _apiUsageUrl = $"{_baseApi}usage";
         _progressWindowUtils = progressWindowUtils;
 
+        if (string.IsNullOrWhiteSpace(settings.DeeplApiKey))
+        {
+            // without this block, the line below throws an exception, if settings are empty.
+            return;
+        }
+
         Task.Run(() => GetUsageAsync()).Wait();
     }
 
