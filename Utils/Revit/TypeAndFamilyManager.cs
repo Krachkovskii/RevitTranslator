@@ -1,5 +1,5 @@
 ﻿namespace RevitTranslatorAddin.Utils.Revit;
-internal class TypeAndFamilyManager
+public class TypeAndFamilyManager
 {
     /// <summary>
     /// Gets Family for this element, if available.
@@ -8,7 +8,7 @@ internal class TypeAndFamilyManager
     /// <returns>
     /// Family for this element, null if not available.
     /// </returns>
-    internal static Family GetFamily(Element element)
+    public static Family GetFamily(Element element)
     {
         if (element is not FamilyInstance instance)
         {
@@ -32,7 +32,7 @@ internal class TypeAndFamilyManager
     /// <returns>
     /// Document that represents this family.
     /// </returns>
-    internal static Document GetFamilyDocument(Family family)
+    public static Document GetFamilyDocument(Family family)
     {
         return RevitUtils.Doc.EditFamily(family);
     }
@@ -44,7 +44,7 @@ internal class TypeAndFamilyManager
     /// <returns>
     /// FamilyType for this element, null if not available.
     /// </returns>
-    internal static ElementType GetElementType(Element element)
+    public static ElementType GetElementType(Element element)
     {
         return RevitUtils.Doc.GetElement(element.GetTypeId()) as ElementType;
     }
@@ -53,13 +53,13 @@ internal class TypeAndFamilyManager
     /// Loads modified family document back to host document
     /// </summary>
     /// <param name="familyDoc"></param>
-    internal static void LoadFamilyToActiveDocument(Document familyDoc)
+    public static void LoadFamilyToActiveDocument(Document familyDoc)
     {
         var loadOptions = new FamilyLoadOptions();
         familyDoc.LoadFamily(RevitUtils.Doc, loadOptions);
     }
 
-    internal static HashSet<ElementType> GetUniqueTypesFromElements(IEnumerable<Element> elements)
+    public static HashSet<ElementType> GetUniqueTypesFromElements(IEnumerable<Element> elements)
     {
         var set = new HashSet<ElementType>();
         foreach (var element in elements)
@@ -71,7 +71,7 @@ internal class TypeAndFamilyManager
         return set;
     }
 
-    internal static HashSet<Family> GetUniqueFamiliesFromElements(IEnumerable<Element> elements)
+    public static HashSet<Family> GetUniqueFamiliesFromElements(IEnumerable<Element> elements)
     {
         var set = new HashSet<Family>();
         

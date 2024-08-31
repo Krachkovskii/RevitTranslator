@@ -4,10 +4,10 @@ namespace RevitTranslatorAddin.Utils.App;
 /// <summary>
 /// This class handles creation and management of concurrent translation tasks.
 /// </summary>
-internal class MultiTaskTranslationHandler
+public class MultiTaskTranslationHandler
 {
     private List<TranslationUnitGroup> _unitGroups { get; set; } = null;
-    internal int TotalTranslationCount { get; private set; } = 0;
+    public int TotalTranslationCount { get; private set; } = 0;
 
     private readonly List<Task> _translationTasks = [];
     private readonly TranslationUtils _translationUtils = null;
@@ -17,9 +17,9 @@ internal class MultiTaskTranslationHandler
     /// <summary>
     /// Token handler for this instance
     /// </summary>
-    internal CancellationTokenHandler TokenHandler { get; private set; } = null;
+    public CancellationTokenHandler TokenHandler { get; private set; } = null;
 
-    internal MultiTaskTranslationHandler(TranslationUtils translationUtils, 
+    public MultiTaskTranslationHandler(TranslationUtils translationUtils, 
                                             List<TranslationUnitGroup> unitGroups, 
                                             ProgressWindowUtils progressWindowUtils)
     {
@@ -47,7 +47,7 @@ internal class MultiTaskTranslationHandler
     /// <returns>
     /// State of translation process via TranslationProcessResult object.
     /// </returns>
-    internal TranslationProcessResult TranslateUnits()
+    public TranslationProcessResult TranslateUnits()
     {
         CreateTranslationTasks(_unitGroups);
 

@@ -1,10 +1,10 @@
 ﻿using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
-internal class ElementParameterTextRetriever : BaseParameterTextRetriever
+public class ElementParameterTextRetriever : BaseParameterTextRetriever
 {
     private readonly Element _parentElement;
-    internal ElementParameterTextRetriever()
+    public ElementParameterTextRetriever()
     {
     }
     public ElementParameterTextRetriever(Element element)

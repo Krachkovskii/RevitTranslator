@@ -2,14 +2,14 @@
 using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
-internal class ScheduleTextRetriever : BaseElementTextRetriever
+public class ScheduleTextRetriever : BaseElementTextRetriever
 {
-    internal ScheduleTextRetriever(ViewSchedule schedule)
+    public ScheduleTextRetriever(ViewSchedule schedule)
     {
         Process(schedule);
     }
 
-    internal ScheduleTextRetriever(ScheduleSheetInstance scheduleInstance) 
+    public ScheduleTextRetriever(ScheduleSheetInstance scheduleInstance) 
     {
         var schedule = RevitUtils.Doc.GetElement(scheduleInstance.ScheduleId) as ViewSchedule;
         Process(schedule);

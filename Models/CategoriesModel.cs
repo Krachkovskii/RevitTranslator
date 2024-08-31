@@ -16,7 +16,7 @@ public class CategoriesModel
     /// This method retrieves all the user-visible element categories from Revit.
     /// </summary>
     /// <returns>A list of valid categories, sorted by category type and then by category name.</returns>
-    internal static List<Category> GetCategories()
+    public static List<Category> GetCategories()
     {
         var validCategories = CategoryFilter.GetValidCategories(RevitUtils.Doc.Settings.Categories);
 

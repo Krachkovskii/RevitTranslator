@@ -33,7 +33,7 @@ public class BaseTranslationCommand : ExternalCommand
     /// <param name="tUtils">TranslationUtils for this run.</param>
     /// <param name="callFromContext">True if called from Command; false if called from UI thread, e.g. ViewModel</param>
     /// <param name="translateProjectParameters">If true, project parameters will be considered.</param>
-    internal static void StartCommandTranslation(List<Element> elements, ProgressWindowUtils pwUtils, TranslationUtils tUtils, bool callFromContext, bool translateProjectParameters)
+    public static void StartCommandTranslation(List<Element> elements, ProgressWindowUtils pwUtils, TranslationUtils tUtils, bool callFromContext, bool translateProjectParameters)
     {
         if (elements == null
             || elements.Count == 0

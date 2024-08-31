@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.DependencyInjection;
 
 namespace RevitTranslatorAddin.Utils.Revit;
-internal class ElementRetriever
+public class ElementRetriever
 {
 
     /// <summary>
@@ -15,7 +15,7 @@ internal class ElementRetriever
     /// <returns>
     /// List of Elements
     /// </returns>
-    internal static List<Element> GetCurrentSelection()
+    public static List<Element> GetCurrentSelection()
     {
         var ids = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
         var elements = GetElementsFromIds(ids);
@@ -28,7 +28,7 @@ internal class ElementRetriever
     /// </summary>
     /// <param name="ids"></param>
     /// <returns></returns>
-    internal static List<Element> GetElementsFromIds(IEnumerable<ElementId> ids)
+    public static List<Element> GetElementsFromIds(IEnumerable<ElementId> ids)
     {
         var elements = new List<Element>();
 
@@ -53,7 +53,7 @@ internal class ElementRetriever
     /// <returns>
     /// Unique tagged elements.
     /// </returns>
-    internal static HashSet<Element> GetTaggedElements(IEnumerable<Element> tags)
+    public static HashSet<Element> GetTaggedElements(IEnumerable<Element> tags)
     {
         var set = new HashSet<Element>();
 

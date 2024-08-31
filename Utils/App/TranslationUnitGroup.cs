@@ -2,15 +2,15 @@
 
 [assembly: InternalsVisibleTo("RevitTranslatorAddin.Tests")]
 namespace RevitTranslatorAddin.Utils.App;
-internal class TranslationUnitGroup
+public class TranslationUnitGroup
 {
-    internal Document Document { get; private set; } = null;
-    internal List<TranslationUnit> TranslationUnits { get; } = [];
-    internal TranslationUnitGroup(Document document)
+    public Document Document { get; private set; } = null;
+    public List<TranslationUnit> TranslationUnits { get; } = [];
+    public TranslationUnitGroup(Document document)
     {
         Document = document;
     }
-    internal TranslationUnitGroup()
+    public TranslationUnitGroup()
     {
     }
 }

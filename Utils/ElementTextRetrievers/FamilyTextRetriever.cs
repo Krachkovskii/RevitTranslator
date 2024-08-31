@@ -2,13 +2,13 @@
 using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
-internal class FamilyTextRetriever : BaseElementTextRetriever
+public class FamilyTextRetriever : BaseElementTextRetriever
 {
     // this list can be further extended
     private readonly List<Type> _filterTypes = [typeof(TextElement)];
     private Family _family;
     private Document _familyDoc;
-    internal FamilyTextRetriever(Family family)
+    public FamilyTextRetriever(Family family)
     {
         if (family == null || !family.IsEditable)
         {
@@ -21,7 +21,7 @@ internal class FamilyTextRetriever : BaseElementTextRetriever
     /// <summary>
     /// UnitGroup associated with this family document.
     /// </summary>
-    internal TranslationUnitGroup UnitGroup { get; private set; } = null;
+    public TranslationUnitGroup UnitGroup { get; private set; } = null;
 
     protected override void Process(object Object)
     {

@@ -2,9 +2,9 @@
 using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
-internal class ProjectParameterTextRetriever : BaseParameterTextRetriever
+public class ProjectParameterTextRetriever : BaseParameterTextRetriever
 {
-    internal ProjectParameterTextRetriever()
+    public ProjectParameterTextRetriever()
     {
         Process(RevitUtils.Doc);
     }

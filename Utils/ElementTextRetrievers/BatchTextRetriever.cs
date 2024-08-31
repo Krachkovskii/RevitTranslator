@@ -6,7 +6,7 @@ namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
 /// Use this class to retrieve text from a list of elements.
 /// This is the primary class to process elements in a document.
 /// </summary>
-internal class BatchTextRetriever : BaseElementTextRetriever
+public class BatchTextRetriever : BaseElementTextRetriever
 {
     /// <summary>
     /// Current BaseElementTextRetriever for the Process function.
@@ -43,22 +43,22 @@ internal class BatchTextRetriever : BaseElementTextRetriever
     /// <summary>
     /// ElementTypes to be processed.
     /// </summary>
-    internal HashSet<ElementType> ElementTypes { get; } = [];
+    public HashSet<ElementType> ElementTypes { get; } = [];
 
     /// <summary>
     /// Families to be processed.
     /// </summary>
-    internal HashSet<Family> Families { get; } = [];
+    public HashSet<Family> Families { get; } = [];
 
     /// <summary>
     /// Tagged elements to be processed.
     /// </summary>
-    internal HashSet<Element> TaggedElements { get; } = [];
+    public HashSet<Element> TaggedElements { get; } = [];
 
     /// <summary>
     /// TranslationUnitGroups associated with provided elements.
     /// </summary>
-    internal List<TranslationUnitGroup> UnitGroups { get; } = [];
+    public List<TranslationUnitGroup> UnitGroups { get; } = [];
     /// <summary>
     /// Uses class-appropriate methods to retrieve information from a specific element.
     /// </summary>

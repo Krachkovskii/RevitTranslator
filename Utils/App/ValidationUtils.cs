@@ -5,7 +5,7 @@ namespace RevitTranslatorAddin.Utils.App;
 /// <summary>
 /// Utilities for text validation
 /// </summary>
-internal class ValidationUtils
+public class ValidationUtils
 {
     /// <summary>
     /// Preset regex to avoid initialization on every call
@@ -21,7 +21,7 @@ internal class ValidationUtils
     /// <returns>
     /// Bool that indicates whether the input contains only numbers
     /// </returns>
-    internal static bool HasText(string input)
+    public static bool HasText(string input)
     {
         return !(string.IsNullOrWhiteSpace(input) || NumberOnlyRegex.IsMatch(input));
     }
@@ -29,7 +29,7 @@ internal class ValidationUtils
     /// <summary>
     /// Characters that can't be used in certain Revit text properties.
     /// </summary>
-    internal static readonly List<char> ForbiddenParameterSymbols = new()
+    public static readonly List<char> ForbiddenParameterSymbols = new()
     {
 
         '\\', ':', '{', '}', '[', ']', '|', ';', '<', '>', '?', '`', '~'
@@ -41,7 +41,7 @@ internal class ValidationUtils
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    internal static bool IsValidForFamilyEdit(Element element)
+    public static bool IsValidForFamilyEdit(Element element)
     {
         if (element == null)
         {
@@ -67,7 +67,7 @@ internal class ValidationUtils
     /// </summary>
     /// <param name="unit"></param>
     /// <returns></returns>
-    internal static bool NameHasIllegalCharacters(TranslationUnit unit)
+    public static bool NameHasIllegalCharacters(TranslationUnit unit)
     {
         if (unit.Element is Parameter p || unit.TranslationDetails == TranslationDetails.ElementName)
         {

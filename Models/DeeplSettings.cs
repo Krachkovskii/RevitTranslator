@@ -57,7 +57,7 @@ public class DeeplSettings
     /// Gets the path of the JSON file with settings, corresponding to an active Revit version.
     /// </summary>
     /// <returns>A string representing the full path of the JSON file.</returns>
-    internal static string GetJsonPath()
+    public static string GetJsonPath()
     {
         string revitVersion = RevitUtils.App.VersionNumber;
         string roamingAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

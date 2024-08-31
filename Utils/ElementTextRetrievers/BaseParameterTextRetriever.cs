@@ -2,7 +2,7 @@
 using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
-internal class BaseParameterTextRetriever : BaseElementTextRetriever
+public class BaseParameterTextRetriever : BaseElementTextRetriever
 {
     /// <summary>
     /// Checks if parameter is valid for translation. Only string-based, user-modifiable 
@@ -14,7 +14,7 @@ internal class BaseParameterTextRetriever : BaseElementTextRetriever
     /// <returns>
     /// true if parameter is valid for translation, false otherwise
     /// </returns>
-    internal static bool CanUseParameter(Parameter param)
+    public static bool CanUseParameter(Parameter param)
     {
         if (param.StorageType == StorageType.String
             && !param.IsReadOnly

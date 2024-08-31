@@ -11,36 +11,36 @@ namespace RevitTranslatorAddin.Utils.Revit;
 /// Represents active Revit context and general Revit-related methods. 
 /// Context is updated every time a command is being executed.
 /// </summary>
-internal class RevitUtils
+public class RevitUtils
 {
-    internal static Autodesk.Revit.ApplicationServices.Application App = null;
+    public static Autodesk.Revit.ApplicationServices.Application App = null;
     
     /// <summary>
     /// Active document at the moment of command's start.
     /// </summary>
-    internal static Document Doc { get; private set; } = null;
+    public static Document Doc { get; private set; } = null;
 
     /// <summary>
     /// ExternalEvent to be associated with current command.
     /// </summary>
-    internal static ExternalEvent ExEvent { get; private set; } = null;
+    public static ExternalEvent ExEvent { get; private set; } = null;
 
     /// <summary>
     /// ExternalEventHandler that handles the execution of current command.
     /// </summary>
-    internal static IExternalEventHandler ExEventHandler { get; private set; } = null;
+    public static IExternalEventHandler ExEventHandler { get; private set; } = null;
     
-    internal static UIApplication UIApp { get; private set; } = null;
+    public static UIApplication UIApp { get; private set; } = null;
     
     /// <summary>
     /// UIDocument for the active document.
     /// </summary>
-    internal static UIDocument UIDoc { get; private set; } = null;
+    public static UIDocument UIDoc { get; private set; } = null;
     
     /// <summary>
     /// Creates and assigns ExternalEvent and its handler.
     /// </summary>
-    internal static void CreateAndAssignEvents()
+    public static void CreateAndAssignEvents()
     {
         ExEventHandler = new ElementUpdateHandler();
         ExEvent = ExternalEvent.Create(ExEventHandler);
@@ -50,7 +50,7 @@ internal class RevitUtils
     /// Sets the current Revit context at the time of Command execution.
     /// </summary>
     /// <param name="uiapp"></param>
-    internal static void SetRevitUtils(UIApplication uiapp)
+    public static void SetRevitUtils(UIApplication uiapp)
     {
         UIApp = uiapp;
         App = uiapp.Application;
@@ -66,7 +66,7 @@ internal class RevitUtils
     /// <param name="tUtils">TranslationUtils for this run.</param>
     /// <param name="callFromContext">True if called from Command; false if called from UI thread, e.g. ViewModel</param>
     /// <param name="translateProjectParameters">If true, project parameters will be considered.</param>
-    internal static void StartCommandTranslation(List<Element> elements, ProgressWindowUtils pwUtils, TranslationUtils tUtils, bool callFromContext, bool translateProjectParameters)
+    public static void StartCommandTranslation(List<Element> elements, ProgressWindowUtils pwUtils, TranslationUtils tUtils, bool callFromContext, bool translateProjectParameters)
     {
         if (elements == null 
             || elements.Count == 0
@@ -112,7 +112,7 @@ internal class RevitUtils
     /// <summary>
     /// Sets focus on the main Revit window momentarily.
     /// </summary>
-    internal static void SetTemporaryFocus()
+    public static void SetTemporaryFocus()
     {
         IntPtr hBefore = GetForegroundWindow();
 

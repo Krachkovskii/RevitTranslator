@@ -2,13 +2,13 @@
 using RevitTranslatorAddin.Utils.Revit;
 
 namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
-internal class DimensionTextRetriever : BaseElementTextRetriever
+public class DimensionTextRetriever : BaseElementTextRetriever
 {
     /// <summary>
     /// Dimension associated with this retriever.
     /// </summary>
     private readonly Dimension _dimension;
-    internal DimensionTextRetriever(Dimension dimension)
+    public DimensionTextRetriever(Dimension dimension)
     {
         _dimension = dimension;
         Process(dimension);
@@ -21,7 +21,7 @@ internal class DimensionTextRetriever : BaseElementTextRetriever
     /// <param name="details">Type of override (e.g. Above)</param>
     /// <param name="isSingleSegment">True if dimension has only one segment</param>
     /// <returns></returns>
-    internal string ExtractDimensionText(object d, TranslationDetails details, bool isSingleSegment)
+    public string ExtractDimensionText(object d, TranslationDetails details, bool isSingleSegment)
     {
         string value;
         object DimensionObject;
@@ -93,7 +93,7 @@ internal class DimensionTextRetriever : BaseElementTextRetriever
         return value;
     }
 
-    internal void ProcessDimensionSegment(DimensionSegment segment)
+    public void ProcessDimensionSegment(DimensionSegment segment)
     {
         ProcessDimensionOverrideAbove(segment, false);
         ProcessDimensionOverrideBelow(segment, false);

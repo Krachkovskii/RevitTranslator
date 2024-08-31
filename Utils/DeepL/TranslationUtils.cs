@@ -51,21 +51,21 @@ public class TranslationUtils
     /// <summary>
     /// Counter for translated symbols for this run
     /// </summary>
-    internal static int CharacterCount { get; private set; } = 0;
+    public static int CharacterCount { get; private set; } = 0;
 
     /// <summary>
     /// Counter for completed translations for this run
     /// </summary>
-    internal static int CompletedTranslationsCount { get; private set; } = 0;
+    public static int CompletedTranslationsCount { get; private set; } = 0;
     /// <summary>
     /// Translation limits for current DeepL plan
     /// </summary>
-    internal static int Limit { get; private set; } = 0;
+    public static int Limit { get; private set; } = 0;
 
     /// <summary>
     /// Counter for translated symbols for current billing period
     /// </summary>
-    internal static int Usage { get; private set; } = 0;
+    public static int Usage { get; private set; } = 0;
     private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
     /// <summary>
     /// Checks if translation can be performed based on the provided settings. 
@@ -140,7 +140,7 @@ public class TranslationUtils
     /// <summary>
     /// Clears all properties related to translation count.
     /// </summary>
-    internal static void ClearTranslationCount()
+    public static void ClearTranslationCount()
     {
         _translationsCount = 0;
         _completedTranslationsCount = 0;
@@ -156,7 +156,7 @@ public class TranslationUtils
     /// <returns>
     /// Bool value with user's response.
     /// </returns>
-    internal static bool ProceedWithUpdate()
+    public static bool ProceedWithUpdate()
     {
         var result = System.Windows.MessageBox.Show($"Translation process was interrupted, or an error was thrown.\n" +
             $"Do you still want to update the model with translated text?",
@@ -183,7 +183,7 @@ public class TranslationUtils
     /// <returns>
     /// Translated text.
     /// </returns>
-    internal async Task<string> TranslateTextAsync(string text, CancellationToken token)
+    public async Task<string> TranslateTextAsync(string text, CancellationToken token)
     {
         var translatedText = await TranslateBaseAsync(text, token);
 

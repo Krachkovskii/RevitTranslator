@@ -72,7 +72,7 @@ public class TranslateCategoriesViewModel : INotifyPropertyChanged
     /// <summary>
     /// Counts the number of elements in selected categories and asynchronously updates the value.
     /// </summary>
-    internal void CountElements()
+    public void CountElements()
     {
         Task.Run(() =>
         {

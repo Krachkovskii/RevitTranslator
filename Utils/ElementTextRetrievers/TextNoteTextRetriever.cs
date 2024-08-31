@@ -1,7 +1,7 @@
 ﻿using RevitTranslatorAddin.Utils.App;
 
 namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
-internal class TextElementTextRetriever : BaseElementTextRetriever
+public class TextElementTextRetriever : BaseElementTextRetriever
 {
     public TextElementTextRetriever(TextElement textElement)
     {

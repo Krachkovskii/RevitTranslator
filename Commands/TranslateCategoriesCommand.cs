@@ -6,12 +6,12 @@ using RevitTranslatorAddin.Views;
 namespace RevitTranslatorAddin.Commands;
 
 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-internal class TranslateCategoriesCommand : BaseTranslationCommand
+public class TranslateCategoriesCommand : BaseTranslationCommand
 {
     /// <summary>
     /// Window that displays all available categories and allows user to select all necessary categories
     /// </summary>
-    internal static TranslateCategoriesWindow Window { get; set; } = null;
+    public static TranslateCategoriesWindow Window { get; set; } = null;
 
     public override void Execute()
     {
@@ -46,7 +46,7 @@ internal class TranslateCategoriesCommand : BaseTranslationCommand
     /// <returns>
     /// List of ElementIds
     /// </returns>
-    internal static List<Element> GetElementsFromCategories(List<BuiltInCategory> categories)
+    public static List<Element> GetElementsFromCategories(List<BuiltInCategory> categories)
     {
         var filter = new ElementMulticategoryFilter(categories);
         var elements = new FilteredElementCollector(RevitUtils.Doc)

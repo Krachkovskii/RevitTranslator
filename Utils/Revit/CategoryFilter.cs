@@ -2,7 +2,7 @@
 /// <summary>
 /// Retrieve and filter all user-visible and modifiable categories
 /// </summary>
-internal class CategoryFilter
+public class CategoryFilter
 {
     /// <summary>
     /// Special categories that still need to be used even if they don't pass main filters.

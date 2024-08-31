@@ -42,7 +42,7 @@ public class TranslationUnit
     public object Element
     {
         get => _element;
-        internal set
+        public set
         {
             _element = value;
             SetElementDocumentAndId(value);
@@ -67,7 +67,7 @@ public class TranslationUnit
     public Element ParentElement
     {
         get => _parentElement;
-        internal set
+        public set
         {
             _parentElement = value;
             SetElementDocumentAndId(value);
@@ -77,17 +77,17 @@ public class TranslationUnit
     /// <summary>
     /// Optional: TableSectionData coordinates (row, column).
     /// </summary>
-    public ScheduleCellCoordinates ScheduleCellCoordinates { get; internal set; } = null;
+    public ScheduleCellCoordinates ScheduleCellCoordinates { get; public set; } = null;
 
     /// <summary>
     /// Translation of the original text.
     /// </summary>
-    public string TranslatedText { get; internal set; } = string.Empty;
+    public string TranslatedText { get; public set; } = string.Empty;
     
     /// <summary>
     /// Optional: Additional details of the translation, e.g. Dimension Override or Element Name.
     /// </summary>
-    public TranslationDetails TranslationDetails { get; internal set; } = TranslationDetails.None;
+    public TranslationDetails TranslationDetails { get; public set; } = TranslationDetails.None;
     
     
     private void SetElementDocumentAndId(object element)

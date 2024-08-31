@@ -18,9 +18,9 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
     /// <summary>
     /// Utils for the Progress window of current command
     /// </summary>
-    internal static ProgressWindowUtils ProgressWindowUtils { get; set; } = null;
+    public static ProgressWindowUtils ProgressWindowUtils { get; set; } = null;
 
-    internal static List<TranslationUnitGroup> TranslationUnitGroups { get; set; } = [];
+    public static List<TranslationUnitGroup> TranslationUnitGroups { get; set; } = [];
 
     /// <summary>
     /// Clears all necessary values

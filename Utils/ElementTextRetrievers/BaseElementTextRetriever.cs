@@ -5,7 +5,7 @@ namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
 /// <summary>
 /// Base class for retrieving text properties from elements
 /// </summary>
-internal class BaseElementTextRetriever : IDisposable
+public class BaseElementTextRetriever : IDisposable
 {
     public List<TranslationUnit> TranslationUnits { get; private set; } = [];
 

@@ -2,12 +2,12 @@
 /// <summary>
 /// Represents a report for terminated translation process
 /// </summary>
-internal class TranslationProcessResult
+public class TranslationProcessResult
 {
     /// <summary>
     /// Enum of cancellation reasons
     /// </summary>
-    internal enum AbortReasons
+    public enum AbortReasons
     {
         None,
         Canceled,
@@ -18,7 +18,7 @@ internal class TranslationProcessResult
     /// <summary>
     /// Denotes whether all translations have been completed successfully
     /// </summary>
-    internal bool Completed
+    public bool Completed
     {
         get; 
         set; 
@@ -27,7 +27,7 @@ internal class TranslationProcessResult
     /// <summary>
     /// Reason for cancellation
     /// </summary>
-    internal AbortReasons AbortReasonResult
+    public AbortReasons AbortReasonResult
     {
         get; 
         set; 
@@ -36,12 +36,12 @@ internal class TranslationProcessResult
     /// <summary>
     /// Error message, if applicable
     /// </summary>
-    internal string ErrorMessage 
+    public string ErrorMessage 
     { 
         get; set; 
     } = string.Empty;
 
-    internal TranslationProcessResult(bool result, AbortReasons abortReasonResult, string errorMessage)
+    public TranslationProcessResult(bool result, AbortReasons abortReasonResult, string errorMessage)
     {
         Completed = result;
         AbortReasonResult = abortReasonResult;

@@ -1,11 +1,11 @@
 ﻿namespace RevitTranslatorAddin.Utils.DeepL;
-internal class DeeplLanguageCodes
+public class DeeplLanguageCodes
 {
     // Source: https://developers.deepl.com/docs/v/en/resources/supported-languages
     /// <summary>
     /// Language codes for DeepL. First item is readable language name, second item is language code.
     /// </summary>
-    internal static SortedList<string, string> LanguageCodes = new()
+    public static SortedList<string, string> LanguageCodes = new()
     {
         {"Bulgarian", "bg"},
         {"Chinese (simplified)", "zh"},

@@ -5,9 +5,9 @@ namespace RevitTranslatorAddin.Utils.ElementTextRetrievers;
 /// <summary>
 /// This class handles an element's text attributes (name and parameters).
 /// </summary>
-internal class GenericElementTextRetriever : BaseElementTextRetriever
+public class GenericElementTextRetriever : BaseElementTextRetriever
 {
-    internal GenericElementTextRetriever(Element element)
+    public GenericElementTextRetriever(Element element)
     {
         Process(element);
     }
