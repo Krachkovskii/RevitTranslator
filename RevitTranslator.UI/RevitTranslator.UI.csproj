@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <UseWPF>true</UseWPF>
+        <OutputType>Library</OutputType>
+        <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+        <LangVersion>latest</LangVersion>
+        <PlatformTarget>x64</PlatformTarget>
+        <TargetFramework>net48</TargetFramework>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+        <ImplicitUsings>true</ImplicitUsings>
+        <OutputPath>bin\Debug\</OutputPath>
+        <Platform>AnyCPU</Platform>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <Reference Include="System"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="System.Data"/>
+        <Reference Include="System.Xml"/>
+        <Reference Include="Wpf.Ui">
+          <HintPath>..\..\..\..\.nuget\packages\wpf-ui\4.0.0-rc.2\lib\net8.0-windows7.0\Wpf.Ui.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+      <PackageReference Include="WPF-UI" Version="4.0.0-rc.2" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj" />
+    </ItemGroup>
+
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+
+</Project>
