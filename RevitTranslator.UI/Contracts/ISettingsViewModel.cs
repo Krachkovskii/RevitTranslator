@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using TranslationService.Models;
 
 namespace RevitTranslator.UI.Contracts;
 

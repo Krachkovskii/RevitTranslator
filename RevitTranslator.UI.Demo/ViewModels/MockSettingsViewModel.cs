@@ -2,6 +2,7 @@ using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RevitTranslator.UI.Contracts;
+using TranslationService.Models;
 
 namespace RevitTranslator.Demo.ViewModels;
 
