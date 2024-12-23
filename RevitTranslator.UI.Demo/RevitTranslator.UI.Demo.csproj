@@ -30,6 +30,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\RevitTranslator.UI\RevitTranslator.UI.csproj" />
+      <ProjectReference Include="..\TranslationService\TranslationService.csproj" />
     </ItemGroup>
 
 </Project>

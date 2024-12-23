@@ -29,6 +29,7 @@
     
     <ItemGroup>
       <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj" />
+      <ProjectReference Include="..\TranslationService\TranslationService.csproj" />
     </ItemGroup>
 
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
