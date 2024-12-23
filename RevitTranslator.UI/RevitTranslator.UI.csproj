@@ -5,7 +5,7 @@
         <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
         <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
         <ImplicitUsings>true</ImplicitUsings>
         <OutputPath>bin/$(Configuration)</OutputPath>
         <Platform>AnyCPU</Platform>
