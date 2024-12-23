@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+        <TargetFramework>net8.0-windows</TargetFramework>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>TranslationService</RootNamespace>
@@ -9,18 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="JetBrains.Annotations" Version="2023.*" />
-      <PackageReference Include="PolySharp" Version="1.*">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-      <PackageReference Include="System.Net.Http" Version="4.*" />
       <PackageReference Include="System.Text.Json" Version="9.*" />
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj" />
     </ItemGroup>
 
 </Project>

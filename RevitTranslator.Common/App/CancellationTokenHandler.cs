@@ -1,0 +1,28 @@
+namespace RevitTranslator.Common.App;
+/// <summary>
+/// This class handles cancellation token, its creation and disposal
+/// </summary>
+public class CancellationTokenHandler : IDisposable
+{
+    /// <summary>
+    /// Active CancellationTokenSource
+    /// </summary>
+    public CancellationTokenSource? Cts { get; private set; }
+
+    /// <summary>
+    /// Creates and sets a new CancellationTokenSource instance
+    /// </summary>
+    public void Create()
+    {
+        Cts = new CancellationTokenSource();
+    }
+
+    /// <summary>
+    /// Disposes and resets the CancellationTokenSource
+    /// </summary>
+    public void Dispose()
+    {
+        Cts?.Dispose();
+        Cts = null;
+    }
+}
