@@ -1,5 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using TranslationService.JsonProperties;
+using TranslationService.Models;
 
 namespace TranslationService.Utils;
 
@@ -69,7 +72,6 @@ public class TranslationUtils
     {
         if (string.IsNullOrWhiteSpace(_settingsDescriptor.DeeplApiKey))
         {
-            ShowCantTranslateMessage();
             return false;
         }
 
@@ -89,7 +91,6 @@ public class TranslationUtils
 
         catch (Exception e)
         {
-            ShowCantTranslateMessage();
             Debug.WriteLine(e.Message);
 
             return false;
@@ -109,7 +110,7 @@ public class TranslationUtils
         response.EnsureSuccessStatusCode();
 
         var responseBody = await response.Content.ReadAsStringAsync();
-        var usage = JsonConvert.DeserializeObject<DeeplUsage>(responseBody);
+        var usage = JsonSerializer.Deserialize<DeeplUsage>(responseBody);
         if (usage is null) return;
 
         Usage = usage.CharacterCount;
@@ -139,29 +140,6 @@ public class TranslationUtils
     }
 
     /// <summary>
-    /// Shows a warning window after translation was cancelled. 
-    /// Determines whether the model should be updated.
-    /// </summary>
-    /// <returns>
-    /// Bool value with user's response.
-    /// </returns>
-    public static bool ProceedWithUpdate()
-    {
-        var result = MessageBox.Show($"Translation process was interrupted, or an error was thrown.\n" +
-            $"Do you still want to update the model with translated text?",
-            "Translation interrupted",
-            System.Windows.MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        if (result.Equals(System.Windows.MessageBoxResult.Yes))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
     /// Translates a given text using the DeepL translation API.
     /// This method is responsible for updating the translation count, calling the base translation method,
     /// and updating the progress window.
@@ -180,22 +158,6 @@ public class TranslationUtils
         UpdateCompletedCounter();
 
         return translatedText;
-    }
-
-    /// <summary>
-    /// Shows MessageBox with translations that can't be updated due to illegal characters
-    /// </summary>
-    private void ShowCantTranslateMessage()
-    {
-        System.Windows.MessageBox.Show("Your settingsUtils configuration cannot be used for translation.\n" +
-                "Please make sure everything is correct:\n" +
-                "• API key\n" +
-                "• Target language\n" +
-                "• Paid/Free plan\n" +
-                "• Translation limits.",
-                "Incorrect settingsUtils",
-                System.Windows.MessageBoxButton.OK,
-                MessageBoxImage.Warning);
     }
     
     /// <summary>
@@ -223,7 +185,7 @@ public class TranslationUtils
         response.EnsureSuccessStatusCode();
         var responseBody = await response.Content.ReadAsStringAsync();
 
-        var translationResult = JsonConvert.DeserializeObject<TranslationResult>(responseBody);
+        var translationResult = JsonSerializer.Deserialize<TranslationResult>(responseBody);
         if (translationResult is null) return string.Empty;
 
         return translationResult.Translations[0].Text;

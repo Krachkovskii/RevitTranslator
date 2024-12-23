@@ -1,4 +1,4 @@
-﻿using System.Xml;
+﻿using System.Text.Json;
 using TranslationService.Models;
 
 namespace TranslationService.Utils;
@@ -28,7 +28,7 @@ public static class DeeplSettingsUtils
         if (!File.Exists(_jsonFilePath)) return null;
         
         var json = File.ReadAllText(_jsonFilePath);
-        return JsonConvert.Des<DeeplSettingsDescriptor>(json);
+        return JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json);
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public static class DeeplSettingsUtils
     /// </summary>
     public static void SaveToJson(this DeeplSettingsDescriptor descriptor)
     {
-        var json = JsonConvert.SerializeObject(descriptor, Formatting.Indented);
+        var json = JsonSerializer.Serialize(descriptor);
         if (!Directory.Exists(_jsonDirectoryPath))
         {
             Directory.CreateDirectory(_jsonDirectoryPath);
