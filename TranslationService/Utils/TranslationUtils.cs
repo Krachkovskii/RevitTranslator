@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using TranslationService.JsonProperties;
@@ -9,45 +9,11 @@ namespace TranslationService.Utils;
 /// <summary>
 /// DeepL-related utils
 /// </summary>
-public class TranslationUtils
+public static class TranslationUtils
 {
-    private static int _characterCount;
-    private static int _completedTranslationsCount;
-    private static int _translationsCount;
-    private readonly string _apiTranslateUrl;
-    private readonly string _apiUsageUrl;
-    private readonly string _baseApi;
-    private readonly HttpClient _httpClient;
-    private readonly DeeplSettingsDescriptor _settingsDescriptor;
+    private static readonly HttpClient HttpClient = new();
+    private static readonly DeeplSettingsDescriptor _settings = DeeplSettingsUtils.CurrentSettings;
 
-    public TranslationUtils(DeeplSettingsDescriptor settingsDescriptor)
-    {
-        _settingsDescriptor = settingsDescriptor;
-        _httpClient = new HttpClient();
-        _baseApi = _settingsDescriptor.IsPaidPlan
-            ? "https://api.deepl.com/v2/"
-            : "https://api-free.deepl.com/v2/";
-        _apiTranslateUrl = $"{_baseApi}translate";
-        _apiUsageUrl = $"{_baseApi}usage";
-
-        if (string.IsNullOrWhiteSpace(settingsDescriptor.DeeplApiKey))
-        {
-            // without this block, the line below throws an exception, if settingsDescriptor are empty.
-            return;
-        }
-
-        Task.Run(GetUsageAsync).Wait();
-    }
-
-    /// <summary>
-    /// Counter for translated symbols for this run
-    /// </summary>
-    public static int CharacterCount { get; private set; }
-
-    /// <summary>
-    /// Counter for completed translations for this run
-    /// </summary>
-    public static int CompletedTranslationsCount { get; private set; }
     /// <summary>
     /// Translation limits for current DeepL plan
     /// </summary>
@@ -68,46 +34,26 @@ public class TranslationUtils
     /// <returns>
     /// True if translation can be performed, false otherwise.
     /// </returns>
-    public bool TryTestTranslate(DeeplSettingsDescriptor settingsUtils)
+    public static bool TryTestTranslate()
     {
-        if (string.IsNullOrWhiteSpace(_settingsDescriptor.DeeplApiKey))
+        if (string.IsNullOrWhiteSpace(_settings.DeeplApiKey)) return false;
+
+        var test = Task.Run(async () =>
         {
-            return false;
-        }
-
-        // Perform test translation to see if translation can be performed.
-        // This action is done every time settingsUtils are saved or when a command is executed.
-        try
-        {
-            var test = Task.Run(async () =>
-            {
-                // var utils = new TranslationUtils(settingsUtils, new ProgressWindowUtils());
-                // var res = await utils.TranslateBaseAsync("bonjour", new CancellationTokenSource().Token);
-                return true;
-            }).GetAwaiter().GetResult();
-
-            return test;
-        }
-
-        catch (Exception e)
-        {
-            Debug.WriteLine(e.Message);
-
-            return false;
-        }
+            var res = await TranslateTextAsync("bonjour", new CancellationTokenSource().Token);
+            return res is not null;
+        }).Result;
+        return test;
     }
 
-    //TODO: switch to returning (int, int); do not set properties inside the function. Instead, set properties in the main block
-    /// <summary>
-    /// Retrieves monthly usage and limits for this API key. Sets corresponding properties.
-    /// </summary>
-    public async Task GetUsageAsync()
+    private static async Task GetUsageAsync()
     {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("DeepL-Auth-Key", _settingsDescriptor.DeeplApiKey);
-        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("RevitTranslator");
+        HttpClient.DefaultRequestHeaders.Authorization = 
+            new AuthenticationHeaderValue("DeepL-Auth-Key", _settings.DeeplApiKey);
+        HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("RevitTranslator");
 
-        var response = await _httpClient.GetAsync(_apiUsageUrl);
-        response.EnsureSuccessStatusCode();
+        var response = await HttpClient.GetAsync(DeeplSettingsUtils.UsageUrl);
+        if (!response.IsSuccessStatusCode) return;
 
         var responseBody = await response.Content.ReadAsStringAsync();
         var usage = JsonSerializer.Deserialize<DeeplUsage>(responseBody);
@@ -115,49 +61,6 @@ public class TranslationUtils
 
         Usage = usage.CharacterCount;
         Limit = usage.CharacterLimit;
-    }
-
-    /// <summary>
-    /// Updates counter of finished translations
-    /// </summary>
-    public void UpdateCompletedCounter()
-    {
-        var finished = Interlocked.Increment(ref _completedTranslationsCount);
-        CompletedTranslationsCount = finished;
-        // _progressWindowUtils.UpdateCurrent(finished);
-    }
-
-    /// <summary>
-    /// Clears all properties related to translation count.
-    /// </summary>
-    public static void ClearTranslationCount()
-    {
-        _translationsCount = 0;
-        _completedTranslationsCount = 0;
-        CompletedTranslationsCount = 0;
-        _characterCount = 0;
-        CharacterCount = 0;
-    }
-
-    /// <summary>
-    /// Translates a given text using the DeepL translation API.
-    /// This method is responsible for updating the translation count, calling the base translation method,
-    /// and updating the progress window.
-    /// </summary>
-    /// <param name="text">
-    /// The text to be translated.
-    /// </param>
-    /// <returns>
-    /// Translated text.
-    /// </returns>
-    public async Task<string?> TranslateTextAsync(string text, CancellationToken token)
-    {
-        var translatedText = await TranslateBaseAsync(text, token);
-
-        UpdateCharacterCounter(text);
-        UpdateCompletedCounter();
-
-        return translatedText;
     }
     
     /// <summary>
@@ -170,34 +73,23 @@ public class TranslationUtils
     /// <returns>
     /// Translated text.
     /// </returns>
-    private async Task<string?> TranslateBaseAsync(string text, CancellationToken token)
+    public static async Task<string?> TranslateTextAsync(string text, CancellationToken token)
     {
         var content = new FormUrlEncodedContent(
         [
-            new KeyValuePair<string, string>("auth_key", _settingsDescriptor.DeeplApiKey),
+            new KeyValuePair<string, string>("auth_key", _settings.DeeplApiKey),
             new KeyValuePair<string, string>("text", text),
             new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"),
-            new KeyValuePair<string, string>("target_lang", _settingsDescriptor.TargetLanguage.LanguageCode),
-            new KeyValuePair<string, string?>("source_lang", _settingsDescriptor.SourceLanguage?.LanguageCode)
+            new KeyValuePair<string, string>("target_lang", _settings.TargetLanguage.TargetLanguageCode),
+            new KeyValuePair<string, string?>("source_lang", _settings.SourceLanguage?.SourceLanguageCode)
         ]);
 
-        var response = await _httpClient.PostAsync(_apiTranslateUrl, content);
-        response.EnsureSuccessStatusCode();
+        //TODO: implement response code processing to handle server-side errors
+        var response = await HttpClient.PostAsync(DeeplSettingsUtils.TranslationUrl, content, token);
+        if (!response.IsSuccessStatusCode) return null;
+        
         var responseBody = await response.Content.ReadAsStringAsync();
-
         var translationResult = JsonSerializer.Deserialize<TranslationResult>(responseBody);
-        if (translationResult is null) return string.Empty;
-
-        return translationResult.Translations[0].Text;
-    }
-    
-    /// <summary>
-    /// Updates counter of translated characters for this run
-    /// </summary>
-    /// <param name="text"></param>
-    private void UpdateCharacterCounter(string text)
-    {
-        Interlocked.Add(ref _characterCount, text.Length);
-        CharacterCount = _characterCount;
+        return translationResult?.Translations[0].Text;
     }
 }

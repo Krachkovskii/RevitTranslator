@@ -19,22 +19,40 @@ public static class DeeplSettingsUtils
         _jsonDirectoryPath,
         "settings.json");
 
+    public static DeeplSettingsDescriptor CurrentSettings { get; set; } = new();
+    public static string TranslationUrl { get; private set; } = "https://api-free.deepl.com/v2/translate";
+    public static string UsageUrl { get; private set; } = "https://api-free.deepl.com/v2/usage";
+
     /// <summary>
     /// Loads the settings from a JSON file.
     /// </summary>
     /// <returns>An instance of the Settings class with the loaded settings.</returns>
-    public static DeeplSettingsDescriptor? TryLoadFromJson()
+    public static void Load()
     {
-        if (!File.Exists(_jsonFilePath)) return null;
+        if (!File.Exists(_jsonFilePath)) return;
         
         var json = File.ReadAllText(_jsonFilePath);
-        return JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json);
+        CurrentSettings = JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json)!;
     }
 
-    /// <summary>
-    /// Saves the class instance to JSON file
-    /// </summary>
-    public static void SaveToJson(this DeeplSettingsDescriptor descriptor)
+    public static void Save(this DeeplSettingsDescriptor descriptor)
+    {
+        if (descriptor.IsPaidPlan != CurrentSettings.IsPaidPlan)
+        {
+            var translationUrl = CurrentSettings.IsPaidPlan
+                ? "https://api.deepl.com/v2/"
+                : "https://api-free.deepl.com/v2";
+            var usageUrl = CurrentSettings.IsPaidPlan
+                ? "https://api.deepl.com/v2/"
+                : "https://api-free.deepl.com/v2";
+            TranslationUrl = $"{translationUrl}/translate";
+            UsageUrl = $"{usageUrl}/usage";
+        }
+        
+        descriptor.SaveToJson();
+    }
+
+    private static void SaveToJson(this DeeplSettingsDescriptor descriptor)
     {
         var json = JsonSerializer.Serialize(descriptor);
         if (!Directory.Exists(_jsonDirectoryPath))
@@ -42,5 +60,7 @@ public static class DeeplSettingsUtils
             Directory.CreateDirectory(_jsonDirectoryPath);
         }
         File.WriteAllText(_jsonFilePath, json);
+        
+        CurrentSettings = descriptor;
     }
 }
