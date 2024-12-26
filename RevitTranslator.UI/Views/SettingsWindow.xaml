@@ -75,7 +75,7 @@
                             Style="{StaticResource Annotation}" />
                         <ComboBox
                             ItemsSource="{Binding 
-                                Source={x:Static languageModels:DeeplLanguageCodes.LanguageCodes}}"
+                                Source={x:Static languageModels:DeeplLanguageCodes.TargetLanguages}}"
                             DisplayMemberPath="VisibleName"
                             IsEnabled="{Binding SelectedSourceLanguage,
                                 Converter={converters:ObjectNotNullBoolConverter},
@@ -114,7 +114,7 @@
                         <ComboBox
                             Foreground="Black"
                             ItemsSource="{Binding 
-                                Source={x:Static languageModels:DeeplLanguageCodes.LanguageCodes}}"
+                                Source={x:Static languageModels:DeeplLanguageCodes.TargetLanguages}}"
                             DisplayMemberPath="VisibleName"
                             SelectedItem="{Binding SelectedTargetLanguage}" />
                         <TextBlock 

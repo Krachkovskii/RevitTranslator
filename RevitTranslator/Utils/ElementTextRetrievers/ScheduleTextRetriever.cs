@@ -1,5 +1,4 @@
-﻿using RevitTranslator.Utils.App;
-using RevitTranslatorAddin.Utils.Revit;
+﻿using RevitTranslator.Models;
 
 namespace RevitTranslator.Utils.ElementTextRetrievers;
 public class ScheduleTextRetriever : BaseElementTextRetriever

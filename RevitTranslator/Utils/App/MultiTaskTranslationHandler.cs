@@ -1,4 +1,6 @@
-﻿namespace RevitTranslator.Utils.App;
+﻿using RevitTranslator.Models;
+
+namespace RevitTranslator.Utils.App;
 /// <summary>
 /// This class handles creation and management of concurrent translation tasks.
 /// </summary>
@@ -9,7 +11,6 @@ public class MultiTaskTranslationHandler
 
     private readonly List<Task> _translationTasks = [];
     private readonly TranslationUtils _translationUtils = null;
-    private readonly ProgressWindowUtils _progressWindowUtils = null;
     private TranslationProcessResult _processResult { get; set; } = new(false, TranslationProcessResult.AbortReasons.None, string.Empty);
     
     /// <summary>

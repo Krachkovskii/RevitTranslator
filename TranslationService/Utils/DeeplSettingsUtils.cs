@@ -10,13 +10,13 @@ public static class DeeplSettingsUtils
 {
     private const string AddinName = "RevitTranslator";
     
-    private static string _jsonDirectoryPath => Path.Combine(
+    private static string JsonDirectoryPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Autodesk",
         "ApplicationPlugins",
         AddinName);
-    private static string _jsonFilePath => Path.Combine(
-        _jsonDirectoryPath,
+    private static string JsonFilePath => Path.Combine(
+        JsonDirectoryPath,
         "settings.json");
 
     public static DeeplSettingsDescriptor CurrentSettings { get; set; } = new();
@@ -29,9 +29,9 @@ public static class DeeplSettingsUtils
     /// <returns>An instance of the Settings class with the loaded settings.</returns>
     public static void Load()
     {
-        if (!File.Exists(_jsonFilePath)) return;
+        if (!File.Exists(JsonFilePath)) return;
         
-        var json = File.ReadAllText(_jsonFilePath);
+        var json = File.ReadAllText(JsonFilePath);
         CurrentSettings = JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json)!;
     }
 
@@ -55,11 +55,11 @@ public static class DeeplSettingsUtils
     private static void SaveToJson(this DeeplSettingsDescriptor descriptor)
     {
         var json = JsonSerializer.Serialize(descriptor);
-        if (!Directory.Exists(_jsonDirectoryPath))
+        if (!Directory.Exists(JsonDirectoryPath))
         {
-            Directory.CreateDirectory(_jsonDirectoryPath);
+            Directory.CreateDirectory(JsonDirectoryPath);
         }
-        File.WriteAllText(_jsonFilePath, json);
+        File.WriteAllText(JsonFilePath, json);
         
         CurrentSettings = descriptor;
     }

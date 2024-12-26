@@ -17,7 +17,7 @@ public partial class SettingsViewModel : ObservableObject, ISettingsViewModel
     [ObservableProperty] private int _selectedTargetLanguageIndex;
     [ObservableProperty] private string _buttonText;
 
-    public LanguageDescriptor[] Languages { get; } = DeeplLanguageCodes.LanguageCodes;
+    public LanguageDescriptor[] Languages { get; } = DeeplLanguageCodes.TargetLanguages;
 
     public SettingsViewModel()
     {

@@ -1,36 +1,20 @@
-﻿using RevitTranslator.Models;
-using RevitTranslator.Views;
-using RevitTranslatorAddin.Models;
-using RevitTranslatorAddin.Utils.Revit;
+﻿using Nice3point.Revit.Toolkit.External;
+using RevitTranslator.Models;
 using CategoriesViewModel = RevitTranslator.ViewModels.CategoriesViewModel;
 
 namespace RevitTranslator.Commands;
 
 [UsedImplicitly]
-[Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-public class TranslateCategoriesCommand : BaseTranslationCommand
+public class TranslateCategoriesCommand : ExternalCommand
 {
-    /// <summary>
-    /// Window that displays all available categories and allows user to select all necessary categories
-    /// </summary>
-    public static CategoriesWindow Window { get; set; } = null;
-
+    //TODO: Inherit `ExternalCommand`
     public override void Execute()
     {
-        if (RevitUtils.Doc != Document)
-        {
-            RevitUtils.SetRevitUtils(UiApplication);
-        }
-
-        CreateAndSetUtils();
-
         if (!_translationUtils.CanTranslate(_settings))
         {
             return;
         }
         
-        RevitUtils.CreateAndAssignEvents();
-
         var categoryDescriptors = new CategoriesModel()
             .AllValidCategories
             .Select(category => new CategoryDescriptor

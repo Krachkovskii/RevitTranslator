@@ -1,5 +1,7 @@
-﻿[assembly: InternalsVisibleTo("RevitTranslator.Tests")]
+﻿using RevitTranslator.Models;
+
 namespace RevitTranslator.Utils.App;
+
 public class RevitTranslationUnitGroup
 {
     public Document Document { get; private set; } = null;

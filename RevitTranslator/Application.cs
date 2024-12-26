@@ -3,7 +3,7 @@ using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
 using Nice3point.Revit.Toolkit.External;
 
-namespace RevitTranslatorAddin;
+namespace RevitTranslator;
 /// <summary>
 ///     Application entry point
 /// </summary>

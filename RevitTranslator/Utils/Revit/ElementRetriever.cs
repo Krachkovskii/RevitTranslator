@@ -1,9 +1,6 @@
-﻿using RevitTranslatorAddin.Utils.Revit;
-
-namespace RevitTranslator.Utils.Revit;
+﻿namespace RevitTranslator.Utils.Revit;
 public class ElementRetriever
 {
-
     /// <summary>
     /// Gets Revit elements that are currently selected in the UI
     /// </summary>
@@ -12,7 +9,7 @@ public class ElementRetriever
     /// </returns>
     public static List<Element> GetCurrentSelection()
     {
-        var ids = RevitUtils.UIDoc.Selection.GetElementIds().ToList();
+        var ids = Context.ActiveUiDocument!.Selection.GetElementIds().ToList();
         var elements = GetElementsFromIds(ids);
 
         return elements;

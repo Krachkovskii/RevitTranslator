@@ -1,6 +1,8 @@
-﻿namespace RevitTranslator.ViewModels;
+﻿using RevitTranslator.UI.Contracts;
 
-public partial class ProgressWindowViewModel : ObservableObject
+namespace RevitTranslator.ViewModels;
+
+public partial class ProgressWindowViewModel : ObservableObject, IProgressWindowViewModel
 {
     [ObservableProperty] private string _buttonText = string.Empty;
     [ObservableProperty] private int _characterCount = 0;

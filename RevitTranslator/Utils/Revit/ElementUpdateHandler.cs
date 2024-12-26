@@ -1,4 +1,5 @@
-﻿using RevitTranslator.Utils.App;
+﻿using RevitTranslator.Models;
+using RevitTranslator.Utils.App;
 
 namespace RevitTranslator.Utils.Revit;
 
@@ -12,25 +13,7 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
     /// </summary>
     private readonly List<string> _cantUpdate = [];
 
-    /// <summary>
-    /// Utils for the Progress window of current command
-    /// </summary>
-    public static ProgressWindowUtils ProgressWindowUtils { get; set; } = null;
-
     public static List<RevitTranslationUnitGroup> TranslationUnitGroups { get; set; } = [];
-
-    /// <summary>
-    /// Clears all necessary values
-    /// </summary>
-    public void Dispose()
-    {
-        ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateFinished());
-        ProgressWindowUtils.PW.Activate();
-
-        _cantUpdate.Clear();
-        ProgressWindowUtils = null;
-        TranslationUnitGroups = null;
-    }
 
     /// <summary>
     /// Main entry point for Revit event.
@@ -38,18 +21,14 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
     /// <param name="app"></param>
     public void Execute(UIApplication app)
     {
-        ProgressWindowUtils.PW.Dispatcher.Invoke(() => ProgressWindowUtils.VM.UpdateStarted());
-
         foreach (var group in TranslationUnitGroups)
         {
-            RunTranslationUpdate(group);
+            UpdateDocumentTranslations(group);
             if (group.Document.IsFamilyDocument)
             {
                 TypeAndFamilyManager.LoadFamilyToActiveDocument(group.Document);
             }
         }
-
-        Dispose();
     }
 
     public string GetName()
@@ -62,6 +41,7 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
     /// </summary>
     /// <param name="unit"></param>
     /// <param name="element"></param>
+    //TODO: Remove method and use one-liner where needed instead
     private static void SetElementName(RevitTranslationUnit unit, Element element)
     {
         element.Name = unit.TranslatedText;
@@ -94,7 +74,7 @@ public class ElementUpdateHandler : IExternalEventHandler, IDisposable
     /// Updates all elements associated with this group.
     /// </summary>
     /// <param name="group"></param>
-    private void RunTranslationUpdate(RevitTranslationUnitGroup group)
+    private void UpdateDocumentTranslations(RevitTranslationUnitGroup group)
     {
         using (var t = new Transaction(group.Document, $"Update Document {group.Document.Title}"))
         {

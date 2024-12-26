@@ -1,6 +1,6 @@
 ﻿using RevitTranslator.Utils.Revit;
 
-namespace RevitTranslator.Utils.App;
+namespace RevitTranslator.Models;
 /// <summary>
 /// This class describes a Revit-related unit of translation, 
 /// which includes reference to the element, original text, translation etc.
