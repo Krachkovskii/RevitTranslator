@@ -1,30 +1,30 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Windows.Input;
+﻿using System.Diagnostics;
+using RevitTranslator.UI.Contracts;
+using TranslationService.Models;
+using TranslationService.Utils;
 
 namespace RevitTranslator.ViewModels;
 
-public partial class SettingsViewModel : ObservableObject
+public partial class SettingsViewModel : ObservableObject, ISettingsViewModel
 {
+    private readonly DeeplSettingsDescriptor _settings = DeeplSettingsUtils.CurrentSettings;
+    private bool _isAutoDetectChecked = true;
+    private int _previousSourceIndex = -1;
+
     [ObservableProperty] private string _deeplApiKey;
     [ObservableProperty] private bool _isPaidPlan;
     [ObservableProperty] private int _selectedSourceLanguageIndex;
     [ObservableProperty] private int _selectedTargetLanguageIndex;
-    [ObservableProperty] private string _updateButtonText;
-    
-    private bool _isAutoDetectChecked = true;
-    private SortedList<string, string> _languages;
-    private int _previousSourceIndex = -1;
-    private RevitTranslatorAddin.Models.DeeplSettings _settings;
-    
+    [ObservableProperty] private string _buttonText;
+
+    public LanguageDescriptor[] Languages { get; } = DeeplLanguageCodes.LanguageCodes;
+
     public SettingsViewModel()
     {
         LoadSettings();
-        SaveCommand = new RelayCommand(SaveSettings);
-        OpenLinkedinCommand = new RelayCommand<string>(OpenLinkedin);
-        UpdateButtonText = "Save settings";
+        ButtonText = "Save settings";
     }
-    
+
     public bool IsAutoDetectChecked
     {
         get => _isAutoDetectChecked;
@@ -50,36 +50,26 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     public bool IsSourceComboBoxEnabled => !IsAutoDetectChecked;
-    public ObservableCollection<string> Languages { get; private set; } = [];
-    public ICommand OpenLinkedinCommand
-    {
-        get;
-    }
-
-    public ICommand SaveCommand
-    {
-        get;
-    }
 
     /// <summary>
     /// Loads the settings file
     /// </summary>
     private void LoadSettings()
     {
-        _settings = RevitTranslatorAddin.Models.DeeplSettings.LoadFromJson();
+        DeeplSettingsUtils.Load();
+        
         DeeplApiKey = _settings.DeeplApiKey;
-        _languages = _settings.Languages;
-        Languages = new ObservableCollection<string>(_languages.Keys);
         IsPaidPlan = _settings.IsPaidPlan;
 
-        SetSourceLanguage();
-        SetTargetLanguage();
+        // SetSourceLanguage();
+        // SetTargetLanguage();
     }
 
     /// <summary>
     /// Opens the link to my LinkedIn page in default browser
     /// </summary>
     /// <param name="uri"></param>
+    [RelayCommand]
     private void OpenLinkedin(string uri)
     {
         if (Uri.TryCreate(uri, UriKind.Absolute, out var validUri))
@@ -91,76 +81,76 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>
     /// Saves settings file and checks if provided credentials are valid
     /// </summary>
+    [RelayCommand]
     private void SaveSettings()
     {
         _settings.DeeplApiKey = DeeplApiKey;
         _settings.SourceLanguage = SelectedSourceLanguageIndex == -1 ? null : Languages[SelectedSourceLanguageIndex];
         _settings.TargetLanguage = Languages[SelectedTargetLanguageIndex];
-        _settings.SaveToJson();
-
-        var translationUtils = new TranslationUtils(_settings, new ProgressWindowUtils());
-
-        if (!translationUtils.CanTranslate(_settings))
+        _settings.Save();
+        
+        if (!TranslationUtils.TryTestTranslate())
         {
             return;
         }
 
-        UpdateButtonText = "Settings saved!";
+        ButtonText = "Settings saved!";
 
         Task.Run((Func<Task>)(async () =>
         {
             await Task.Delay(2000);
-            UpdateButtonText = "Save settings";
+            ButtonText = "Save settings";
         }));
     }
 
     /// <summary>
     /// Sets the source language
     /// </summary>
-    private void SetSourceLanguage()
-    {
-        if (_settings.SourceLanguage == null)
-        {
-            SelectedSourceLanguageIndex = -1;
-            IsAutoDetectChecked = true;
-        }
-        else
-        {
-            IsAutoDetectChecked = false;
-            if (_settings.SourceLanguage == null)
-            {
-                SelectedSourceLanguageIndex = -1;
-            }
-            else if (char.IsLower(_settings.SourceLanguage[0]))
-            {
-                SelectedSourceLanguageIndex = _languages.IndexOfKey(_languages.FirstOrDefault(kvp => kvp.Value == _settings.SourceLanguage).Key);
-            }
-            else
-            {
-                SelectedSourceLanguageIndex = _languages.IndexOfKey(_settings.SourceLanguage);
-            }
-        }
-    }
+    // private void SetSourceLanguage()
+    // {
+    //     if (_settings.SourceLanguage == null)
+    //     {
+    //         SelectedSourceLanguageIndex = -1;
+    //         IsAutoDetectChecked = true;
+    //     }
+    //     else
+    //     {
+    //         IsAutoDetectChecked = false;
+    //         if (_settings.SourceLanguage == null)
+    //         {
+    //             SelectedSourceLanguageIndex = -1;
+    //         }
+    //         else if (char.IsLower(_settings.SourceLanguage[0]))
+    //         {
+    //             SelectedSourceLanguageIndex = _languages.IndexOfKey(_languages.FirstOrDefault(kvp => kvp.Value == _settings.SourceLanguage).Key);
+    //         }
+    //         else
+    //         {
+    //             SelectedSourceLanguageIndex = _languages.IndexOfKey(_settings.SourceLanguage);
+    //         }
+    //     }
+    // }
 
     /// <summary>
     /// Sets the target language
     /// </summary>
-    private void SetTargetLanguage()
-    {
-        if (_settings.TargetLanguage == null)
-        {
-            SelectedTargetLanguageIndex = -1;
-            IsAutoDetectChecked = true;
-        }
-        else if (char.IsLower(_settings.TargetLanguage[0]))
-        {
-            SelectedTargetLanguageIndex = _languages.IndexOfKey(_languages.FirstOrDefault(kvp => kvp.Value == _settings.TargetLanguage).Key);
-        }
-        else
-        {
-            SelectedTargetLanguageIndex = _languages.IndexOfKey(_settings.TargetLanguage);
-        }
-    }
+    // private void SetTargetLanguage()
+    // {
+    //     if (_settings.TargetLanguage == null)
+    //     {
+    //         SelectedTargetLanguageIndex = -1;
+    //         IsAutoDetectChecked = true;
+    //     }
+    //     else if (char.IsLower(_settings.TargetLanguage[0]))
+    //     {
+    //         SelectedTargetLanguageIndex = _languages.IndexOfKey(_languages.FirstOrDefault(kvp => kvp.Value == _settings.TargetLanguage).Key);
+    //     }
+    //     else
+    //     {
+    //         SelectedTargetLanguageIndex = _languages.IndexOfKey(_settings.TargetLanguage);
+    //     }
+    // }
+    
     /// <summary>
     /// Switches "to" and "from" languages in the UI
     /// </summary>
