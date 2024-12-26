@@ -9,6 +9,7 @@
         <ImplicitUsings>true</ImplicitUsings>
         <OutputPath>bin/$(Configuration)</OutputPath>
         <Platform>AnyCPU</Platform>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     
     <ItemGroup>
@@ -22,7 +23,7 @@
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
       <PackageReference Include="WPF-UI" Version="4.0.0-rc.2" />
     </ItemGroup>
     
