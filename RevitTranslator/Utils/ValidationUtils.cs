@@ -1,3 +1,7 @@
+using System.Text.RegularExpressions;
+using RevitTranslator.Models;
+using RevitTranslator.Utils.Revit;
+
 namespace RevitTranslator.Utils;
 /// <summary>
 /// Utilities for text validation
@@ -40,6 +44,7 @@ public static class ValidationUtils
     /// <returns></returns>
     public static bool IsValidForFamilyEdit(Element? element)
     {
+        //TODO: Update category validation
         if (element is null) return false;
         // if (element.Category?.BuiltInCategory == BuiltInCategory.OST_TitleBlocks) return true;
 
@@ -52,8 +57,7 @@ public static class ValidationUtils
     /// </summary>
     /// <param name="unit"></param>
     /// <returns></returns>
-    / 
-     public static bool NameHasIllegalCharacters( unit)
+     public static bool NameHasIllegalCharacters(RevitTranslationUnit unit)
      {
          if (unit.Element is Parameter p || unit.TranslationDetails == TranslationDetails.ElementName)
          {

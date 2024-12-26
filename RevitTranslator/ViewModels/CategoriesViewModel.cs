@@ -1,11 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using RevitTranslator.Commands;
 using RevitTranslator.Models;
-using RevitTranslatorAddin.ViewModels.Contracts;
 
 namespace RevitTranslator.ViewModels;
-public partial class CategoriesViewModel : ObservableObject, ICategoriesViewModel
+public partial class CategoriesViewModel : ObservableValidator, ICategoriesViewModel
 {
+    //TODO: Implement validation logic
     private readonly TranslationUtils _translationUtils = null;
     
     [ObservableProperty] private string _mainButtonText;

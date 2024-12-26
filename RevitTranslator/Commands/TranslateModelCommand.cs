@@ -1,22 +1,15 @@
 ﻿using System.Windows;
-using RevitTranslatorAddin.Models;
-using RevitTranslatorAddin.Utils.Revit;
+using Nice3point.Revit.Toolkit.External;
+using RevitTranslator.Models;
 
 namespace RevitTranslator.Commands;
 
+//TODO: Move to separate service
 [UsedImplicitly]
-[Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-public class TranslateModelCommand : BaseTranslationCommand
+public class TranslateModelCommand : ExternalCommand
 {
     public override void Execute()
     {
-        if (RevitUtils.Doc != Document)
-        {
-            RevitUtils.SetRevitUtils(UiApplication);
-        }
-
-        CreateAndSetUtils();
-
         if (!_translationUtils.CanTranslate(_settings))
         {
             return;

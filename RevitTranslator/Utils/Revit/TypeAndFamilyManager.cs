@@ -1,7 +1,6 @@
-﻿using RevitTranslatorAddin.Utils.Revit;
-
+﻿
 namespace RevitTranslator.Utils.Revit;
-public class TypeAndFamilyManager
+public static class TypeAndFamilyManager
 {
     /// <summary>
     /// Gets Family for this element, if available.

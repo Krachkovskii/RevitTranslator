@@ -14,6 +14,7 @@ public static class TranslationUtils
     private static readonly HttpClient HttpClient = new();
     private static readonly DeeplSettingsDescriptor _settings = DeeplSettingsUtils.CurrentSettings;
 
+    // TODO: Move these properties to a Settings Descriptor
     /// <summary>
     /// Translation limits for current DeepL plan
     /// </summary>

@@ -8,24 +8,19 @@ namespace RevitTranslator.Demo.ViewModels;
 
 public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewModel
 {
+    //TODO: Add validation properties
     [ObservableProperty] private string _deeplApiKey = string.Empty;
     [ObservableProperty] private string _buttonText;
     [ObservableProperty] private bool _isAutoDetectChecked;
     [ObservableProperty] private bool _isPaidPlan;
-    [ObservableProperty] private LanguageDescriptor? _selectedSourceLanguage = DeeplLanguageCodes.LanguageCodes[0];
-    [ObservableProperty] private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.LanguageCodes[1];
+    [ObservableProperty] private LanguageDescriptor? _selectedSourceLanguage = DeeplLanguageCodes.TargetLanguages[0];
+    [ObservableProperty] private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.TargetLanguages[1];
     
-    private LanguageDescriptor? _previousLanguage = null;
+    private LanguageDescriptor? _previousLanguage;
     
     public MockSettingsViewModel()
     {
         DeeplSettingsUtils.Load();
-        // var faker = new Faker();
-        // SelectedSourceLanguageIndex = faker.Random.Int(0, Languages.Length - 1);
-        // SelectedTargetLanguageIndex = faker.Random.Int(0, Languages.Length - 1);
-        //
-        // _isAutoDetectChecked = faker.Random.Bool();
-        // if (_isAutoDetectChecked) SelectedSourceLanguageIndex = -1;
     }
     
     [RelayCommand]
@@ -62,7 +57,7 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
         }
         else
         {
-            SelectedSourceLanguage = _previousLanguage ??= DeeplLanguageCodes.LanguageCodes[0];
+            SelectedSourceLanguage = _previousLanguage ??= DeeplLanguageCodes.TargetLanguages[0];
         }
     }
 }

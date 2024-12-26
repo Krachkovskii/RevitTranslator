@@ -4,11 +4,13 @@
 /// </summary>
 public class FamilyLoadOptions : IFamilyLoadOptions
 {
+    //TODO: Make static
     bool IFamilyLoadOptions.OnFamilyFound(bool familyInUse, out bool overwriteParameterValues)
     {
         overwriteParameterValues = true;
         return true;
     }
+    
     bool IFamilyLoadOptions.OnSharedFamilyFound(Family sharedFamily, bool familyInUse, out FamilySource source, out bool overwriteParameterValues) 
     {
         source = FamilySource.Family;

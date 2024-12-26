@@ -6,7 +6,7 @@ public static class DeeplLanguageCodes
     /// <summary>
     /// Language codes for DeepL. First item is readable language name, second item is language code.
     /// </summary>
-    public static LanguageDescriptor[] LanguageCodes { get; } =
+    public static LanguageDescriptor[] TargetLanguages { get; } =
     [
         new("Bulgarian", "bg", "bg"),
         new("Chinese (simplified)", "zh", "zh-hans"),
@@ -41,4 +41,5 @@ public static class DeeplLanguageCodes
         new("Turkish", "tr", "tr"),
         new("Ukrainian", "uk", "uk")
     ];
+    //TODO: Add "SourceLanguages" properties
 }
