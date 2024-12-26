@@ -7,6 +7,7 @@
                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                 xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
                 xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
+                xmlns:languageModels="clr-namespace:TranslationService.Models;assembly=TranslationService"
                 mc:Ignorable="d" 
                 Width="500"
                 Height="400"
@@ -43,13 +44,16 @@
                         Text="DeepL API key:"
                         FontTypography="Body" />
                     <ui:TextBox
-                        Text="{Binding DeeplApiKey, UpdateSourceTrigger=PropertyChanged}"
+                        Text="{Binding DeeplApiKey, 
+                            UpdateSourceTrigger=PropertyChanged}"
                         Height="40"
                         Margin="0 10"
                         ToolTip="Insert your DeepL API key here"/>
                     <CheckBox
                         Content="I'm using paid DeepL API plan"
-                        IsChecked="{Binding IsPaidPlan}"/>
+                        IsChecked="{Binding IsPaidPlan,
+                            Mode=TwoWay,
+                            UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
                 <Rectangle
                     DockPanel.Dock="Top"
@@ -70,13 +74,16 @@
                             Text="From:"
                             Style="{StaticResource Annotation}" />
                         <ComboBox
-                            ItemsSource="{Binding Languages}"
+                            ItemsSource="{Binding 
+                                Source={x:Static languageModels:DeeplLanguageCodes.LanguageCodes}}"
                             DisplayMemberPath="VisibleName"
-                            IsEnabled="{Binding IsAutoDetectChecked, 
-                                Converter={converters:InverseBoolConverter}, 
+                            IsEnabled="{Binding SelectedSourceLanguage,
+                                Converter={converters:ObjectNotNullBoolConverter},
+                                Mode=TwoWay,
                                 UpdateSourceTrigger=PropertyChanged}"
-                            SelectedIndex="{Binding SelectedSourceLanguageIndex, 
-                                Mode=TwoWay}" />
+                            SelectedItem="{Binding SelectedSourceLanguage,
+                                Mode=TwoWay,
+                                UpdateSourceTrigger=PropertyChanged}"/>
                         <CheckBox
                             Content="Detect language"
                             VerticalAlignment="Top"
@@ -106,9 +113,10 @@
                             Style="{StaticResource Annotation}" />
                         <ComboBox
                             Foreground="Black"
-                            ItemsSource="{Binding Languages}"
+                            ItemsSource="{Binding 
+                                Source={x:Static languageModels:DeeplLanguageCodes.LanguageCodes}}"
                             DisplayMemberPath="VisibleName"
-                            SelectedIndex="{Binding SelectedTargetLanguageIndex}" />
+                            SelectedItem="{Binding SelectedTargetLanguage}" />
                         <TextBlock 
                             DockPanel.Dock="Bottom"
                             HorizontalAlignment="Right"

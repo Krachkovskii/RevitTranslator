@@ -9,12 +9,10 @@ public interface ISettingsViewModel
     public string ButtonText { get; set; }
     public bool IsAutoDetectChecked { get; set; }
     public bool IsPaidPlan { get; set; }
-    public int? SelectedSourceLanguageIndex { get; set; }
-    public int SelectedTargetLanguageIndex { get; set; }
+    public LanguageDescriptor? SelectedSourceLanguage { get; set; }
+    public LanguageDescriptor SelectedTargetLanguage { get; set; }
 
-    public LanguageDescriptor[] Languages { get; }
-    
     IRelayCommand OpenLinkedinCommand { get; }
-    IAsyncRelayCommand SaveSettingsCommand { get; }
+    IRelayCommand SaveSettingsCommand { get; }
     IRelayCommand SwitchLanguagesCommand { get; }
 }
