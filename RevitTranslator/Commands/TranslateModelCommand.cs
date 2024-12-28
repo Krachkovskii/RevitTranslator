@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using Nice3point.Revit.Toolkit.External;
-using RevitTranslator.Models;
+using RevitTranslator.Services;
 
 namespace RevitTranslator.Commands;
 
@@ -10,66 +10,11 @@ public class TranslateModelCommand : ExternalCommand
 {
     public override void Execute()
     {
-        if (!_translationUtils.CanTranslate(_settings))
-        {
-            return;
-        }
-
-        // only allow elements of user-visible categories via ElementMulticategoryFilter
-        var filter = CreateCategoryFilter();
-        var instances = GetModelInstances(filter);
-        int types = CountElementTypes(filter);
-
-        var elementCount = CountTotalElements(instances.Count, types);
-        var warningResult = ShowElementCountWarning(elementCount);
-
-        if (warningResult.Equals(MessageBoxResult.No))
-        {
-            return;
-        }
-
-        StartCommandTranslation(instances, _progressWindowUtils, _translationUtils, true, true);
-    }
-
-    /// <summary>
-    /// Calculates the approximate number of elements that can be used for translation
-    /// </summary>
-    /// <param name="instCount"></param>
-    /// <param name="typesCount"></param>
-    /// <returns></returns>
-    private static int CountTotalElements(int instCount, int typesCount)
-    {
-        var rounded = (int)Math.Round((instCount + typesCount) / 100d) * 100;
-        return rounded;
-    }
-
-    /// <summary>
-    /// Creates MulticategoryFilter to get all elements of valid categories
-    /// </summary>
-    /// <returns>
-    /// The filter</returns>
-    private static ElementMulticategoryFilter CreateCategoryFilter()
-    {
-        List<BuiltInCategory> categoryList = CreateCategoryList();
-        var filter = new ElementMulticategoryFilter(categoryList);
-        return filter;
-    }
-
-    /// <summary>
-    /// Gets BuiltInCategory for all valid categories
-    /// </summary>
-    /// <returns></returns>
-    private static List<BuiltInCategory> CreateCategoryList()
-    {
-        List<BuiltInCategory> categoryList = [];
-
-        var categories = new CategoriesModel().GetCategories();
-        foreach (Category category in categories)
-        {
-            categoryList.Add(category.BuiltInCategory);
-        }
-
-        return categoryList;
+        var instances = Document.EnumerateInstanceIds().ToList();
+        
+        var service = new BaseTranslationService();
+        service.SelectedElements = instances;
+        service.Execute();
     }
 
     /// <summary>
@@ -90,35 +35,5 @@ public class TranslateModelCommand : ExternalCommand
 
         if (result == MessageBoxResult.Yes) { return true; }
         else { return false; }
-    }
-
-    /// <summary>
-    /// Counts all Element Types of valid categories
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    private static int CountElementTypes(ElementMulticategoryFilter filter)
-    {
-        int types = new FilteredElementCollector(RevitUtils.Doc)
-            .WherePasses(filter)
-            .WhereElementIsElementType()
-            .GetElementCount();
-
-        return types;
-    }
-
-    /// <summary>
-    /// Get all element instances of valid categories
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    private List<Element> GetModelInstances(ElementMulticategoryFilter filter)
-    {
-        var instances = new FilteredElementCollector(RevitUtils.Doc)
-            .WherePasses(filter)
-            .WhereElementIsNotElementType()
-            .ToList();
-
-        return instances;
     }
 }
