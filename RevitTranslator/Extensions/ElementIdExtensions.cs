@@ -19,4 +19,9 @@ public static class ElementIdExtensions
         return new ElementId((int)longValue);
 #endif
     }
+
+    public static Element ToElement(this ElementId elementId)
+    {
+        return Context.ActiveDocument?.GetElement(elementId);
+    }
 }
