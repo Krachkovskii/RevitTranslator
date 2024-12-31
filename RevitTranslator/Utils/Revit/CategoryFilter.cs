@@ -9,21 +9,14 @@ public static class CategoryFilter
         BuiltInCategory.OST_Materials
     ];
 
-    public static List<Category> ValidCategories { get; } = GetValidCategories();
+    public static Category[] ValidCategories { get; } = GetValidCategories();
 
-    private static List<Category> GetValidCategories()
+    private static Category[] GetValidCategories()
     {
-        var categories = new List<Category>();
-        
-        foreach (Category category in Context.ActiveDocument!.Settings.Categories)
-        {
-            if (IsValidCategory(category))
-            {
-                categories.Add(category);
-            }
-        }
-        
-        return categories;
+        return Context.ActiveDocument!.Settings.Categories
+            .Cast<Category>()
+            .Where(IsValidCategory)
+            .ToArray();
     }
 
     private static bool IsValidCategory(Category category)

@@ -61,15 +61,20 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
         if (category.IsChecked)
         {
             SelectedCategories.Add(category);
-            // _elementCount += new Faker().Random.Int(0, 50);
+            Task.Run(async () => await UpdateElementCounter(category, true));
             MainButtonText = $"Translate {_elementCount} elements";
             return;
         }
         
         SelectedCategories.Remove(category);
-        // _elementCount -= new Faker().Random.Int(0, 50);
+        Task.Run(async () => await UpdateElementCounter(category, false));
         
         if (_elementCount == 0) MainButtonText = "Select category to translate";
+    }
+
+    private async Task UpdateElementCounter(ObservableCategoryDescriptor category, bool add)
+    {
+        
     }
 
     partial void OnSearchTextChanged(string value)

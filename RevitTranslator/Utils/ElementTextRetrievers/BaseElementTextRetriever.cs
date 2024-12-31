@@ -7,29 +7,21 @@ namespace RevitTranslator.Utils.ElementTextRetrievers;
 /// </summary>
 public class BaseElementTextRetriever : IDisposable
 {
-    public List<RevitTranslationUnit> TranslationUnits { get; private set; } = [];
+    public List<TranslationEntity> ElementTranslationUnits { get; private set; } = [];
 
-    protected virtual string GetText(object Object) => throw new NotImplementedException();
-
-    /// <summary>
-    /// Adds valid translation unit to the list.
-    /// </summary>
-    /// <param name="unit"></param>
-    protected virtual void AddUnitToList(RevitTranslationUnit unit)
+    protected virtual void AddUnitToList(TranslationEntity entity)
     {
-        if (unit.OriginalText == string.Empty)
-        {
-            return;
-        }
+        if (entity.OriginalText == string.Empty) return;
 
-        TranslationUnits.Add(unit);
+        ElementTranslationUnits.Add(entity);
     }
-
-    protected virtual void Process(object Object) => throw new NotImplementedException();
 
     public void Dispose()
     {
-        TranslationUnits.Clear();
-        TranslationUnits = null;
+        ElementTranslationUnits.Clear();
+        ElementTranslationUnits = null;
     }
+    
+    protected virtual void Process(object Object) => throw new NotImplementedException();
+    protected virtual string GetText(object Object) => throw new NotImplementedException();
 }

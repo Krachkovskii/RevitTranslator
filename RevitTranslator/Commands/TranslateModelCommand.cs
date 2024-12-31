@@ -10,7 +10,7 @@ public class TranslateModelCommand : ExternalCommand
 {
     public override void Execute()
     {
-        var instances = Document.EnumerateInstanceIds().ToList();
+        var instances = Document.EnumerateInstances().ToArray();
         
         var service = new BaseTranslationService();
         service.SelectedElements = instances;

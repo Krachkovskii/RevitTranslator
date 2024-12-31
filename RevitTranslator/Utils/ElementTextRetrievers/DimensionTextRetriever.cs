@@ -4,127 +4,19 @@ using RevitTranslator.Utils.Revit;
 namespace RevitTranslator.Utils.ElementTextRetrievers;
 public class DimensionTextRetriever : BaseElementTextRetriever
 {
-    /// <summary>
-    /// Dimension associated with this retriever.
-    /// </summary>
     private readonly Dimension _dimension;
+    
     public DimensionTextRetriever(Dimension dimension)
     {
         _dimension = dimension;
         Process(dimension);
     }
 
-    /// <summary>
-    /// Extracts text from a particular override of a Dimension or DimensionSegment
-    /// </summary>
-    /// <param name="d">Dimension or DimensionSegment</param>
-    /// <param name="details">Type of override (e.g. Above)</param>
-    /// <param name="isSingleSegment">True if dimension has only one segment</param>
-    /// <returns></returns>
-    public string ExtractDimensionText(object d, TranslationDetails details, bool isSingleSegment)
+    protected override sealed void Process(object Object)
     {
-        string value;
-        object DimensionObject;
+        if (Object is not Dimension dim) return;
 
-        if (isSingleSegment)
-        {
-            DimensionObject = (Dimension)d;
-
-            if (DimensionObject == null)
-            {
-                return string.Empty;
-            }
-
-            switch (details)
-            {
-                case TranslationDetails.DimensionAbove:
-                    value = ((Dimension)DimensionObject).Above;
-                    break;
-                case TranslationDetails.DimensionBelow:
-                    value = ((Dimension)DimensionObject).Below;
-                    break;
-                case TranslationDetails.DimensionPrefix:
-                    value = ((Dimension)DimensionObject).Prefix;
-                    break;
-                case TranslationDetails.DimensionSuffix:
-                    value = ((Dimension)DimensionObject).Suffix;
-                    break;
-                case TranslationDetails.DimensionOverride:
-                    value = ((Dimension)DimensionObject).ValueOverride;
-                    break;
-                default:
-                    value = string.Empty;
-                    break;
-            }
-        }
-
-        else
-        {
-            DimensionObject = d as DimensionSegment;
-
-            if (DimensionObject == null)
-            {
-                return string.Empty;
-            }
-
-            switch (details)
-            {
-                case TranslationDetails.DimensionAbove:
-                    value = ((DimensionSegment)DimensionObject).Above;
-                    break;
-                case TranslationDetails.DimensionBelow:
-                    value = ((DimensionSegment)DimensionObject).Below;
-                    break;
-                case TranslationDetails.DimensionPrefix:
-                    value = ((DimensionSegment)DimensionObject).Prefix;
-                    break;
-                case TranslationDetails.DimensionSuffix:
-                    value = ((DimensionSegment)DimensionObject).Suffix;
-                    break;
-                case TranslationDetails.DimensionOverride:
-                    value = ((DimensionSegment)DimensionObject).ValueOverride;
-                    break;
-                default:
-                    value = string.Empty;
-                    break;
-            }
-        }
-
-        return value;
-    }
-
-    public void ProcessDimensionSegment(DimensionSegment segment)
-    {
-        ProcessDimensionOverrideAbove(segment, false);
-        ProcessDimensionOverrideBelow(segment, false);
-        ProcessDimensionOverridePrefix(segment, false);
-        ProcessDimensionOverrideSuffix(segment, false);
-        ProcessDimensionOverrideValue(segment, false);
-    }
-
-    protected override void AddUnitToList(RevitTranslationUnit unit)
-    {
-        if (unit.Element is DimensionSegment)
-        {
-            unit.ParentElement = _dimension;
-        }
-
-        base.AddUnitToList(unit);
-    }
-
-    /// <summary>
-    /// Extracts all overrides from Dimension element
-    /// </summary>
-    /// <param name="dim"></param>
-    protected override void Process(object Object)
-    {
-        if (Object is not Dimension dim)
-        {
-            return;
-        }
-
-        // var single = dim.HasOneSegment();
-        var single = true;
+        var single = dim.HasOneSegment();
         if (single)
         {
             ProcessSingleSegmentDimension(dim);
@@ -134,100 +26,7 @@ public class DimensionTextRetriever : BaseElementTextRetriever
             ProcessMultiSegmentDimension(dim);
         }
     }
-    /// <summary>
-    /// Process Above override of a Dimension element
-    /// </summary>
-    /// <param name="dim">Dimension or DimensionSegment</param>
-    /// <param name="isSingleSegment"></param>
-    private void ProcessDimensionOverrideAbove(object dim, bool isSingleSegment)
-    {
-        var value = ExtractDimensionText(dim, TranslationDetails.DimensionAbove, isSingleSegment);
 
-        if (!ValidationUtils.HasText(value))
-        {
-            return;
-        }
-
-        var dimensionUnit = new RevitTranslationUnit(dim, value, TranslationDetails.DimensionAbove);
-        AddUnitToList(dimensionUnit);
-    }
-
-    /// <summary>
-    /// Process Below override of a Dimension element
-    /// </summary>
-    /// <param name="dim">Dimension or DimensionSegment</param>
-    /// <param name="isSingleSegment"></param>
-    private void ProcessDimensionOverrideBelow(object dim, bool isSingleSegment)
-    {
-        var value = ExtractDimensionText(dim, TranslationDetails.DimensionBelow, isSingleSegment);
-
-        if (!ValidationUtils.HasText(value))
-        {
-            return;
-        }
-
-        var dimensionUnit = new RevitTranslationUnit(dim, value, TranslationDetails.DimensionBelow);
-        AddUnitToList(dimensionUnit);
-    }
-
-    /// <summary>
-    /// Process Prefix override of a Dimension element
-    /// </summary>
-    /// <param name="dim">Dimension or DimensionSegment</param>
-    /// <param name="isSingleSegment"></param>
-    private void ProcessDimensionOverridePrefix(object dim, bool isSingleSegment)
-    {
-        var value = ExtractDimensionText(dim, TranslationDetails.DimensionPrefix, isSingleSegment);
-
-        if (!ValidationUtils.HasText(value))
-        {
-            return;
-        }
-
-        var dimensionUnit = new RevitTranslationUnit(dim, value, TranslationDetails.DimensionPrefix);
-        AddUnitToList(dimensionUnit);
-    }
-
-    /// <summary>
-    /// Process Suffix override of a Dimension element
-    /// </summary>
-    /// <param name="dim">Dimension or DimensionSegment</param>
-    /// <param name="isSingleSegment"></param>
-    private void ProcessDimensionOverrideSuffix(object dim, bool isSingleSegment)
-    {
-        var value = ExtractDimensionText(dim, TranslationDetails.DimensionSuffix, isSingleSegment);
-
-        if (!ValidationUtils.HasText(value))
-        {
-            return;
-        }
-
-        var dimensionUnit = new RevitTranslationUnit(dim, value, TranslationDetails.DimensionSuffix);
-        AddUnitToList(dimensionUnit);
-    }
-
-    /// <summary>
-    /// Process CurrentValue override of a Dimension element
-    /// </summary>
-    /// <param name="dim">Dimension or DimensionSegment</param>
-    /// <param name="isSingleSegment"></param>
-    private void ProcessDimensionOverrideValue(object dim, bool isSingleSegment)
-    {
-        var value = ExtractDimensionText(dim, TranslationDetails.DimensionOverride, isSingleSegment);
-
-        if (!ValidationUtils.HasText(value))
-        {
-            return;
-        }
-
-        var dimensionUnit = new RevitTranslationUnit(dim, value, TranslationDetails.DimensionOverride);
-        AddUnitToList(dimensionUnit);
-    }
-
-    /// <summary>
-    /// Extracts text from Dimension element with multiple Dimension Segments
-    /// </summary>
-    /// <param name="dim"></param>
     private void ProcessMultiSegmentDimension(Dimension dim)
     {
         var segments = dim.Segments;
@@ -242,10 +41,6 @@ public class DimensionTextRetriever : BaseElementTextRetriever
         }
     }
 
-    /// <summary>
-    /// Extracts text from Dimension element with a single Dimension Segment
-    /// </summary>
-    /// <param name="dim"></param>
     private void ProcessSingleSegmentDimension(Dimension dim)
     {
         ProcessDimensionOverrideAbove(dim, true);
@@ -253,5 +48,129 @@ public class DimensionTextRetriever : BaseElementTextRetriever
         ProcessDimensionOverridePrefix(dim, true);
         ProcessDimensionOverrideSuffix(dim, true);
         ProcessDimensionOverrideValue(dim, true);
+    }
+
+    private void ProcessDimensionSegment(DimensionSegment segment)
+    {
+        ProcessDimensionOverrideAbove(segment, false);
+        ProcessDimensionOverrideBelow(segment, false);
+        ProcessDimensionOverridePrefix(segment, false);
+        ProcessDimensionOverrideSuffix(segment, false);
+        ProcessDimensionOverrideValue(segment, false);
+    }
+
+    private void ProcessDimensionOverrideAbove(object dim, bool isSingleSegment)
+    {
+        var value = ExtractDimensionText(dim, TranslationDetails.DimensionAbove, isSingleSegment);
+
+        if (!ValidationUtils.HasText(value))
+        {
+            return;
+        }
+
+        var dimensionUnit = new TranslationEntity(dim, value, TranslationDetails.DimensionAbove);
+        AddUnitToList(dimensionUnit);
+    }
+
+    private void ProcessDimensionOverrideBelow(object dim, bool isSingleSegment)
+    {
+        var value = ExtractDimensionText(dim, TranslationDetails.DimensionBelow, isSingleSegment);
+
+        if (!ValidationUtils.HasText(value))
+        {
+            return;
+        }
+
+        var dimensionUnit = new TranslationEntity(dim, value, TranslationDetails.DimensionBelow);
+        AddUnitToList(dimensionUnit);
+    }
+
+    private void ProcessDimensionOverridePrefix(object dim, bool isSingleSegment)
+    {
+        var value = ExtractDimensionText(dim, TranslationDetails.DimensionPrefix, isSingleSegment);
+
+        if (!ValidationUtils.HasText(value))
+        {
+            return;
+        }
+
+        var dimensionUnit = new TranslationEntity(dim, value, TranslationDetails.DimensionPrefix);
+        AddUnitToList(dimensionUnit);
+    }
+
+    private void ProcessDimensionOverrideSuffix(object dim, bool isSingleSegment)
+    {
+        var value = ExtractDimensionText(dim, TranslationDetails.DimensionSuffix, isSingleSegment);
+
+        if (!ValidationUtils.HasText(value))
+        {
+            return;
+        }
+
+        var dimensionUnit = new TranslationEntity(dim, value, TranslationDetails.DimensionSuffix);
+        AddUnitToList(dimensionUnit);
+    }
+    
+    private void ProcessDimensionOverrideValue(object dim, bool isSingleSegment)
+    {
+        var value = ExtractDimensionText(dim, TranslationDetails.DimensionOverride, isSingleSegment);
+
+        if (!ValidationUtils.HasText(value))
+        {
+            return;
+        }
+
+        var dimensionUnit = new TranslationEntity(dim, value, TranslationDetails.DimensionOverride);
+        AddUnitToList(dimensionUnit);
+    }
+
+    private string ExtractDimensionText(object d, TranslationDetails details, bool isSingleSegment)
+    {
+        string value;
+        object dimensionObject;
+
+        if (isSingleSegment)
+        {
+            dimensionObject = (Dimension)d;
+            if (dimensionObject is null) return string.Empty;
+
+            value = details switch
+            {
+                TranslationDetails.DimensionAbove => ((Dimension)dimensionObject).Above,
+                TranslationDetails.DimensionBelow => ((Dimension)dimensionObject).Below,
+                TranslationDetails.DimensionPrefix => ((Dimension)dimensionObject).Prefix,
+                TranslationDetails.DimensionSuffix => ((Dimension)dimensionObject).Suffix,
+                TranslationDetails.DimensionOverride => ((Dimension)dimensionObject).ValueOverride,
+                _ => string.Empty
+            };
+        }
+
+        else
+        {
+            dimensionObject = (DimensionSegment)d;
+            if (dimensionObject is null) return string.Empty;
+
+            value = details switch
+            {
+                TranslationDetails.DimensionAbove => ((DimensionSegment)dimensionObject).Above,
+                TranslationDetails.DimensionBelow => ((DimensionSegment)dimensionObject).Below,
+                TranslationDetails.DimensionPrefix => ((DimensionSegment)dimensionObject).Prefix,
+                TranslationDetails.DimensionSuffix => ((DimensionSegment)dimensionObject).Suffix,
+                TranslationDetails.DimensionOverride => ((DimensionSegment)dimensionObject).ValueOverride,
+                _ => string.Empty
+            };
+        }
+
+        return value;
+    }
+
+    protected override void AddUnitToList(TranslationEntity entity)
+    {
+        if (entity.Element is DimensionSegment)
+        {
+            entity.ParentElement = _dimension;
+        }
+
+        base.AddUnitToList(entity);
     }
 }

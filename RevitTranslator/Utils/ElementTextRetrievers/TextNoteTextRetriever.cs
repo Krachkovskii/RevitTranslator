@@ -8,26 +8,18 @@ public class TextElementTextRetriever : BaseElementTextRetriever
         Process(textElement);
     }
 
-    protected override string GetText(object Object) 
+    protected override sealed void Process(object Object) 
     {
-        if (Object is not TextElement textElement)
-        {
-            return string.Empty;
-        }
-
-        return textElement.Text;
-    }
-
-    protected override void Process(object Object) 
-    {
-        if (Object is not TextElement textElement)
-        {
-            return;
-        }
+        if (Object is not TextElement textElement) return;
 
         var text = GetText(textElement);
-        var unit = new RevitTranslationUnit(textElement, text);
+        var unit = new TranslationEntity(textElement, text);
 
         AddUnitToList(unit);
+    }
+
+    protected override string GetText(object Object)
+    {
+        return Object is not TextElement textElement ? string.Empty : textElement.Text;
     }
 }

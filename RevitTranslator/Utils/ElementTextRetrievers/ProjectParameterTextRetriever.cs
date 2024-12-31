@@ -6,37 +6,12 @@ public class ProjectParameterTextRetriever : BaseParameterTextRetriever
 {
     public ProjectParameterTextRetriever()
     {
-        Process(RevitUtils.Doc);
+        Process(Context.ActiveDocument);
     }
-
-    /// <summary>
-    /// Creates and adds a new Translation Unit with corresponding Translation Details
-    /// </summary>
-    /// <param name="propertyText"></param>
-    /// <param name="details"></param>
-    private void ProcessProjectInfoProperty(string propertyText, TranslationDetails details)
+    
+    protected override sealed void Process(object Object)
     {
-        if (!ValidationUtils.HasText(propertyText))
-        {
-            return;
-        }
-
-        var unit = new RevitTranslationUnit(RevitUtils.Doc, propertyText, details);
-        AddUnitToList(unit);
-    }
-
-    /// <summary>
-    /// Processes all Document-related properties
-    /// </summary>
-    /// <param name="Object">
-    /// Document object to process
-    /// </param>
-    protected override void Process(object Object)
-    {
-        if (Object is not Document document) 
-        {
-            return; 
-        }
+        if (Object is not Document document) return;
 
         var projectInfo = document.ProjectInformation;
         
@@ -50,5 +25,13 @@ public class ProjectParameterTextRetriever : BaseParameterTextRetriever
         ProcessProjectInfoProperty(projectInfo.OrganizationDescription, TranslationDetails.ProjectInfoOrganizationDescription);
         ProcessProjectInfoProperty(projectInfo.OrganizationName, TranslationDetails.ProjectInfoOrganizationName);
         ProcessProjectInfoProperty(projectInfo.Status, TranslationDetails.ProjectInfoStatus);
+    }
+    
+    private void ProcessProjectInfoProperty(string propertyText, TranslationDetails details)
+    {
+        if (!ValidationUtils.HasText(propertyText)) return;
+
+        var unit = new TranslationEntity(Context.ActiveDocument, propertyText, details);
+        AddUnitToList(unit);
     }
 }

@@ -1,5 +1,5 @@
-﻿using RevitTranslator.Models;
-using RevitTranslator.Utils.App;
+﻿using RevitTranslator.Extensions;
+using RevitTranslator.Models;
 using RevitTranslator.Utils.Revit;
 
 namespace RevitTranslator.Utils.ElementTextRetrievers;
@@ -9,26 +9,28 @@ namespace RevitTranslator.Utils.ElementTextRetrievers;
 /// </summary>
 public class BatchTextRetriever : BaseElementTextRetriever
 {
-    /// <summary>
-    /// Current BaseElementTextRetriever for the Process function.
-    /// </summary>
-    private BaseElementTextRetriever _currentRetriever = null;
+    [CanBeNull] 
+    private BaseElementTextRetriever _currentRetriever;
+    private HashSet<ElementType> _elementTypes = [];
+    private HashSet<Family> _families = [];
+    private HashSet<Element> _taggedElements = [];
+    private readonly List<DocumentTranslationEntityGroup> _unitGroups = [];
 
-    public BatchTextRetriever(List<Element> elements, bool translateProjectParameters)
+    public List<DocumentTranslationEntityGroup> Translate(Element[] elements, bool translateProjectParameters)
     {
-        TaggedElements = ElementRetriever.GetTaggedElements(elements);
-        HashSet<Element> instancesTypesFamilies = elements.ToHashSet();
-        instancesTypesFamilies.UnionWith(TaggedElements);
+        _unitGroups.Add(new DocumentTranslationEntityGroup(Context.ActiveDocument));
+        
+        _taggedElements = elements.OfType<IndependentTag>().GetUniqueTaggedElements();
+        var instancesTypesFamilies = elements.ToHashSet();
+        instancesTypesFamilies.UnionWith(_taggedElements);
 
-        ElementTypes = TypeAndFamilyManager.GetUniqueTypesFromElements(instancesTypesFamilies);
-        Families = TypeAndFamilyManager.GetUniqueFamiliesFromElements(instancesTypesFamilies);
+        _elementTypes = instancesTypesFamilies.GetUniqueTypes();
+        _families = instancesTypesFamilies.GetUniqueFamilies();
 
-        UnitGroups.Add(new RevitTranslationUnitGroup(RevitUtils.Doc));
+        instancesTypesFamilies.UnionWith(_elementTypes);
+        instancesTypesFamilies.UnionWith(_families);
 
-        instancesTypesFamilies.UnionWith(ElementTypes);
-        instancesTypesFamilies.UnionWith(Families);
-
-        var elementsToTranslate = instancesTypesFamilies.Where(n => n != null).ToList();
+        var elementsToTranslate = instancesTypesFamilies.Where(n => n != null).ToArray();
 
         foreach (var element in elementsToTranslate)
         {
@@ -39,31 +41,10 @@ public class BatchTextRetriever : BaseElementTextRetriever
         {
             var paramRetriever = new ProjectParameterTextRetriever();
         }
+
+        return _unitGroups;
     }
 
-    /// <summary>
-    /// ElementTypes to be processed.
-    /// </summary>
-    public HashSet<ElementType> ElementTypes { get; } = [];
-
-    /// <summary>
-    /// Families to be processed.
-    /// </summary>
-    public HashSet<Family> Families { get; } = [];
-
-    /// <summary>
-    /// Tagged elements to be processed.
-    /// </summary>
-    public HashSet<Element> TaggedElements { get; } = [];
-
-    /// <summary>
-    /// TranslationUnitGroups associated with provided elements.
-    /// </summary>
-    public List<RevitTranslationUnitGroup> UnitGroups { get; } = [];
-    /// <summary>
-    /// Uses class-appropriate methods to retrieve information from a specific element.
-    /// </summary>
-    /// <param name="Object"></param>
     protected override void Process(object Object)
     {
         switch (Object)
@@ -94,59 +75,45 @@ public class BatchTextRetriever : BaseElementTextRetriever
 
             // this case will hit if we're processing anything that doesn't require any special treatment
             // besides one for a generic element
-            case object:
+            case not null:
                 _currentRetriever = null;
                 break;
         }
 
-        AddUnitsToGroup(_currentRetriever?.TranslationUnits);
+        if (_currentRetriever is not null)
+        {
+            AddUnitsToGroup(_currentRetriever.ElementTranslationUnits);
+        }
         _currentRetriever?.Dispose();
         _currentRetriever = null;
 
-        if (Object is not Element element)
-        {
-            return;
-        }
+        if (Object is not Element element) return;
 
         /* Every element still gets processed as a generic element
         * in case of any instance or type parameters.
         * This function also processes ElementTypes, which are classified as Elements.*/
 
         var elementRetriever = new GenericElementTextRetriever(element);
-        AddUnitsToGroup(elementRetriever.TranslationUnits);
+        AddUnitsToGroup(elementRetriever.ElementTranslationUnits);
     }
 
-    /// <summary>
-    /// If available, adds the UnitGroup of a family to the list of UnitGroups.
-    /// </summary>
-    /// <param name="retriever"></param>
     private void AddFamilyUnitGroupToList(FamilyTextRetriever retriever)
     {
-        if (retriever == null || retriever.UnitGroup == null)
-        {
-            return;
-        }
+        if (retriever == null || retriever.EntityGroup == null) return;
 
-        UnitGroups.Add(retriever.UnitGroup);
+        _unitGroups.Add(retriever.EntityGroup);
     }
-
-    /// <summary>
-    /// Adds TranslationUnits to the RevitTranslationUnitGroup with matching Document.
-    /// </summary>
-    /// <param name="units"></param>
-    private void AddUnitsToGroup(List<RevitTranslationUnit> units)
+    
+    private void AddUnitsToGroup(List<TranslationEntity> units)
     {
-        if (units == null || units.Count == 0)
-        {
-            return;
-        }
+        if (units == null || units.Count == 0) return;
         
         var u = units[0];
-        var group = UnitGroups.FirstOrDefault(g => g.Document.Equals(u.Document));
+        var group = _unitGroups.FirstOrDefault(g => g.Document.Equals(u.Document));
 
         foreach (var unit in units)
         {
-            group?.TranslationUnits.Add(unit);
+            group?.TranslationEntities.Add(unit);
         }
     }
 }

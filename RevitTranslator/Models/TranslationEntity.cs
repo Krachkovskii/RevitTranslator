@@ -5,29 +5,29 @@ namespace RevitTranslator.Models;
 /// This class describes a Revit-related unit of translation, 
 /// which includes reference to the element, original text, translation etc.
 /// </summary>
-public class RevitTranslationUnit
+public class TranslationEntity
 {
     private object _element = null;
     private Element _parentElement = null;
 
-    public RevitTranslationUnit()
+    public TranslationEntity()
     {
     }
 
-    public RevitTranslationUnit(object element, string originalText)
+    public TranslationEntity(object element, string originalText)
     {
         OriginalText = originalText;
         Element = element;
     }
 
-    public RevitTranslationUnit(object element, string originalText, TranslationDetails details)
+    public TranslationEntity(object element, string originalText, TranslationDetails details)
     {
         OriginalText = originalText;
         Element = element;
         TranslationDetails = details;
     }
 
-    public RevitTranslationUnit(object element, string originalText, ScheduleCellCoordinates cellCoordinates)
+    public TranslationEntity(object element, string originalText, ScheduleCellCoordinates cellCoordinates)
     {
         OriginalText = originalText;
         Element = element;
