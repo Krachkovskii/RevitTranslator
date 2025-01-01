@@ -1,30 +1,17 @@
 ﻿using System.Windows;
-using Autodesk.Revit.UI;
 using RevitTranslator.Models;
 
 namespace RevitTranslator.Utils.Revit;
 
-/// <summary>
-/// This class handles update of elements in the model using Transaction
-/// </summary>
-public class ModelUpdateHandler : IExternalEventHandler
+public class ModelUpdater
 {
-    /// <summary>
-    /// List of translations that can't be applied due to illegal characters
-    /// </summary>
-    private readonly List<string> _cantUpdate = [];
+    private readonly List<string> _nonUpdatableElements = [];
 
-    public static List<DocumentTranslationEntityGroup> TranslationUnitGroups { get; set; } = [];
-
-    /// <summary>
-    /// Main entry point for Revit event.
-    /// </summary>
-    /// <param name="app"></param>
-    public void Execute(UIApplication app)
+    public void Update(List<DocumentTranslationEntityGroup> documentGroups)
     {
-        foreach (var group in TranslationUnitGroups)
+        foreach (var group in documentGroups)
         {
-            UpdateDocumentTranslations(group);
+            UpdateDocument(group);
             if (group.Document.IsFamilyDocument)
             {
                 group.Document.LoadFamilyToActiveDocument();
@@ -32,38 +19,32 @@ public class ModelUpdateHandler : IExternalEventHandler
         }
     }
 
-    public string GetName()
+    private void UpdateDocument(DocumentTranslationEntityGroup group)
     {
-        return "Element Updater";
-    }
-
-    private void UpdateDocumentTranslations(DocumentTranslationEntityGroup group)
-    {
-        using var transaction = new Transaction(group.Document, $"Update Document {group.Document.Title}");
+        using var transaction = new Transaction(group.Document, "Translate elements");
         transaction.Start();
         
         try
         {
             foreach (var unit in group.TranslationEntities)
             {
-                UpdateElement(unit);
+                UpdateUnit(unit);
             }
 
-            if (_cantUpdate.Count > 0)
+            if (_nonUpdatableElements.Count > 0)
             {
                 ShowCantTranslateMessage(group.Document);
             }
 
             transaction.Commit();
         }
-        catch (Exception ex)
+        catch
         {
-            ShowTransactionErrorMessage(ex);
             transaction.RollBack();
         }
     }
 
-    private void UpdateElement(TranslationEntity entity)
+    private void UpdateUnit(TranslationEntity entity)
     {
         if (entity.Element == null 
             || entity.TranslatedText == string.Empty 
@@ -112,41 +93,9 @@ public class ModelUpdateHandler : IExternalEventHandler
                     element.Name = entity.TranslatedText;
                 }
                 break;
-
-            case not null:
-                break;
         }
     }
 
-    /// <summary>
-    /// Shows error message about a faulty transaction
-    /// </summary>
-    /// <param name="ex"></param>
-    private static void ShowTransactionErrorMessage(Exception ex)
-    {
-        MessageBox.Show(ex.Message,
-                        "Error updating elements",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-    }
-
-
-    /// <summary>
-    /// Adds report about translation with illegal characters
-    /// </summary>
-    /// <param name="entity"></param>
-    private void AddIllegalTranslation(TranslationEntity entity)
-    {
-        _cantUpdate.Add($"{entity.TranslatedText} " +
-            $"(Symbol: \"{entity.TranslatedText.FirstOrDefault(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c))}\", " +
-            $"ElementId: {entity.ElementId})");
-    }
-
-    /// <summary>
-    /// Updates overrides of DimensionSegment element
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="dim"></param>
     private void SetDimensionSegmentText(TranslationEntity entity, DimensionSegment dim)
     {
         switch (entity.TranslationDetails)
@@ -154,26 +103,25 @@ public class ModelUpdateHandler : IExternalEventHandler
             case TranslationDetails.DimensionAbove:
                 dim.Above = entity.TranslatedText;
                 break;
+            
             case TranslationDetails.DimensionBelow:
                 dim.Below = entity.TranslatedText;
                 break;
+            
             case TranslationDetails.DimensionPrefix:
                 dim.Prefix = entity.TranslatedText;
                 break;
+            
             case TranslationDetails.DimensionSuffix:
                 dim.Suffix = entity.TranslatedText;
                 break;
+            
             case TranslationDetails.DimensionOverride:
                 dim.ValueOverride = entity.TranslatedText;
                 break;
         }
     }
 
-    /// <summary>
-    /// Updates overrides of Dimension element
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="dim"></param>
     private void SetDimensionText(TranslationEntity entity, Dimension dim)
     {
         switch (entity.TranslationDetails)
@@ -181,25 +129,35 @@ public class ModelUpdateHandler : IExternalEventHandler
             case TranslationDetails.DimensionAbove:
                 dim.Above = entity.TranslatedText;
                 break;
+            
             case TranslationDetails.DimensionBelow:
                 dim.Below = entity.TranslatedText;
                 break;
+            
             case TranslationDetails.DimensionPrefix:
                 dim.Prefix = entity.TranslatedText;
                 break;
+            
             case TranslationDetails.DimensionSuffix:
                 dim.Suffix = entity.TranslatedText;
                 break;
+            
             case TranslationDetails.DimensionOverride:
                 dim.ValueOverride = entity.TranslatedText;
                 break;
         }
     }
 
+    private void AddIllegalTranslation(TranslationEntity entity)
+    {
+        _nonUpdatableElements.Add($"{entity.TranslatedText} " +
+                        $"(Symbol: \"{entity.TranslatedText.FirstOrDefault(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c))}\", " +
+                        $"ElementId: {entity.ElementId})");
+    }
 
     private void ShowCantTranslateMessage(Document doc)
     {
-        MessageBox.Show($"These translations in document \"{doc.Title}\" weren't updated due to forbidden symbols: \n{string.Join("\n", _cantUpdate)}.",
+        MessageBox.Show($"Some translations in document \"{doc.Title}\" weren't updated due to forbidden symbols: \n{string.Join("\n", _nonUpdatableElements)}.",
                                         "Warning",
                                         MessageBoxButton.OK,
                                         MessageBoxImage.Warning);

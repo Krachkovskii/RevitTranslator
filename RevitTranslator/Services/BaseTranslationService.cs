@@ -1,4 +1,4 @@
-using Autodesk.Revit.UI;
+using Nice3point.Revit.Toolkit.External.Handlers;
 using RevitTranslator.Contracts;
 using RevitTranslator.Models;
 using RevitTranslator.UI.Views;
@@ -11,20 +11,19 @@ namespace RevitTranslator.Services;
 
 public class BaseTranslationService : IService
 {
-    private ExternalEvent _externalEvent;
+    private List<DocumentTranslationEntityGroup> _documentEntities;
     
     public Element[] SelectedElements { get; set; } = [];
     
     public void Execute()
     {
-        _externalEvent = ExternalEvent.Create(new ModelUpdateHandler());
-        var documentEntities = RetrieveText();
+        _documentEntities = RetrieveText();
 
         var viewModel = new ProgressWindowViewModel();
         var view = new ProgressWindow(viewModel);
         view.Show();
         
-        Translate(documentEntities);
+        Translate();
         UpdateRevitModel();
     }
 
@@ -34,14 +33,14 @@ public class BaseTranslationService : IService
         return retriever.Translate(SelectedElements, false);
     }
     
-    private void Translate(List<DocumentTranslationEntityGroup> documentEntities)
+    private void Translate()
     {
         var handler = new NewConcurrentTranslationHandler();
         var cts = new CancellationTokenSource();
 
         try
         {
-            foreach (var documentEntity in documentEntities)
+            foreach (var documentEntity in _documentEntities)
             {
                 cts.Token.ThrowIfCancellationRequested();
                 Task.Run(async () => await handler.Execute(documentEntity.TranslationEntities, cts.Token), cts.Token);
@@ -55,6 +54,6 @@ public class BaseTranslationService : IService
 
     private void UpdateRevitModel()
     {
-        _externalEvent.Raise();
+        new ActionEventHandler().Raise(_ => new ModelUpdater().Update(_documentEntities));
     }
 }
