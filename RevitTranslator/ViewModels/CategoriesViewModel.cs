@@ -1,94 +1,115 @@
 ﻿using System.Collections.ObjectModel;
-using RevitTranslator.Commands;
-using RevitTranslator.Models;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using RevitTranslator.Common.App.Models;
+using RevitTranslator.Common.Extensions;
+using RevitTranslator.Extensions;
+using RevitTranslator.UI.Contracts;
+using RevitTranslator.Utils.Revit;
 
 namespace RevitTranslator.ViewModels;
-public partial class CategoriesViewModel : ObservableValidator, ICategoriesViewModel
+public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindowViewModel
 {
-    //TODO: Implement validation logic
-    private readonly TranslationUtils _translationUtils = null;
+    [ObservableProperty] private string _mainButtonText = "Select elements to translate";
+    [ObservableProperty] private string _searchText = string.Empty;
+    [ObservableProperty] private ObservableCollection<ObservableCategoryType> _filteredCategoryTypes = [];
+    [ObservableProperty] private bool _isLoading;
     
-    [ObservableProperty] private string _mainButtonText;
-    [ObservableProperty] private ObservableCollection<CategoryDescriptor> _selectedCategories;
-    
-    public CategoriesViewModel(TranslationUtils utils, ProgressWindowUtils windowUtils, List<CategoryDescriptor> categoryDescriptors)
-    {
-        AllCategories = categoryDescriptors.ToArray();
+    [ObservableProperty] 
+    [Required]
+    [NotifyDataErrorInfo]
+    [MinLength(1)]
+    [NotifyCanExecuteChangedFor(nameof(TranslateCommand))]
+    private List<ObservableCategoryDescriptor> _selectedCategories = [];
 
-        _translationUtils = utils;
-        _progressWindowUtils = windowUtils;
+    private int _elementCount;
+    
+    public ObservableCategoryType[] CategoryTypes { get; private set; }
+    
+    public CategoriesViewModel()
+    {
         MainButtonText = "Translate";
-    }
-    public CategoryDescriptor[] AllCategories { get; }
-    
-    /// <summary>
-    /// Counts the number of elements in all selected categories
-    /// </summary>
-    private int ElementCount
-    {
-        set
-        {
-            if (value == 0)
-            {
-                MainButtonText = Enumerable.Any<CategoryDescriptor>(SelectedCategories, categoryDescriptor => categoryDescriptor.IsChecked) 
-                    ? "No elements of selected categories" 
-                    : "Select Categories to translate";
-            }
-            else
-            {
-                MainButtonText = $"Translate {value} elements";
-            }
-        }
+        CategoryTypes = CreateCategoryTypes();
     }
 
-    private ProgressWindowUtils _progressWindowUtils { get; set; } = null;
-    /// <summary>
-    /// Counts the number of elements in selected categories and asynchronously updates the value.
-    /// </summary>
-    public void CountElements()
+    private ObservableCategoryType[] CreateCategoryTypes()
+    {
+        var categories = CategoryFilter.ValidCategories;
+        var categoryTypes = categories.Select(category => category.CategoryType)
+            .Distinct()
+            .Select(type => new ObservableCategoryType
+            {
+                Categories = categories
+                    .Where(category => category.CategoryType == type)
+                    .Select(category => new ObservableCategoryDescriptor
+                    {
+                        Id = category.Id.ToLong()
+                    })
+                    .ToArray(),
+                Name = type.ToString(),
+            })
+            .ToArray();
+
+        return categoryTypes;
+    }
+
+    private void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName != nameof(ObservableCategoryDescriptor.IsChecked)) return;
+        var category = (ObservableCategoryDescriptor)sender!;
+
+        if (category.IsChecked)
+        {
+            SelectedCategories.Add(category);
+            Task.Run(async () => await UpdateElementCounter(category, true));
+            MainButtonText = $"Translate {_elementCount} elements";
+            return;
+        }
+        
+        SelectedCategories.Remove(category);
+        Task.Run(async () => await UpdateElementCounter(category, false));
+        
+        if (_elementCount == 0) MainButtonText = "Select category to translate";
+    }
+
+    private async Task UpdateElementCounter(ObservableCategoryDescriptor category, bool add)
+    {
+        
+    }
+
+    partial void OnSearchTextChanged(string value)
     {
         Task.Run(() =>
         {
-            // var categories = AllCategories.Where(item => item.IsChecked).Select(c => c.Category.BuiltInCategory).ToList();
-            // var count = TranslateCategoriesCommand.GetElementsFromCategories(categories).Count;
-            //
-            // ElementCount = count;
+            List<ObservableCategoryType> filteredCategories = [];
+            foreach (var categoryType in CategoryTypes)
+            {
+                categoryType.FilteredCategories.Clear();
+                var validCategory = false;
+                foreach (var category in categoryType.Categories)
+                {
+                    var contains = category.Name.Contains(value, StringComparison.OrdinalIgnoreCase);
+                    if (!contains) continue;
+
+                    validCategory = true;
+                    categoryType.FilteredCategories.Add(category);
+                }
+
+                if (validCategory) filteredCategories.Add(categoryType);
+            }
+
+            FilteredCategoryTypes = filteredCategories.ToObservableCollection();
         });
     }
 
-    /// <summary>
-    /// Checks or unchecks all categories in selected Category Type.
-    /// </summary>
-    /// <param name="parameter">
-    /// Passed by GroupCheckboxStateConverter.
-    /// </param>
-    [RelayCommand]
-    private void SelectAllInGroup(object param)
+    [RelayCommand(CanExecute = nameof(CanTranslate))] 
+    private void Translate()
     {
-        if (param is not Tuple<bool, string> parameter) return;
-
-        bool isChecked = parameter.Item1;
-        string type = parameter.Item2;
-
-        // Example: Update all items in the group
-        var itemsInGroup = AllCategories.Where(item => item.Type == type);
-        foreach (var item in itemsInGroup)
-        {
-            item.IsChecked = isChecked;
-        }
     }
-    
-    /// <summary>
-    /// Command for translation of all elements in selected categories. 
-    /// Starts translation process and calls the raise of ExternalEvent to update Revit model.
-    /// </summary>
-    [RelayCommand]
-    private void TranslateSelected()
-    {
-        TranslateCategoriesCommand.Window.Close();
-        TranslateCategoriesCommand.Window = null;
 
-        BaseTranslationCommand.StartCategoryTranslationCommand(Enumerable.ToList<CategoryDescriptor>(SelectedCategories), _progressWindowUtils, _translationUtils, false, false);
+    private bool CanTranslate()
+    {
+        return !HasErrors;
     }
 }
 

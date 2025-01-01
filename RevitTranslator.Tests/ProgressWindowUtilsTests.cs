@@ -11,10 +11,10 @@ namespace RevitTranslatorAddin.Tests
         public void CalculateTotalTranslations_ShouldReturnCorrectCount()
         {
             // Arrange
-            var unitGroups = new List<RevitTranslationUnitGroup>
+            var unitGroups = new List<DocumentTranslationEntityGroup>
             {
-                new RevitTranslationUnitGroup { TranslationUnits = new List<RevitTranslationUnit> { new RevitTranslationUnit(), new RevitTranslationUnit() } },
-                new RevitTranslationUnitGroup { TranslationUnits = new List<RevitTranslationUnit> { new RevitTranslationUnit() } }
+                new DocumentTranslationEntityGroup { TranslationEntities = new List<TranslationEntity> { new TranslationEntity(), new TranslationEntity() } },
+                new DocumentTranslationEntityGroup { TranslationEntities = new List<TranslationEntity> { new TranslationEntity() } }
             };
             var handler = new MultiTaskTranslationHandler(null, unitGroups, null);
 
@@ -31,9 +31,9 @@ namespace RevitTranslatorAddin.Tests
             // Arrange
             var translationUtilsMock = new Mock<TranslationUtils>();
             var progressWindowUtilsMock = new Mock<ProgressWindowUtils>();
-            var unitGroups = new List<RevitTranslationUnitGroup>
+            var unitGroups = new List<DocumentTranslationEntityGroup>
             {
-                new RevitTranslationUnitGroup { TranslationUnits = new List<RevitTranslationUnit> { new RevitTranslationUnit(), new RevitTranslationUnit() } }
+                new DocumentTranslationEntityGroup { TranslationEntities = new List<TranslationEntity> { new TranslationEntity(), new TranslationEntity() } }
             };
             var handler = new MultiTaskTranslationHandler(translationUtilsMock.Object, unitGroups, progressWindowUtilsMock.Object);
 
@@ -52,9 +52,9 @@ namespace RevitTranslatorAddin.Tests
             // Arrange
             var translationUtilsMock = new Mock<TranslationUtils>();
             var progressWindowUtilsMock = new Mock<ProgressWindowUtils>();
-            var unitGroups = new List<RevitTranslationUnitGroup>
+            var unitGroups = new List<DocumentTranslationEntityGroup>
             {
-                new RevitTranslationUnitGroup { TranslationUnits = new List<RevitTranslationUnit> { new RevitTranslationUnit(), new RevitTranslationUnit() } }
+                new DocumentTranslationEntityGroup { TranslationEntities = new List<TranslationEntity> { new TranslationEntity(), new TranslationEntity() } }
             };
             var handler = new MultiTaskTranslationHandler(translationUtilsMock.Object, unitGroups, progressWindowUtilsMock.Object);
             handler._test = true; // Enable test mode
@@ -79,9 +79,9 @@ namespace RevitTranslatorAddin.Tests
             // Arrange
             var translationUtilsMock = new Mock<TranslationUtils>();
             var progressWindowUtilsMock = new Mock<ProgressWindowUtils>();
-            var unitGroups = new List<RevitTranslationUnitGroup>
+            var unitGroups = new List<DocumentTranslationEntityGroup>
             {
-                new RevitTranslationUnitGroup { TranslationUnits = new List<RevitTranslationUnit> { new RevitTranslationUnit() } }
+                new DocumentTranslationEntityGroup { TranslationEntities = new List<TranslationEntity> { new TranslationEntity() } }
             };
             var handler = new MultiTaskTranslationHandler(translationUtilsMock.Object, unitGroups, progressWindowUtilsMock.Object);
             handler._test = true; // Enable test mode
@@ -99,9 +99,9 @@ namespace RevitTranslatorAddin.Tests
             // Arrange
             var translationUtilsMock = new Mock<TranslationUtils>();
             var progressWindowUtilsMock = new Mock<ProgressWindowUtils>();
-            var unitGroups = new List<RevitTranslationUnitGroup>
+            var unitGroups = new List<DocumentTranslationEntityGroup>
             {
-                new RevitTranslationUnitGroup { TranslationUnits = new List<RevitTranslationUnit> { new RevitTranslationUnit() } }
+                new DocumentTranslationEntityGroup { TranslationEntities = new List<TranslationEntity> { new TranslationEntity() } }
             };
             var handler = new MultiTaskTranslationHandler(translationUtilsMock.Object, unitGroups, progressWindowUtilsMock.Object);
             var aggregateException = new AggregateException(new OperationCanceledException());

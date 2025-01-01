@@ -20,7 +20,7 @@ public partial class CategoriesWindow
             WindowBackdropType = WindowBackdropType.Acrylic;
         }
     }
-
+    
     private void OnTranslateButtonClicked(object sender, RoutedEventArgs e)
     {
         Close();

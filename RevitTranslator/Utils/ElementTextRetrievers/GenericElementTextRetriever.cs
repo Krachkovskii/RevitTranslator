@@ -12,59 +12,42 @@ public class GenericElementTextRetriever : BaseElementTextRetriever
         Process(element);
     }
 
-    protected override void Process(object Object)
+    protected override sealed void Process(object Object)
     {
-        if (Object is not Element element)
-        {
-            return;
-        }
+        if (Object is not Element element) return;
 
         ProcessElementParameters(element);
-
-        if (element is ElementType)
+        switch (element)
         {
-            ProcessElementName(element);
-        }
-        else if (element is ViewSchedule schedule)
-        {
-            ProcessElementName(schedule);
-        }
-        else if (element is ScheduleSheetInstance scheduleInstance)
-        {
-            ProcessElementName( RevitUtils.Doc.GetElement( scheduleInstance.ScheduleId ));
+            case ElementType:
+                ProcessElementName(element);
+                break;
+            case ViewSchedule schedule:
+                ProcessElementName(schedule);
+                break;
+            case ScheduleSheetInstance scheduleInstance:
+                ProcessElementName(Context.ActiveDocument!.GetElement(scheduleInstance.ScheduleId));
+                break;
         }
     }
 
-    /// <summary>
-    /// Retrieves element's Name property.
-    /// </summary>
-    /// <param name="element"></param>
-    private void ProcessElementName(Element element)
-    {
-        var name = element.Name;
-
-        if (!ValidationUtils.HasText(name))
-        {
-            return;
-        }
-
-        var unit = new RevitTranslationUnit(element, name, TranslationDetails.ElementName);
-
-        AddUnitToList(unit);
-    }
-
-    /// <summary>
-    /// Processes all valid parameters of an Element.
-    /// </summary>
-    /// <param name="element"></param>
     private void ProcessElementParameters(Element element)
     {
         var parameterRetriever = new ElementParameterTextRetriever(element);
-        var parameterUnits = parameterRetriever.TranslationUnits;
+        var parameterUnits = parameterRetriever.ElementTranslationUnits;
 
         foreach (var unit in parameterUnits)
         {
             AddUnitToList(unit);
         }
+    }
+
+    private void ProcessElementName(Element element)
+    {
+        var name = element.Name;
+        if (!ValidationUtils.HasText(name)) return;
+
+        var unit = new TranslationEntity(element, name, TranslationDetails.ElementName);
+        AddUnitToList(unit);
     }
 }
