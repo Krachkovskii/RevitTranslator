@@ -3,11 +3,11 @@ using TranslationService.Utils;
 
 namespace RevitTranslator.Utils.App;
 
-public class NewConcurrentTranslationHandler
+public class ConcurrentTranslationHandler
 {
     private readonly List<Task> _translationTasks = [];
     
-    public async Task Execute(List<TranslationEntity> entities, CancellationToken token)
+    public async Task Translate(TranslationEntity[] entities, CancellationToken token)
     {
         try
         {
@@ -25,7 +25,6 @@ public class NewConcurrentTranslationHandler
         finally
         {
             await Task.WhenAll(_translationTasks);
-            _translationTasks.Clear();
         }
     }
     

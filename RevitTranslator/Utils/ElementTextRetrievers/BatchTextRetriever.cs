@@ -16,7 +16,7 @@ public class BatchTextRetriever : BaseElementTextRetriever
     private HashSet<Element> _taggedElements = [];
     private readonly List<DocumentTranslationEntityGroup> _unitGroups = [];
 
-    public List<DocumentTranslationEntityGroup> Translate(Element[] elements, bool translateProjectParameters)
+    public List<DocumentTranslationEntityGroup> CreateUnits(Element[] elements, bool translateProjectParameters, out int unitCount)
     {
         _unitGroups.Add(new DocumentTranslationEntityGroup(Context.ActiveDocument));
         
@@ -42,6 +42,7 @@ public class BatchTextRetriever : BaseElementTextRetriever
             var paramRetriever = new ProjectParameterTextRetriever();
         }
 
+        unitCount = _unitGroups.Sum(group => group.TranslationEntities.Count);
         return _unitGroups;
     }
 
