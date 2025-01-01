@@ -1,100 +1,87 @@
-﻿using RevitTranslator.UI.Contracts;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using RevitTranslator.Common.App.Messages;
+using RevitTranslator.UI.Contracts;
+using TranslationService.Utils;
 
 namespace RevitTranslator.ViewModels;
 
-public partial class ProgressWindowViewModel : ObservableObject, IProgressWindowViewModel
+public partial class ProgressWindowViewModel : ObservableObject,
+    IProgressWindowViewModel,
+    IRecipient<TextRetrievedMessage>,
+    IRecipient<EntityTranslatedMessage>,
+    IRecipient<TranslationFinishedMessage>
 {
-    [ObservableProperty] private string _buttonText = string.Empty;
-    [ObservableProperty] private int _characterCount = 0;
-    [ObservableProperty] private int _currentValue = 0;
-    [ObservableProperty] private bool _isProgressBarIndeterminate = false;
-    [ObservableProperty] private bool _isStopEnabled = true;
-    [ObservableProperty] private int _maximum = 0;
-    [ObservableProperty] private int _monthlyLimit = 500000;
-    [ObservableProperty] private int _monthlyUsage = 0;
-    [ObservableProperty] private double _progressBarOpacity = 1;
-    [ObservableProperty] private string _statusTextBlock = string.Empty;
-
+    [ObservableProperty] private int _totalTranslationCount;
+    [ObservableProperty] private int _finishedTranslationCount;
+    [ObservableProperty] private int _monthlyCharacterLimit;
+    [ObservableProperty] private int _monthlyCharacterCount;
+    [ObservableProperty] private int _sessionCharacterCount;
+    [ObservableProperty] private string _buttonText;
+    [ObservableProperty] private bool _isProgressBarIntermediate;
+    [ObservableProperty] private bool _modelUpdateFinished;
+    
     public ProgressWindowViewModel()
     {
-        MonthlyLimit = TranslationUtils.Limit;
-        MonthlyUsage = TranslationUtils.Usage;
-        IsStopEnabled = true;
-        IsProgressBarIndeterminate = true;
-        ButtonText = "Extracting model data...";
-    }
+        StrongReferenceMessenger.Default.Register<TextRetrievedMessage>(this);
+        StrongReferenceMessenger.Default.Register<EntityTranslatedMessage>(this);
+        StrongReferenceMessenger.Default.Register<TranslationFinishedMessage>(this);
+        
+        ButtonText = "Retrieving text from elements...";
 
-    public CancellationTokenSource Cts
-    {
-        get;
-        set;
-    } = null;
-
-    public bool IsStopRequested
-    {
-        get;
-        set;
-    } = false;
-
-    public bool TranslationFinished
-    {
-        get;
-        set;
-    } = false;
-
-    /// <summary>
-    /// Represents the end of translation process
-    /// </summary>
-    public void TranslationsFinishedStatus()
-    {
-        if (IsStopEnabled)
+        Task.Run(async () =>
         {
-            IsStopEnabled = false;
-        }
+            await TranslationUtils.CheckUsageAsync();
 
-        ButtonText = IsStopRequested ? "Translation was interrupted" : "Translation finished!";
+            if (TranslationUtils.Usage == -1)
+            {
+                CancelTranslation();
+                return;
+            }
+            
+            MonthlyCharacterCount = TranslationUtils.Usage;
+            MonthlyCharacterLimit = TranslationUtils.Limit;
+        });
     }
 
-    /// <summary>
-    /// Represents the start of translation process
-    /// </summary>
-    public void TranslationStartedStatus()
-    {
-        IsProgressBarIndeterminate = false;
-        ButtonText = "Stop translation";
-    }
-
-    /// <summary>
-    /// Represents the end of Revit model update
-    /// </summary>
-    public void UpdateFinished()
-    {
-        TranslationUtils.ClearTranslationCount();
-
-        ButtonText = IsStopRequested ? "Translation interrupted | Elements updated" : "Elements translated!";
-
-        ProgressBarOpacity = 0.5;
-        IsProgressBarIndeterminate = false;
-    }
-
-    /// <summary>
-    /// Represents the start of Revit model update
-    /// </summary>
-    public void UpdateStarted()
-    {
-        ButtonText = "Updating Revit model...";
-        IsProgressBarIndeterminate = true;
-    }
-
-    /// <summary>
-    /// Cancels the translation process
-    /// </summary>
     [RelayCommand]
-    private void Stop()
+    private void CancelTranslation()
     {
-        Cts.Cancel();
-        ButtonText = "Stopping translation...";
-        IsStopEnabled = false;
-        IsStopRequested = true;
+        StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage());
+        ButtonText = "Translation cancelled";
+    }
+
+    public void CloseRequested()
+    {
+        StrongReferenceMessenger.Default.UnregisterAll(this);
+        CancelTranslation();
+    }
+
+    public void UpdateProgress(int translationLength)
+    {
+        SessionCharacterCount += translationLength;
+        MonthlyCharacterCount += translationLength;
+        FinishedTranslationCount++;
+
+        if (MonthlyCharacterCount >= MonthlyCharacterLimit)
+        {
+            CancelTranslation();
+        }
+    }
+
+    public void Receive(TextRetrievedMessage message)
+    {
+        IsProgressBarIntermediate = false;
+        ButtonText = "Cancel translation";
+    }
+
+    public void Receive(EntityTranslatedMessage message)
+    {
+        UpdateProgress(message.CharacterCount);
+    }
+
+    public void Receive(TranslationFinishedMessage message)
+    {
+        IsProgressBarIntermediate = true;
+        ButtonText = "Updating model...";
     }
 }

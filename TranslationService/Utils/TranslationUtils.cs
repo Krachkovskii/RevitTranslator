@@ -1,5 +1,4 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
 using TranslationService.JsonProperties;
 using TranslationService.Models;
@@ -18,12 +17,12 @@ public static class TranslationUtils
     /// <summary>
     /// Translation limits for current DeepL plan
     /// </summary>
-    public static int Limit { get; private set; }
+    public static int Limit { get; private set; } = -1;
 
     /// <summary>
     /// Counter for translated symbols for current billing period
     /// </summary>
-    public static int Usage { get; private set; }
+    public static int Usage { get; private set; } = -1;
 
     /// <summary>
     /// Checks if translation can be performed based on the provided settingsUtils. 
@@ -47,7 +46,7 @@ public static class TranslationUtils
         return test;
     }
 
-    private static async Task GetUsageAsync()
+    public static async Task CheckUsageAsync()
     {
         HttpClient.DefaultRequestHeaders.Authorization = 
             new AuthenticationHeaderValue("DeepL-Auth-Key", _settings.DeeplApiKey);
