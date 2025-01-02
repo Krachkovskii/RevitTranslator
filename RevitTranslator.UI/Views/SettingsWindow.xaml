@@ -32,7 +32,6 @@
                 ShowMinimize="False"/>
             <Button 
                 DockPanel.Dock="Bottom" 
-                IsDefault="True"
                 Content="{Binding ButtonText}"
                 Command="{Binding SaveSettingsCommand}"
                 Style="{StaticResource LargeRectangularButton}"/>
@@ -95,19 +94,24 @@
                             ToolTip="Enable language auto-detect"
                             Cursor="Hand" />
                     </StackPanel>
-                    <ui:Button
+                    <StackPanel 
                         Grid.Column="1"
-                        Height="40"
-                        Width="40"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Top"
-                        FontSize="15"
-                        Content="{ui:SymbolIcon ArrowRepeat124}"
-                        Command="{Binding SwitchLanguagesCommand}"
-                        IsEnabled="{Binding IsAutoDetectChecked, 
+                        Orientation="Vertical">
+                        <ui:TextBlock
+                            Style="{StaticResource Annotation}" />
+                        <ui:Button
+                            Height="40"
+                            Width="40"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            FontSize="15"
+                            Content="{ui:SymbolIcon ArrowRepeat124}"
+                            Command="{Binding SwitchLanguagesCommand}"
+                            IsEnabled="{Binding IsAutoDetectChecked, 
                             Converter={converters:InverseBoolConverter}}"
-                        ToolTip="Reverse language selection"
-                        Cursor="Hand" />
+                            ToolTip="Reverse language selection"
+                            Cursor="Hand" />
+                    </StackPanel>
                     <StackPanel
                         Grid.Column="2"
                         Orientation="Vertical">
