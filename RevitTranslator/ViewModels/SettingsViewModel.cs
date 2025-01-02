@@ -5,70 +5,36 @@ using TranslationService.Utils;
 
 namespace RevitTranslator.ViewModels;
 
-public partial class SettingsViewModel : ObservableObject, ISettingsViewModel
+public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
 {
-    private readonly DeeplSettingsDescriptor _settings = DeeplSettingsUtils.CurrentSettings;
-    private bool _isAutoDetectChecked = true;
-    private int _previousSourceIndex = -1;
-
-    [ObservableProperty] private string _deeplApiKey;
+    [ObservableProperty] private string _deeplApiKey = string.Empty;
+    [ObservableProperty] private bool _isAutoDetectChecked;
     [ObservableProperty] private bool _isPaidPlan;
-    [ObservableProperty] private int _selectedSourceLanguageIndex;
-    [ObservableProperty] private int _selectedTargetLanguageIndex;
+    [ObservableProperty] private LanguageDescriptor? _selectedSourceLanguage = DeeplLanguageCodes.TargetLanguages[0];
+    [ObservableProperty] private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.TargetLanguages[1];
     [ObservableProperty] private string _buttonText;
-
-    public LanguageDescriptor[] Languages { get; } = DeeplLanguageCodes.TargetLanguages;
-
+    
+    private LanguageDescriptor? _previousLanguage;
+    private int _savedHash;
+    
     public SettingsViewModel()
     {
-        LoadSettings();
-        ButtonText = "Save settings";
-    }
-
-    public bool IsAutoDetectChecked
-    {
-        get => _isAutoDetectChecked;
-        set
-        {
-            if (_isAutoDetectChecked != value)
-            {
-                _isAutoDetectChecked = value;
-                OnPropertyChanged(nameof(IsSourceComboBoxEnabled));
-                OnPropertyChanged(nameof(IsAutoDetectChecked));
-
-                if (value)
-                {
-                    _previousSourceIndex = SelectedSourceLanguageIndex;
-                    SelectedSourceLanguageIndex = -1;
-                }
-                else
-                {
-                    SelectedSourceLanguageIndex = _previousSourceIndex;
-                }
-            }
-        }
-    }
-
-    public bool IsSourceComboBoxEnabled => !IsAutoDetectChecked;
-
-    /// <summary>
-    /// Loads the settings file
-    /// </summary>
-    private void LoadSettings()
-    {
         DeeplSettingsUtils.Load();
-        
-        DeeplApiKey = _settings.DeeplApiKey;
-        IsPaidPlan = _settings.IsPaidPlan;
-
-        // SetSourceLanguage();
-        // SetTargetLanguage();
+        SetSettingsValues();
+        ButtonText = "Save Settings";
     }
+    
+    [RelayCommand]
+    private void SwitchLanguages()
+    {
+        // this works only when auto-detect is off, so source language would be selected anyway
+        var lang1 = SelectedSourceLanguage;
+        var lang2 = SelectedTargetLanguage;
 
-    /// <summary>
-    /// Opens the link to my LinkedIn page in default browser
-    /// </summary>
-    /// <param name="uri"></param>
+        SelectedSourceLanguage = lang2;
+        SelectedTargetLanguage = lang1!;    
+    }
+    
     [RelayCommand]
     private void OpenLinkedin(string uri)
     {
@@ -77,94 +43,91 @@ public partial class SettingsViewModel : ObservableObject, ISettingsViewModel
             Process.Start(new ProcessStartInfo(validUri.AbsoluteUri) { UseShellExecute = true });
         }
     }
-
-    /// <summary>
-    /// Saves settings file and checks if provided credentials are valid
-    /// </summary>
-    [RelayCommand]
+    
+    [RelayCommand(CanExecute = nameof(CanSaveSettings))]
     private void SaveSettings()
     {
-        _settings.DeeplApiKey = DeeplApiKey;
-        _settings.SourceLanguage = SelectedSourceLanguageIndex == -1 ? null : Languages[SelectedSourceLanguageIndex];
-        _settings.TargetLanguage = Languages[SelectedTargetLanguageIndex];
-        _settings.Save();
+        var settings = new DeeplSettingsDescriptor();
+        settings.IsPaidPlan = IsPaidPlan;
+        settings.DeeplApiKey = DeeplApiKey;
+        settings.SourceLanguage = SelectedSourceLanguage;
+        settings.TargetLanguage = SelectedTargetLanguage;
+
+        DeeplSettingsUtils.CurrentSettings = settings;
+        settings.Save();
+        _savedHash = CaluclateHash();
         
-        if (!TranslationUtils.TryTestTranslate())
-        {
-            return;
-        }
-
-        ButtonText = "Settings saved!";
-
-        Task.Run((Func<Task>)(async () =>
-        {
-            await Task.Delay(2000);
-            ButtonText = "Save settings";
-        }));
+        ButtonText = "Settings saved";
     }
 
-    /// <summary>
-    /// Sets the source language
-    /// </summary>
-    // private void SetSourceLanguage()
-    // {
-    //     if (_settings.SourceLanguage == null)
-    //     {
-    //         SelectedSourceLanguageIndex = -1;
-    //         IsAutoDetectChecked = true;
-    //     }
-    //     else
-    //     {
-    //         IsAutoDetectChecked = false;
-    //         if (_settings.SourceLanguage == null)
-    //         {
-    //             SelectedSourceLanguageIndex = -1;
-    //         }
-    //         else if (char.IsLower(_settings.SourceLanguage[0]))
-    //         {
-    //             SelectedSourceLanguageIndex = _languages.IndexOfKey(_languages.FirstOrDefault(kvp => kvp.Value == _settings.SourceLanguage).Key);
-    //         }
-    //         else
-    //         {
-    //             SelectedSourceLanguageIndex = _languages.IndexOfKey(_settings.SourceLanguage);
-    //         }
-    //     }
-    // }
-
-    /// <summary>
-    /// Sets the target language
-    /// </summary>
-    // private void SetTargetLanguage()
-    // {
-    //     if (_settings.TargetLanguage == null)
-    //     {
-    //         SelectedTargetLanguageIndex = -1;
-    //         IsAutoDetectChecked = true;
-    //     }
-    //     else if (char.IsLower(_settings.TargetLanguage[0]))
-    //     {
-    //         SelectedTargetLanguageIndex = _languages.IndexOfKey(_languages.FirstOrDefault(kvp => kvp.Value == _settings.TargetLanguage).Key);
-    //     }
-    //     else
-    //     {
-    //         SelectedTargetLanguageIndex = _languages.IndexOfKey(_settings.TargetLanguage);
-    //     }
-    // }
-    
-    /// <summary>
-    /// Switches "to" and "from" languages in the UI
-    /// </summary>
-    [RelayCommand]
-    private void SwitchLanguages()
+    private void SetSettingsValues()
     {
-        if (IsAutoDetectChecked)
-        {
-            IsAutoDetectChecked = false;
-        }
-        var index1 = SelectedSourceLanguageIndex;
-        var index2 = SelectedTargetLanguageIndex;
+        IsPaidPlan = DeeplSettingsUtils.CurrentSettings.IsPaidPlan;
+        DeeplApiKey = DeeplSettingsUtils.CurrentSettings.DeeplApiKey;
+        SelectedSourceLanguage = DeeplSettingsUtils.CurrentSettings.SourceLanguage;
+        SelectedTargetLanguage = DeeplSettingsUtils.CurrentSettings.TargetLanguage;
 
-        SelectedSourceLanguageIndex = index2;
-        SelectedTargetLanguageIndex = index1;
+        if (SelectedSourceLanguage is null)
+        {
+            IsAutoDetectChecked = true;
+        }
+        
+        _savedHash = CaluclateHash();
+    }
+
+    partial void OnIsAutoDetectCheckedChanged(bool value)
+    {
+        if (value)
+        {
+            _previousLanguage = SelectedSourceLanguage;
+            SelectedSourceLanguage = null;
+        }
+        else
+        {
+            SelectedSourceLanguage = _previousLanguage ??= DeeplLanguageCodes.TargetLanguages[0];
+        }
+    }
+
+    partial void OnDeeplApiKeyChanged(string value)
+    {
+        CanSaveSettings();
+    }
+
+    partial void OnIsPaidPlanChanged(bool value)
+    {
+        CanSaveSettings();
+    }
+
+    partial void OnSelectedSourceLanguageChanged(LanguageDescriptor? value)
+    {
+        CanSaveSettings();
+    }
+
+
+    partial void OnSelectedTargetLanguageChanged(LanguageDescriptor value)
+    {
+        CanSaveSettings();
+    }
+
+    private bool CanSaveSettings()
+    {
+        var areSettingsSame = _savedHash == CaluclateHash();
+        ButtonText =  areSettingsSame ? "Settings saved" : "Save Settings";
+
+        return !areSettingsSame;
+    }
+
+    private int CaluclateHash()
+    {
+        unchecked
+        {
+            var hash = 95;
+            hash = hash * 31 + SelectedSourceLanguage?.GetHashCode()?? 1;
+            hash = hash * 31 + SelectedTargetLanguage.GetHashCode();
+            hash = hash * 31 + IsPaidPlan.GetHashCode();
+            hash = hash * 31 + DeeplApiKey.GetHashCode();
+
+            return hash;
+        }
     }
 }
