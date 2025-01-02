@@ -2,6 +2,8 @@
 using System.Text.Json;
 using TranslationService.JsonProperties;
 using TranslationService.Models;
+// ReSharper disable once RedundantUsingDirective
+using System.Net.Http;
 
 namespace TranslationService.Utils;
 
