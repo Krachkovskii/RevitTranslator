@@ -7,16 +7,27 @@ namespace RevitTranslator.ViewModels;
 
 public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
 {
-    [ObservableProperty] private string _deeplApiKey = string.Empty;
+    [ObservableProperty] 
+    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
+    private string _deeplApiKey = string.Empty;
+    
+    [ObservableProperty] 
+    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
+    private bool _isPaidPlan;
+    
+    [ObservableProperty] 
+    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
+    private LanguageDescriptor? _selectedSourceLanguage = DeeplLanguageCodes.TargetLanguages[0];
+    
+    [ObservableProperty] 
+    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
+    private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.TargetLanguages[1];
+    
     [ObservableProperty] private bool _isAutoDetectChecked;
-    [ObservableProperty] private bool _isPaidPlan;
-    [ObservableProperty] private LanguageDescriptor? _selectedSourceLanguage = DeeplLanguageCodes.TargetLanguages[0];
-    [ObservableProperty] private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.TargetLanguages[1];
     [ObservableProperty] private string _buttonText;
     
     private LanguageDescriptor? _previousLanguage;
-    private int _savedHash;
-    
+
     public SettingsViewModel()
     {
         DeeplSettingsUtils.Load();
@@ -44,18 +55,35 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
         }
     }
     
-    [RelayCommand(CanExecute = nameof(CanSaveSettings))]
+    [RelayCommand(CanExecute = nameof(CanExecuteSaveSettings))]
     private void SaveSettings()
     {
-        var settings = new DeeplSettingsDescriptor();
-        settings.IsPaidPlan = IsPaidPlan;
-        settings.DeeplApiKey = DeeplApiKey;
-        settings.SourceLanguage = SelectedSourceLanguage;
-        settings.TargetLanguage = SelectedTargetLanguage;
+        ButtonText = "Saving settings...";
+        
+        var oldSettings = DeeplSettingsUtils.CurrentSettings;
+        var newSettings = new DeeplSettingsDescriptor
+        {
+            IsPaidPlan = IsPaidPlan,
+            DeeplApiKey = DeeplApiKey,
+            SourceLanguage = SelectedSourceLanguage,
+            TargetLanguage = SelectedTargetLanguage
+        };
+        newSettings.Save();
 
-        DeeplSettingsUtils.CurrentSettings = settings;
-        settings.Save();
-        _savedHash = CaluclateHash();
+        var test = TranslationUtils.TryTestTranslate();
+        if (!test)
+        {
+            oldSettings.Save();
+            SetSettingsValues();
+            ButtonText = "Invalid credentials. Settings were restored.";
+            Task.Run(async () =>
+            {
+                await Task.Delay(3000);
+                ButtonText = "Settings saved";
+            });
+            
+            return;
+        }
         
         ButtonText = "Settings saved";
     }
@@ -71,8 +99,6 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
         {
             IsAutoDetectChecked = true;
         }
-        
-        _savedHash = CaluclateHash();
     }
 
     partial void OnIsAutoDetectCheckedChanged(bool value)
@@ -88,46 +114,16 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
         }
     }
 
-    partial void OnDeeplApiKeyChanged(string value)
+    private bool CanExecuteSaveSettings()
     {
-        CanSaveSettings();
-    }
-
-    partial void OnIsPaidPlanChanged(bool value)
-    {
-        CanSaveSettings();
-    }
-
-    partial void OnSelectedSourceLanguageChanged(LanguageDescriptor? value)
-    {
-        CanSaveSettings();
-    }
-
-
-    partial void OnSelectedTargetLanguageChanged(LanguageDescriptor value)
-    {
-        CanSaveSettings();
-    }
-
-    private bool CanSaveSettings()
-    {
-        var areSettingsSame = _savedHash == CaluclateHash();
-        ButtonText =  areSettingsSame ? "Settings saved" : "Save Settings";
-
-        return !areSettingsSame;
-    }
-
-    private int CaluclateHash()
-    {
-        unchecked
-        {
-            var hash = 95;
-            hash = hash * 31 + SelectedSourceLanguage?.GetHashCode()?? 1;
-            hash = hash * 31 + SelectedTargetLanguage.GetHashCode();
-            hash = hash * 31 + IsPaidPlan.GetHashCode();
-            hash = hash * 31 + DeeplApiKey.GetHashCode();
-
-            return hash;
-        }
+        var savedSettings = DeeplSettingsUtils.CurrentSettings;
+        var hasChanges = savedSettings.IsPaidPlan != IsPaidPlan ||
+                           savedSettings.DeeplApiKey != DeeplApiKey ||
+                           savedSettings.SourceLanguage != SelectedSourceLanguage ||
+                           savedSettings.TargetLanguage != SelectedTargetLanguage;
+        
+        ButtonText =  hasChanges ? "Save Settings" : "Settings saved";
+        
+        return hasChanges;
     }
 }
