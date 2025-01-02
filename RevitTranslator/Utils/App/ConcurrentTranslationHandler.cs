@@ -1,3 +1,5 @@
+using CommunityToolkit.Mvvm.Messaging;
+using RevitTranslator.Common.App.Messages;
 using RevitTranslator.Models;
 using TranslationService.Utils;
 
@@ -31,6 +33,11 @@ public class ConcurrentTranslationHandler
     private async Task TranslateEntityAsync(TranslationEntity entity, CancellationToken token)
     {
         var translated = await TranslationUtils.TranslateTextAsync(entity.OriginalText, token);
+        if (translated is null)
+        {
+            StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage());
+            return;
+        }
         entity.TranslatedText = translated;
     }
 }
