@@ -1,9 +1,11 @@
-﻿using Nice3point.Revit.Toolkit.External;
+﻿using Autodesk.Revit.Attributes;
+using Nice3point.Revit.Toolkit.External;
 using RevitTranslator.Services;
 
 namespace RevitTranslator.Commands;
 
 [UsedImplicitly]
+[Transaction(TransactionMode.Manual)]
 public class TranslateModelCommand : ExternalCommand
 {
     public override void Execute()

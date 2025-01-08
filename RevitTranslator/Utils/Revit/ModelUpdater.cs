@@ -1,5 +1,9 @@
 ﻿using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
+using RevitTranslator.Common.App.Messages;
+using RevitTranslator.Enums;
 using RevitTranslator.Models;
+using RevitTranslator.Utils.App;
 
 namespace RevitTranslator.Utils.Revit;
 
@@ -17,11 +21,14 @@ public class ModelUpdater
                 group.Document.LoadFamilyToActiveDocument();
             }
         }
+
+        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
     }
 
     private void UpdateDocument(DocumentTranslationEntityGroup group)
     {
-        using var transaction = new Transaction(group.Document, "Translate elements");
+        var title = group.Document.IsFamilyDocument ? "Translate Family Document" : "Translate Document";
+        using var transaction = new Transaction(group.Document, title);
         transaction.Start();
         
         try
@@ -46,8 +53,7 @@ public class ModelUpdater
 
     private void UpdateUnit(TranslationEntity entity)
     {
-        if (entity.Element == null 
-            || entity.TranslatedText == string.Empty 
+        if (entity.TranslatedText == string.Empty 
             || entity.TranslatedText == entity.OriginalText) return;
 
         if (entity.NameHasIllegalCharacters())
@@ -72,7 +78,7 @@ public class ModelUpdater
                 break;
 
             case TableSectionData tsd:
-                tsd.SetCellText(entity.ScheduleCellCoordinates.Row, entity.ScheduleCellCoordinates.Column, entity.TranslatedText);
+                tsd.SetCellText(entity.ScheduleCellCoordinates!.Row, entity.ScheduleCellCoordinates.Column, entity.TranslatedText);
                 break;
 
             case TextElement textElement:

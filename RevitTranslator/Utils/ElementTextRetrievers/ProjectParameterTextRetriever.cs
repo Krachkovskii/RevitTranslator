@@ -1,12 +1,13 @@
-﻿using RevitTranslator.Models;
-using RevitTranslator.Utils.Revit;
+﻿using RevitTranslator.Enums;
+using RevitTranslator.Models;
+using RevitTranslator.Utils.App;
 
 namespace RevitTranslator.Utils.ElementTextRetrievers;
 public class ProjectParameterTextRetriever : BaseParameterTextRetriever
 {
     public ProjectParameterTextRetriever()
     {
-        Process(Context.ActiveDocument);
+        Process(Context.ActiveDocument!);
     }
     
     protected override sealed void Process(object Object)
@@ -31,7 +32,13 @@ public class ProjectParameterTextRetriever : BaseParameterTextRetriever
     {
         if (!ValidationUtils.HasText(propertyText)) return;
 
-        var unit = new TranslationEntity(Context.ActiveDocument, propertyText, details);
+        var unit = new TranslationEntity
+        {
+            Element = Context.ActiveDocument!,
+            OriginalText = propertyText,
+            TranslationDetails = details
+        };
+
         AddUnitToList(unit);
     }
 }

@@ -13,7 +13,13 @@ public class TextElementTextRetriever : BaseElementTextRetriever
         if (Object is not TextElement textElement) return;
 
         var text = GetText(textElement);
-        var unit = new TranslationEntity(textElement, text);
+        var unit = new TranslationEntity
+        {
+            Element = textElement.Document,
+            ElementId = textElement.Id,
+            Document = textElement.Document,
+            OriginalText = text,
+        };
 
         AddUnitToList(unit);
     }

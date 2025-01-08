@@ -39,5 +39,6 @@ public class ConcurrentTranslationHandler
             return;
         }
         entity.TranslatedText = translated;
+        StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(translated.Length));
     }
 }

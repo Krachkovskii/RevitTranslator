@@ -47,7 +47,9 @@
                 Value="{Binding FinishedTranslationCount, FallbackValue=50}"
                 Maximum="{Binding TotalTranslationCount, FallbackValue=100}"
                 IsIndeterminate="{Binding IsProgressBarIntermediate,
-                    Converter={converters:InverseBoolConverter}}"/>
+                    Converter={converters:InverseBoolConverter},
+                    Mode=OneWay,
+                    UpdateSourceTrigger=PropertyChanged}"/>
 
             <Grid
                 Margin="20">

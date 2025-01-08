@@ -1,4 +1,5 @@
 ﻿using RevitTranslator.Models;
+using RevitTranslator.Utils.App;
 
 namespace RevitTranslator.Utils.ElementTextRetrievers;
 public class ScheduleTextRetriever : BaseElementTextRetriever
@@ -30,9 +31,16 @@ public class ScheduleTextRetriever : BaseElementTextRetriever
         for (var i = 0; i < fieldCount; i++)
         {
             var headerText = GetHeaderText(definition, i);
+            var field = definition.GetField(i);
 
-            var unit = new TranslationEntity(definition.GetField(i), headerText);
-            unit.ParentElement = schedule;
+            var unit = new TranslationEntity
+            {
+                Element = field,
+                ParentElement = schedule,
+                Document = schedule.Document,
+                ElementId = schedule.Id,
+                OriginalText = headerText,
+            };
 
             AddUnitToList(unit);
         }

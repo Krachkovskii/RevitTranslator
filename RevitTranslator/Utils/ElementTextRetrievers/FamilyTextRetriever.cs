@@ -5,7 +5,9 @@ namespace RevitTranslator.Utils.ElementTextRetrievers;
 public class FamilyTextRetriever : BaseElementTextRetriever
 {
     // this list can be further extended
-    private readonly List<Type> _filterTypes = [typeof(TextElement)];
+    private readonly List<Type> _filterTypes = [
+        typeof(TextElement)
+    ];
     
     private Family _family;
     private Document _familyDoc;
@@ -29,12 +31,12 @@ public class FamilyTextRetriever : BaseElementTextRetriever
             return;
         }
 
-        var familyDoc = TypeAndFamilyManager.GetFamilyDocument(family);
+        var familyDoc = TypeAndFamilyUtils.GetFamilyDocument(family);
 
         _family = family;
         _familyDoc = familyDoc;
 
-        var elements = RetrieveFamilyElements(family);
+        var elements = RetrieveFamilyElements();
 
         // family with no elements to process doesn't to be processed any further
         if (elements.Count == 0)
@@ -52,7 +54,7 @@ public class FamilyTextRetriever : BaseElementTextRetriever
         AddUnitsToGroup();
     }
     
-    private List<Element> RetrieveFamilyElements(Family family)
+    private List<Element> RetrieveFamilyElements()
     {
         var collector = new FilteredElementCollector(_familyDoc);
         collector.WhereElementIsNotElementType();

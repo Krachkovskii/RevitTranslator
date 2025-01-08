@@ -9,7 +9,8 @@ public partial class ProgressWindowViewModel : ObservableObject,
     IProgressWindowViewModel,
     IRecipient<TextRetrievedMessage>,
     IRecipient<EntityTranslatedMessage>,
-    IRecipient<TranslationFinishedMessage>
+    IRecipient<TranslationFinishedMessage>,
+    IRecipient<ModelUpdatedMessage>
 {
     [ObservableProperty] private int _totalTranslationCount;
     [ObservableProperty] private int _finishedTranslationCount;
@@ -25,6 +26,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
         StrongReferenceMessenger.Default.Register<TextRetrievedMessage>(this);
         StrongReferenceMessenger.Default.Register<EntityTranslatedMessage>(this);
         StrongReferenceMessenger.Default.Register<TranslationFinishedMessage>(this);
+        StrongReferenceMessenger.Default.Register<ModelUpdatedMessage>(this);
         
         ButtonText = "Retrieving text from elements...";
 
@@ -40,7 +42,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
             
             MonthlyCharacterCount = TranslationUtils.Usage;
             MonthlyCharacterLimit = TranslationUtils.Limit;
-        });
+        }).GetAwaiter().GetResult();
     }
 
     [RelayCommand]
@@ -71,6 +73,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
     public void Receive(TextRetrievedMessage message)
     {
         IsProgressBarIntermediate = false;
+        TotalTranslationCount = message.UnitCount;
         ButtonText = "Cancel translation";
     }
 
@@ -83,5 +86,11 @@ public partial class ProgressWindowViewModel : ObservableObject,
     {
         IsProgressBarIntermediate = true;
         ButtonText = "Updating model...";
+    }
+
+    public void Receive(ModelUpdatedMessage message)
+    {
+        IsProgressBarIntermediate = false;
+        ButtonText = "Model successfully updated";
     }
 }

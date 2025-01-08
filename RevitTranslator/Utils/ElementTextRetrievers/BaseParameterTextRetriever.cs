@@ -1,4 +1,6 @@
-﻿namespace RevitTranslator.Utils.ElementTextRetrievers;
+﻿using RevitTranslator.Utils.App;
+
+namespace RevitTranslator.Utils.ElementTextRetrievers;
 public class BaseParameterTextRetriever : BaseElementTextRetriever
 {
     protected static bool CanUseParameter(Parameter param)
