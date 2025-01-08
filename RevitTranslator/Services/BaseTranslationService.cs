@@ -1,5 +1,5 @@
+using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
-using Nice3point.Revit.Toolkit.External.Handlers;
 using RevitTranslator.Common.App.Messages;
 using RevitTranslator.Contracts;
 using RevitTranslator.Models;
@@ -8,55 +8,63 @@ using RevitTranslator.Utils.App;
 using RevitTranslator.Utils.ElementTextRetrievers;
 using RevitTranslator.Utils.Revit;
 using RevitTranslator.ViewModels;
+using TranslationService.Utils;
 
 namespace RevitTranslator.Services;
 
 public class BaseTranslationService : IService, IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly CancellationTokenSource _cts = new();
-    private List<DocumentTranslationEntityGroup> _documentEntities;
+    private List<DocumentTranslationEntityGroup>? _documentEntities;
 
     public Element[] SelectedElements { get; set; } = [];
     
     public void Execute()
     {
-        _documentEntities = RetrieveText();
-
+        var test = TranslationUtils.TryTestTranslate();
+        if (!test)
+        {
+            MessageBox
+                .Show("Could not connect to translation service.\nPlease check your credentials and internet connection, and try again.",
+                    "Translation Service Error");
+            return;
+        }
+        
         var viewModel = new ProgressWindowViewModel();
         var view = new ProgressWindow(viewModel);
         view.Show();
         
-        Translate();
-        UpdateRevitModel();
+        _documentEntities = RetrieveText();
+
+        Task.Run(async () =>
+        {
+            await Translate();
+            UpdateRevitModel();
+        });
     }
 
     private List<DocumentTranslationEntityGroup> RetrieveText()
     {
-        
-        var retriever = new BatchTextRetriever();
-        var units = retriever.CreateUnits(SelectedElements, false, out var unitCount);
-        
+        var units = new BatchTextRetriever()
+            .CreateEntities(SelectedElements, false, out var unitCount);
         StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(unitCount));
 
         return units;
     }
     
-    private void Translate()
+    private async Task Translate()
     {
         var handler = new ConcurrentTranslationHandler();
 
         try
         {
-            Task.Run(async () =>
-            {
-                _cts.Token.ThrowIfCancellationRequested();
-                await handler.Translate(_documentEntities.SelectMany(entity => entity.TranslationEntities).ToArray(),
-                    _cts.Token);
+            _cts.Token.ThrowIfCancellationRequested();
+            await handler.Translate(_documentEntities!.SelectMany(entity => entity.TranslationEntities).ToArray(),
+                _cts.Token);
 
-                StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(false));
-            });
+            StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(false));
         }
-        catch (OperationCanceledException e)
+        catch (OperationCanceledException)
         {
             StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(true));
         }
@@ -64,7 +72,7 @@ public class BaseTranslationService : IService, IRecipient<TokenCancellationRequ
 
     private void UpdateRevitModel()
     {
-        new ActionEventHandler().Raise(_ => new ModelUpdater().Update(_documentEntities));
+        Handlers.ActionHandler.Raise(_ => new ModelUpdater().Update(_documentEntities!));
     }
 
     public void Receive(TokenCancellationRequestedMessage message)
