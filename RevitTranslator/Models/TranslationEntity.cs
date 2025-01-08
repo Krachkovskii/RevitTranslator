@@ -1,4 +1,4 @@
-﻿using RevitTranslator.Utils.Revit;
+﻿using RevitTranslator.Enums;
 
 namespace RevitTranslator.Models;
 /// <summary>
@@ -7,77 +7,37 @@ namespace RevitTranslator.Models;
 /// </summary>
 public class TranslationEntity
 {
-    private object _element = null;
-    private Element _parentElement = null;
-
-    public TranslationEntity()
-    {
-    }
-
-    public TranslationEntity(object element, string originalText)
-    {
-        OriginalText = originalText;
-        Element = element;
-    }
-
-    public TranslationEntity(object element, string originalText, TranslationDetails details)
-    {
-        OriginalText = originalText;
-        Element = element;
-        TranslationDetails = details;
-    }
-
-    public TranslationEntity(object element, string originalText, ScheduleCellCoordinates cellCoordinates)
-    {
-        OriginalText = originalText;
-        Element = element;
-        ScheduleCellCoordinates = cellCoordinates;
-    }
-
-    public Document Document { get; private set; } = null;
+    /// <summary>
+    /// Document that hosts the Element or ParentElement.
+    /// </summary>
+    public Document Document { get; set; } = null!;
 
     /// <summary>
     /// The element to be updated.
     /// </summary>
-    public object Element
-    {
-        get => _element;
-        set
-        {
-            _element = value;
-            SetElementDocumentAndId(value);
-        }
-    }
+    public object Element { get; set; } = null!;
 
     /// <summary>
     /// ElementId of the element.
     /// </summary>
-    public ElementId ElementId { get; private set; } = null;
+    public ElementId ElementId { get; set; } = null!;
 
     /// <summary>
     /// Original text that will be replaced by translation.
     /// </summary>
-    public string OriginalText { get; private set; } = string.Empty;
+    public string OriginalText { get; set; } = string.Empty;
 
     /// <summary>
     /// Optional: parent element that is UI-visible. 
     /// e.g.: if translated object is Parameter, you can store the element for this parameter;
     /// if translated object is ScheduleField, store Schedule element here.
     /// </summary>
-    public Element ParentElement
-    {
-        get => _parentElement;
-        set
-        {
-            _parentElement = value;
-            SetElementDocumentAndId(value);
-        }
-    }
+    public Element? ParentElement { get; set; }
 
     /// <summary>
     /// Optional: TableSectionData coordinates (row, column).
     /// </summary>
-    public ScheduleCellCoordinates ScheduleCellCoordinates { get; set; } = null;
+    public ScheduleCellCoordinates? ScheduleCellCoordinates { get; set; }
 
     /// <summary>
     /// Translation of the original text.
@@ -88,20 +48,4 @@ public class TranslationEntity
     /// Optional: Additional details of the translation, e.g. Dimension Override or Element Name.
     /// </summary>
     public TranslationDetails TranslationDetails { get; set; } = TranslationDetails.None;
-    
-    
-    private void SetElementDocumentAndId(object element)
-    {
-        if (element is Element el)
-        {
-            Document = el.Document;
-            ElementId = el.Id;
-        }
-
-        else if (ParentElement is Element parentEl)
-        {
-            Document = parentEl.Document;
-            ElementId = parentEl.Id;
-        }
-    }
 }

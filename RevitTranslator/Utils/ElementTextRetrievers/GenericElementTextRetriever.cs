@@ -1,5 +1,6 @@
-﻿using RevitTranslator.Models;
-using RevitTranslator.Utils.Revit;
+﻿using RevitTranslator.Enums;
+using RevitTranslator.Models;
+using RevitTranslator.Utils.App;
 
 namespace RevitTranslator.Utils.ElementTextRetrievers;
 /// <summary>
@@ -47,7 +48,15 @@ public class GenericElementTextRetriever : BaseElementTextRetriever
         var name = element.Name;
         if (!ValidationUtils.HasText(name)) return;
 
-        var unit = new TranslationEntity(element, name, TranslationDetails.ElementName);
+        var unit = new TranslationEntity
+        {
+            Element = element,
+            ElementId = element.Id,
+            Document = element.Document,
+            OriginalText = name,
+            TranslationDetails = TranslationDetails.ElementName
+        };
+        
         AddUnitToList(unit);
     }
 }
