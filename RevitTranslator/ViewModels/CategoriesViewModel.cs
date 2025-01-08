@@ -1,8 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using RevitTranslator.Common.App.Models;
-using RevitTranslator.Common.Extensions;
 using RevitTranslator.Extensions;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.Utils.Revit;
@@ -12,7 +10,7 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
 {
     [ObservableProperty] private string _mainButtonText = "Select elements to translate";
     [ObservableProperty] private string _searchText = string.Empty;
-    [ObservableProperty] private ObservableCollection<ObservableCategoryType> _filteredCategoryTypes = [];
+    [ObservableProperty] private List<ObservableCategoryType> _filteredCategoryTypes = [];
     [ObservableProperty] private bool _isLoading;
     
     [ObservableProperty] 
@@ -23,88 +21,149 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
     private List<ObservableCategoryDescriptor> _selectedCategories = [];
 
     private int _elementCount;
-    
-    public ObservableCategoryType[] CategoryTypes { get; private set; }
+    private string _previousSearch = string.Empty;
+
+    public ObservableCategoryType[] CategoryTypes { get; set; } = null!;
     
     public CategoriesViewModel()
     {
-        MainButtonText = "Translate";
-        CategoryTypes = CreateCategoryTypes();
+        IsLoading = true;
+        Task.Run(async () =>
+        {
+            MainButtonText = "Translate";
+            await CreateCategoryTypes();
+            FilteredCategoryTypes = CategoryTypes.ToList();
+            
+            IsLoading = false;
+        });
     }
 
-    private ObservableCategoryType[] CreateCategoryTypes()
+    private async Task CreateCategoryTypes()
     {
-        var categories = CategoryFilter.ValidCategories;
-        var categoryTypes = categories.Select(category => category.CategoryType)
-            .Distinct()
-            .Select(type => new ObservableCategoryType
-            {
-                Categories = categories
-                    .Where(category => category.CategoryType == type)
-                    .Select(category => new ObservableCategoryDescriptor
-                    {
-                        Id = category.Id.ToLong()
-                    })
-                    .ToArray(),
-                Name = type.ToString(),
-            })
-            .ToArray();
+        await Task.Run(() =>
+        {
+            var categories = CategoryFilter.ValidCategories;
+            CategoryTypes = categories.Select(category => category.CategoryType)
+                .Distinct()
+                .Select(type => new ObservableCategoryType
+                {
+                    Categories = categories
+                        .Where(category => category.CategoryType == type)
+                        .Select(category => new ObservableCategoryDescriptor
+                        {
+                            Name = category.Name,
+                            IsBuiltInCategory = category.BuiltInCategory != BuiltInCategory.INVALID,
+                            Id = category.Id.ToLong()
+                        })
+                        .OrderBy(category => category.Name)
+                        .ToArray(),
+                    Name = type.ToString()
+                })
+                .ToArray();
 
-        return categoryTypes;
+            foreach (var categoryType in CategoryTypes)
+            {
+                categoryType.FilteredCategories = categoryType.Categories.ToList();
+                foreach (var category in categoryType.Categories)
+                {
+                    category.CategoryType = categoryType;
+                    category.PropertyChanged += OnCategoryPropertyChanged;
+                }
+            }
+        });
     }
 
-    private void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs args)
+    private async void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
         if (args.PropertyName != nameof(ObservableCategoryDescriptor.IsChecked)) return;
+        
         var category = (ObservableCategoryDescriptor)sender!;
-
         if (category.IsChecked)
         {
             SelectedCategories.Add(category);
-            Task.Run(async () => await UpdateElementCounter(category, true));
-            MainButtonText = $"Translate {_elementCount} elements";
+            await UpdateElementCounter(category, true);
+            MainButtonText = _elementCount == 0 
+                ? "No elements in selected categories" 
+                : $"Translate {_elementCount} elements";
             return;
         }
         
         SelectedCategories.Remove(category);
-        Task.Run(async () => await UpdateElementCounter(category, false));
+        await UpdateElementCounter(category, false);
         
-        if (_elementCount == 0) MainButtonText = "Select category to translate";
+        MainButtonText = _elementCount == 0 
+            ? "Select category to translate" 
+            : $"Translate {_elementCount} elements";
     }
 
     private async Task UpdateElementCounter(ObservableCategoryDescriptor category, bool add)
     {
-        
+        await Task.Run(() =>
+        {
+            var elementCount = new FilteredElementCollector(Context.ActiveDocument)
+                .OfCategory(Category.GetCategory(Context.ActiveDocument, category.Id.ToElementId()).BuiltInCategory)
+                .GetElementCount();
+            
+            // var elementCount = Context.ActiveDocument.EnumerateInstances(category.Id.ToElementId()).Count();
+            if (add)
+            {
+                _elementCount += elementCount;
+                return;
+            }
+
+            _elementCount -= elementCount;
+        });
     }
 
-    partial void OnSearchTextChanged(string value)
+    async partial void OnSearchTextChanged(string value)
     {
-        Task.Run(() =>
+        var searchSource = value.Contains(_previousSearch)
+            ? FilteredCategoryTypes.ToArray()
+            : CategoryTypes;
+        
+        _previousSearch = value;
+        IsLoading = true;
+        
+        FilteredCategoryTypes = await Task.Run(() =>
         {
-            List<ObservableCategoryType> filteredCategories = [];
-            foreach (var categoryType in CategoryTypes)
+            var filteredTypes = new List<ObservableCategoryType>();
+            foreach (var categoryType in searchSource)
             {
-                categoryType.FilteredCategories.Clear();
-                var validCategory = false;
+                var filteredCategories = new List<ObservableCategoryDescriptor>();
+                var validCategoryType = false;
                 foreach (var category in categoryType.Categories)
                 {
                     var contains = category.Name.Contains(value, StringComparison.OrdinalIgnoreCase);
                     if (!contains) continue;
 
-                    validCategory = true;
-                    categoryType.FilteredCategories.Add(category);
+                    validCategoryType = true;
+                    filteredCategories.Add(category);
                 }
+                if (!validCategoryType) continue;
 
-                if (validCategory) filteredCategories.Add(categoryType);
+                filteredTypes.Add(categoryType);
+                categoryType.FilteredCategories = filteredCategories;
             }
 
-            FilteredCategoryTypes = filteredCategories.ToObservableCollection();
+            IsLoading = false;
+            return filteredTypes;
         });
     }
 
     [RelayCommand(CanExecute = nameof(CanTranslate))] 
     private void Translate()
     {
+    }
+
+    public void OnCloseRequested()
+    {
+        foreach (var categoryType in CategoryTypes)
+        {
+            foreach (var category in categoryType.Categories)
+            {
+                category.PropertyChanged -= OnCategoryPropertyChanged;
+            }
+        }
     }
 
     private bool CanTranslate()
