@@ -1,6 +1,6 @@
 ﻿
 namespace RevitTranslator.Utils.Revit;
-public static class TypeAndFamilyManager
+public static class TypeAndFamilyUtils
 {
     /// <summary>
     /// Gets Family for this element, if available.
@@ -9,7 +9,7 @@ public static class TypeAndFamilyManager
     /// <returns>
     /// Family for this element, null if not available.
     /// </returns>
-    public static Family GetFamily(Element element)
+    public static Family? GetFamily(Element element)
     {
         if (element is not FamilyInstance instance) return null;
         if (instance.Symbol is not FamilySymbol symbol) return null;
@@ -72,6 +72,8 @@ public static class TypeAndFamilyManager
         foreach (var element in elements)
         {
             var family = GetFamily(element);
+            if (family is null) continue;
+            
             set.Add(family);
         }
         

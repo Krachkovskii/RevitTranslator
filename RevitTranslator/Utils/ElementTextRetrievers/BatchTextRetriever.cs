@@ -9,16 +9,15 @@ namespace RevitTranslator.Utils.ElementTextRetrievers;
 /// </summary>
 public class BatchTextRetriever : BaseElementTextRetriever
 {
-    [CanBeNull] 
-    private BaseElementTextRetriever _currentRetriever;
+    private BaseElementTextRetriever? _currentRetriever;
     private HashSet<ElementType> _elementTypes = [];
     private HashSet<Family> _families = [];
     private HashSet<Element> _taggedElements = [];
     private readonly List<DocumentTranslationEntityGroup> _unitGroups = [];
 
-    public List<DocumentTranslationEntityGroup> CreateUnits(Element[] elements, bool translateProjectParameters, out int unitCount)
+    public List<DocumentTranslationEntityGroup> CreateEntities(Element[] elements, bool translateProjectParameters, out int unitCount)
     {
-        _unitGroups.Add(new DocumentTranslationEntityGroup(Context.ActiveDocument));
+        _unitGroups.Add(new DocumentTranslationEntityGroup(Context.ActiveDocument!));
         
         _taggedElements = elements.OfType<IndependentTag>().GetUniqueTaggedElements();
         var instancesTypesFamilies = elements.ToHashSet();
@@ -30,9 +29,9 @@ public class BatchTextRetriever : BaseElementTextRetriever
         instancesTypesFamilies.UnionWith(_elementTypes);
         instancesTypesFamilies.UnionWith(_families);
 
-        var elementsToTranslate = instancesTypesFamilies.Where(n => n != null).ToArray();
+        // var elementsToTranslate = instancesTypesFamilies.Where(element => element is not null).ToArray();
 
-        foreach (var element in elementsToTranslate)
+        foreach (var element in instancesTypesFamilies)
         {
             Process(element);
         }
@@ -100,14 +99,14 @@ public class BatchTextRetriever : BaseElementTextRetriever
 
     private void AddFamilyUnitGroupToList(FamilyTextRetriever retriever)
     {
-        if (retriever == null || retriever.EntityGroup == null) return;
+        if (retriever.EntityGroup == null) return;
 
         _unitGroups.Add(retriever.EntityGroup);
     }
     
     private void AddUnitsToGroup(List<TranslationEntity> units)
     {
-        if (units == null || units.Count == 0) return;
+        if (units.Count == 0) return;
         
         var u = units[0];
         var group = _unitGroups.FirstOrDefault(g => g.Document.Equals(u.Document));

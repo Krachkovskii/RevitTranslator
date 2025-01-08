@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
+using RevitTranslator.Enums;
 using RevitTranslator.Models;
-using RevitTranslator.Utils.Revit;
 
-namespace RevitTranslator.Utils;
+namespace RevitTranslator.Utils.App;
 /// <summary>
 /// Utilities for text validation
 /// </summary>

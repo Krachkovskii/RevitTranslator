@@ -9,6 +9,9 @@ public static class CategoryFilter
         BuiltInCategory.OST_Materials
     ];
 
+    /// <summary>
+    /// Valid Revit categories to be used with this plug-in.
+    /// </summary>
     public static Category[] ValidCategories { get; } = GetValidCategories();
 
     private static Category[] GetValidCategories()

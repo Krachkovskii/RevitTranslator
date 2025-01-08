@@ -1,4 +1,4 @@
-﻿namespace RevitTranslator.Utils.Revit;
+﻿namespace RevitTranslator.Enums;
 
 /// <summary>
 /// Represents translation attribute for elements that have multiple text properties

@@ -56,7 +56,7 @@ public static class TranslationUtils
         if (!response.IsSuccessStatusCode) return;
 
         var responseBody = await response.Content.ReadAsStringAsync();
-        var usage = JsonSerializer.Deserialize<DeeplUsage>(responseBody, SerializerOptions.Options);
+        var usage = JsonSerializer.Deserialize<DeeplUsage>(responseBody, JsonSettings.Options);
         if (usage is null) return;
 
         Usage = usage.CharacterCount;
@@ -89,7 +89,7 @@ public static class TranslationUtils
         if (!response.IsSuccessStatusCode) return null;
         
         var responseBody = await response.Content.ReadAsStringAsync();
-        var translationResult = JsonSerializer.Deserialize<TranslationResult>(responseBody, SerializerOptions.Options);
+        var translationResult = JsonSerializer.Deserialize<TranslationResult>(responseBody, JsonSettings.Options);
         return translationResult?.Translations[0].Text;
     }
 }
