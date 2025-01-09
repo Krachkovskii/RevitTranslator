@@ -1,7 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using JetBrains.Annotations;
 
 namespace RevitTranslator.Common.Models;
 
+[UsedImplicitly]
 public partial class ObservableCategoryDescriptor : ObservableObject
 {
     [ObservableProperty] private bool _isChecked;
