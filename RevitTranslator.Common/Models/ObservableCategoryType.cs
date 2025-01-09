@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace RevitTranslator.Common.App.Models;
+namespace RevitTranslator.Common.Models;
 
 public partial class ObservableCategoryType : ObservableObject
 {
@@ -45,7 +45,7 @@ public partial class ObservableCategoryType : ObservableObject
 
     private void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
-        if (args.PropertyName != nameof(ObservableCategoryDescriptor.IsChecked)) return;
+        if (args.PropertyName != nameof(IsChecked)) return;
         if (_isInternalChange) return;
 
         if (Enumerable.All<ObservableCategoryDescriptor>(Categories, category => category.IsChecked))

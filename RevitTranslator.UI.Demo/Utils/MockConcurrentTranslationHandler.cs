@@ -1,6 +1,6 @@
 using Bogus;
 using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Common.App.Messages;
+using RevitTranslator.Common.Messages;
 
 namespace RevitTranslator.Demo.Utils;
 

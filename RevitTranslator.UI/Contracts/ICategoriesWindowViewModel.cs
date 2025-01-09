@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
-using RevitTranslator.Common.App.Models;
+using RevitTranslator.Common.Models;
 
 namespace RevitTranslator.UI.Contracts;
 

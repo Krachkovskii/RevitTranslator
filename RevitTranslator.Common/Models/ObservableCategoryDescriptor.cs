@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace RevitTranslator.Common.App.Models;
+namespace RevitTranslator.Common.Models;
 
 public partial class ObservableCategoryDescriptor : ObservableObject
 {
