@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using RevitTranslator.Common.App.Models;
+using RevitTranslator.Common.Models;
 using RevitTranslator.UI.Contracts;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;

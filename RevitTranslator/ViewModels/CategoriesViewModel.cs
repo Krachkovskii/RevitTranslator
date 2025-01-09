@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using RevitTranslator.Common.App.Models;
+using RevitTranslator.Common.Models;
 using RevitTranslator.Extensions;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.Utils.Revit;
