@@ -50,6 +50,7 @@ public static class DeeplSettingsUtils
         }
         
         descriptor.SaveToJson();
+        CurrentSettings = descriptor;
     }
 
     private static void SaveToJson(this DeeplSettingsDescriptor descriptor)

@@ -4,7 +4,6 @@
 /// </summary>
 public class FamilyLoadOptions : IFamilyLoadOptions
 {
-    //TODO: Make static
     bool IFamilyLoadOptions.OnFamilyFound(bool familyInUse, out bool overwriteParameterValues)
     {
         overwriteParameterValues = true;

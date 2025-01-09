@@ -1,6 +1,6 @@
 ﻿
 namespace RevitTranslator.Utils.Revit;
-public static class TypeAndFamilyManager
+public static class TypeAndFamilyUtils
 {
     /// <summary>
     /// Gets Family for this element, if available.
@@ -9,17 +9,10 @@ public static class TypeAndFamilyManager
     /// <returns>
     /// Family for this element, null if not available.
     /// </returns>
-    public static Family GetFamily(Element element)
+    public static Family? GetFamily(Element element)
     {
-        if (element is not FamilyInstance instance)
-        {
-            return null;
-        }
-
-        if (instance.Symbol is not FamilySymbol symbol)
-        {
-            return null;
-        }
+        if (element is not FamilyInstance instance) return null;
+        if (instance.Symbol is not FamilySymbol symbol) return null;
 
         var family = symbol.Family;
         return family;
@@ -47,20 +40,20 @@ public static class TypeAndFamilyManager
     /// </returns>
     public static ElementType GetElementType(Element element)
     {
-        return Context.ActiveDocument!.GetElement(element.GetTypeId()) as ElementType;
+        return (ElementType)Context.ActiveDocument!.GetElement(element.GetTypeId());
     }
 
     /// <summary>
     /// Loads modified family document back to host document
     /// </summary>
     /// <param name="familyDoc"></param>
-    public static void LoadFamilyToActiveDocument(Document familyDoc)
+    public static void LoadFamilyToActiveDocument(this Document familyDoc)
     {
         var loadOptions = new FamilyLoadOptions();
-        familyDoc.LoadFamily(RevitUtils.Doc, loadOptions);
+        familyDoc.LoadFamily(Context.ActiveDocument, loadOptions);
     }
 
-    public static HashSet<ElementType> GetUniqueTypesFromElements(IEnumerable<Element> elements)
+    public static HashSet<ElementType> GetUniqueTypes(this IEnumerable<Element> elements)
     {
         var set = new HashSet<ElementType>();
         foreach (var element in elements)
@@ -72,13 +65,15 @@ public static class TypeAndFamilyManager
         return set;
     }
 
-    public static HashSet<Family> GetUniqueFamiliesFromElements(IEnumerable<Element> elements)
+    public static HashSet<Family> GetUniqueFamilies(this IEnumerable<Element> elements)
     {
         var set = new HashSet<Family>();
         
         foreach (var element in elements)
         {
             var family = GetFamily(element);
+            if (family is null) continue;
+            
             set.Add(family);
         }
         

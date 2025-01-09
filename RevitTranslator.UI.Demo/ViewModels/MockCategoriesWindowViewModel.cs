@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,7 +13,7 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
 {
     [ObservableProperty] private string _mainButtonText = "Select elements to translate";
     [ObservableProperty] private string _searchText = string.Empty;
-    [ObservableProperty] private ObservableCollection<ObservableCategoryType> _filteredCategoryTypes = [];
+    [ObservableProperty] private List<ObservableCategoryType> _filteredCategoryTypes = [];
     [ObservableProperty] private bool _isLoading;
     
     [ObservableProperty] 
@@ -33,7 +32,7 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
         IsLoading = true;
         Task.Run(async () =>
         {
-            await Task.Delay(2000);
+            await Task.Delay(1000);
             
             CategoryTypes = new Faker<ObservableCategoryType>()
                 .RuleFor(type => type.Name, faker => faker.Lorem.Word())
@@ -58,7 +57,7 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
                 }
             }
 
-            FilteredCategoryTypes = CategoryTypes.ToObservableCollection();
+            FilteredCategoryTypes = CategoryTypes.ToList();
             IsLoading = false;
         });
     }
@@ -84,6 +83,7 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
 
     partial void OnSearchTextChanged(string value)
     {
+        IsLoading = true;
         Task.Run(() =>
         {
             List<ObservableCategoryType> filteredCategories = [];
@@ -103,7 +103,8 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
                 if (validCategory) filteredCategories.Add(categoryType);
             }
 
-            FilteredCategoryTypes = filteredCategories.ToObservableCollection();
+            IsLoading = false;
+            FilteredCategoryTypes = filteredCategories.ToList();
         });
     }
 
@@ -115,5 +116,10 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
     private bool CanTranslate()
     {
         return !HasErrors;
+    }
+
+    public void OnCloseRequested()
+    {
+        
     }
 }

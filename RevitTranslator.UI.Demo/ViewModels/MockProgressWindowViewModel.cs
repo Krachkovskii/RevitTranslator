@@ -8,8 +8,7 @@ using RevitTranslator.UI.Contracts;
 
 namespace RevitTranslator.Demo.ViewModels;
 
-public partial class MockProgressWindowViewModel 
-    : ObservableObject, 
+public partial class MockProgressWindowViewModel : ObservableObject, 
         IProgressWindowViewModel, 
         IRecipient<EntityTranslatedMessage>,
         IRecipient<TranslationFinishedMessage>

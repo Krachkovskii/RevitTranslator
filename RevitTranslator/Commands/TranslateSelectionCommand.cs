@@ -1,27 +1,22 @@
-﻿using System.Windows;
+﻿using Autodesk.Revit.Attributes;
 using Nice3point.Revit.Toolkit.External;
-using RevitTranslator.Utils.Revit;
+using RevitTranslator.Extensions;
+using RevitTranslator.Services;
 
 namespace RevitTranslator.Commands;
 
-//TODO: Move to separate service
 [UsedImplicitly]
+[Transaction(TransactionMode.Manual)]
 public class TranslateSelectionCommand : ExternalCommand
 {
     public override void Execute()
     {
-        if (!_translationUtils.CanTranslate(_settings))
-        {
-            return;
-        }
-
-        var selection = ElementRetriever.GetCurrentSelection();
-        if (selection.Count == 0)
-        {
-            MessageBox.Show("Nothing was selected.");
-            return;
-        }
-
-        StartCommandTranslation(selection, _progressWindowUtils, _translationUtils, true, false);
+        var selection = Context.ActiveUiDocument!
+            .GetSelectedElements()
+            .ToArray();
+        
+        var service = new BaseTranslationService();
+        service.SelectedElements = selection;
+        service.Execute();
     }
 }

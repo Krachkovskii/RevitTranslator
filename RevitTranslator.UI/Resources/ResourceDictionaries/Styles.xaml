@@ -30,61 +30,33 @@
 						<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
 					</Border>
 					<ControlTemplate.Triggers>
-						<Trigger Property="IsMouseOver" Value="True">
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter Property="Background" Value="DarkGray"/>
+							<Setter Property="Cursor" Value="Cross"/>
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="True">
+							<Setter Property="Background" Value="{StaticResource DeepGreenBrush}"/>
+							<Setter Property="Cursor" Value="Hand"/>
+						</Trigger>
+						<MultiTrigger>
+							<MultiTrigger.Conditions>
+								<Condition Property="IsEnabled" Value="True"/>
+								<Condition Property="IsMouseOver" Value="True"/>
+							</MultiTrigger.Conditions>
 							<Setter Property="Background" Value="{StaticResource DarkerGreenBrush}"/>
-						</Trigger>
-						<Trigger Property="IsPressed" Value="True">
+						</MultiTrigger>
+						<MultiTrigger>
+							<MultiTrigger.Conditions>
+								<Condition Property="IsEnabled" Value="True"/>
+								<Condition Property="IsPressed" Value="True"/>
+							</MultiTrigger.Conditions>
 							<Setter Property="Background" Value="{StaticResource LighterGreenBrush}"/>
-						</Trigger>
+						</MultiTrigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
 	</Style>
-
-    <Style x:Key="CloseButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Width" Value="46"/>
-        <Setter Property="Height" Value="32"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}">
-                        <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" 
-                                       FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#E81123"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
-    <!-- Small Square Button Style -->
-	<Style x:Key="SmallSquareButton" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
-		<Setter Property="Width" Value="40"/>
-		<Setter Property="Height" Value="40"/>
-        <Setter Property="Padding" Value="5"/>
-        <Setter Property="Foreground" Value="{StaticResource DarkerGreenBrush}"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border Background="{StaticResource LightGrayBrush}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="5">
-                        <ContentPresenter HorizontalAlignment="Center" 
-                                          VerticalAlignment="Center"/>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
 
 	<!-- Large Rectangular Button Style -->
 	<Style x:Key="LargeRectangularButton" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
@@ -93,89 +65,11 @@
 		<Setter Property="Height" Value="80"/>
 	</Style>
 
-	<!-- ComboBox Style -->
-    <Style x:Key="CustomComboBox" TargetType="ComboBox">
-        <Setter Property="FontFamily" Value="Helvetica"/>
-        <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ComboBox">
-                    
-                    <Border BorderBrush="{StaticResource LightGrayBrush}"
-                            BorderThickness="1"
-                            CornerRadius="5"
-                            Background="{TemplateBinding Background}"/>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- ComboBoxItem Style -->
-    <Style x:Key="CustomComboBoxItem" TargetType="ComboBoxItem">
-        <Setter Property="FontFamily" Value="Helvetica"/>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="Padding" Value="5,3"/>
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="LightGray"/>
-            </Trigger>
-            <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="{StaticResource DeepGreenBrush}"/>
-                <Setter Property="Foreground" Value="White"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
     <!--TextBlock Style-->
     <Style x:Key="Annotation" TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="Padding" Value="0 0 0 5"/>
         <Setter Property="Foreground" Value="{StaticResource LightGrayBrush}"/>
     </Style>
-
-	<!-- TextBox Style -->
-	<Style x:Key="CustomTextBox" TargetType="TextBox">
-        <Setter Property="FontFamily" Value="Rubik"/>
-        <Setter Property="FontStyle" Value="Normal"/>
-        <Setter Property="Background" Value="White"/>
-		<Setter Property="BorderBrush" Value="{StaticResource LightGrayBrush}"/>
-		<Setter Property="BorderThickness" Value="1"/>
-		<Setter Property="Padding" Value="5"/>
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="TextBox">
-					<Border x:Name="Border"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="5">
-						<Grid>
-							<ScrollViewer x:Name="PART_ContentHost" Margin="0" />
-							<TextBlock x:Name="WatermarkText"
-                                       Text="{TemplateBinding Tag}"
-                                       Visibility="Collapsed"
-                                       Opacity="0.5"
-                                       Margin="6,0,0,0"
-                                       VerticalAlignment="Center"/>
-						</Grid>
-					</Border>
-					<ControlTemplate.Triggers>
-						<Trigger Property="IsKeyboardFocused" Value="True">
-							<Setter TargetName="Border" Property="Effect">
-								<Setter.Value>
-									<DropShadowEffect ShadowDepth="0" Color="{StaticResource DeepGreen}" Opacity="0.3" BlurRadius="5"/>
-								</Setter.Value>
-							</Setter>
-						</Trigger>
-						<Trigger Property="Text" Value="">
-							<Setter TargetName="WatermarkText" Property="Visibility" Value="Visible"/>
-						</Trigger>
-					</ControlTemplate.Triggers>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
 
 </ResourceDictionary>

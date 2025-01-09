@@ -13,7 +13,6 @@ public interface IProgressWindowViewModel
     bool IsProgressBarIntermediate { get; set; }
     
     void UpdateProgress(int translationLength);
-    void FinalizeTranslation();
     void CloseRequested();
     
     IRelayCommand CancelTranslationCommand { get; }

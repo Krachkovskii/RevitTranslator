@@ -1,41 +1,42 @@
-﻿using RevitTranslator.Utils.App;
+﻿using RevitTranslator.Models;
 using RevitTranslator.Utils.Revit;
 
 namespace RevitTranslator.Utils.ElementTextRetrievers;
 public class FamilyTextRetriever : BaseElementTextRetriever
 {
     // this list can be further extended
-    private readonly List<Type> _filterTypes = [typeof(TextElement)];
+    private readonly List<Type> _filterTypes = [
+        typeof(TextElement)
+    ];
+    
     private Family _family;
     private Document _familyDoc;
+    
     public FamilyTextRetriever(Family family)
     {
-        if (family == null || !family.IsEditable)
-        {
-            return;
-        }
+        if (family == null || !family.IsEditable) return;
 
         Process(family);
     }
 
     /// <summary>
-    /// UnitGroup associated with this family document.
+    /// EntityGroup associated with this family document.
     /// </summary>
-    public RevitTranslationUnitGroup UnitGroup { get; private set; } = null;
+    public DocumentTranslationEntityGroup EntityGroup { get; private set; } = null;
 
-    protected override void Process(object Object)
+    protected override sealed void Process(object Object)
     {
         if ( Object is not Family family)
         {
             return;
         }
 
-        var familyDoc = TypeAndFamilyManager.GetFamilyDocument(family);
+        var familyDoc = TypeAndFamilyUtils.GetFamilyDocument(family);
 
         _family = family;
         _familyDoc = familyDoc;
 
-        var elements = RetrieveFamilyElements(family);
+        var elements = RetrieveFamilyElements();
 
         // family with no elements to process doesn't to be processed any further
         if (elements.Count == 0)
@@ -43,7 +44,7 @@ public class FamilyTextRetriever : BaseElementTextRetriever
             return;
         }
 
-        UnitGroup = new RevitTranslationUnitGroup(familyDoc);
+        EntityGroup = new DocumentTranslationEntityGroup(familyDoc);
 
         foreach (var element in elements)
         {
@@ -52,19 +53,16 @@ public class FamilyTextRetriever : BaseElementTextRetriever
 
         AddUnitsToGroup();
     }
-
-    private void AddUnitsToGroup()
+    
+    private List<Element> RetrieveFamilyElements()
     {
-        foreach (var unit in TranslationUnits)
-        {
-            UnitGroup.TranslationUnits.Add(unit);
-        }
+        var collector = new FilteredElementCollector(_familyDoc);
+        collector.WhereElementIsNotElementType();
+        collector.WherePasses( new ElementMulticlassFilter(_filterTypes) );
+        
+        return collector.ToList();
     }
 
-    /// <summary>
-    /// Retrieves text from a given Family element.
-    /// </summary>
-    /// <param name="element"></param>
     private void ProcessFamilyElement(Element element)
     {
         switch (element)
@@ -72,7 +70,7 @@ public class FamilyTextRetriever : BaseElementTextRetriever
             case TextElement note:
                 using (var noteRetriever = new TextElementTextRetriever(note))
                 {
-                    foreach ( var unit in noteRetriever.TranslationUnits)
+                    foreach ( var unit in noteRetriever.ElementTranslationUnits)
                     {
                         AddUnitToList(unit);
                     }
@@ -80,15 +78,12 @@ public class FamilyTextRetriever : BaseElementTextRetriever
                 break;
         }
     }
-    /// <summary>
-    /// Calls all available methods for text extraction for various types of elements in this family
-    /// </summary>
-    private List<Element> RetrieveFamilyElements(Family family)
+
+    private void AddUnitsToGroup()
     {
-        var collector = new FilteredElementCollector(_familyDoc);
-        collector.WhereElementIsNotElementType();
-        collector.WherePasses( new ElementMulticlassFilter(_filterTypes) );
-        
-        return collector.ToList();
+        foreach (var unit in ElementTranslationUnits)
+        {
+            EntityGroup.TranslationEntities.Add(unit);
+        }
     }
 }

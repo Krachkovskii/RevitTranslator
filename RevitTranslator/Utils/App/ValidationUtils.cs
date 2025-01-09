@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
+using RevitTranslator.Enums;
 using RevitTranslator.Models;
-using RevitTranslator.Utils.Revit;
 
-namespace RevitTranslator.Utils;
+namespace RevitTranslator.Utils.App;
 /// <summary>
 /// Utilities for text validation
 /// </summary>
@@ -42,30 +42,22 @@ public static class ValidationUtils
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    public static bool IsValidForFamilyEdit(Element? element)
+    public static bool IsValidForFamilyEdit(this Element element)
     {
-        //TODO: Update category validation
-        if (element is null) return false;
-        // if (element.Category?.BuiltInCategory == BuiltInCategory.OST_TitleBlocks) return true;
-
-        return element is IndependentTag;
+        return element.Category?.BuiltInCategory == BuiltInCategory.OST_TitleBlocks;
     }
 
     /// <summary>
     /// Checks if translation is applied to parameter or element name. 
     /// If yes, checks for illegal Revit characters
     /// </summary>
-    /// <param name="unit"></param>
+    /// <param name="entity"></param>
     /// <returns></returns>
-     public static bool NameHasIllegalCharacters(RevitTranslationUnit unit)
+     public static bool NameHasIllegalCharacters(this TranslationEntity entity)
      {
-         if (unit.Element is Parameter p || unit.TranslationDetails == TranslationDetails.ElementName)
-         {
-             if (unit.TranslatedText.Any(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c)))
-             {
-                 return true;
-             }
-         }
-         return false;
+         if (entity.Element is not Parameter && entity.TranslationDetails != TranslationDetails.ElementName)
+             return false;
+
+         return entity.TranslatedText.Any(c => ForbiddenParameterSymbols.Contains(c));
      }
 }
