@@ -16,6 +16,8 @@ public class TranslateCategoriesCommand : ExternalCommand
         var view = new CategoriesWindow(viewModel);
         view.ShowDialog();
 
+        if (viewModel.SelectedCategories.Count == 0) return;
+
         var service = new CategoryTranslationService();
         service.SelectedCategories = viewModel.SelectedCategories.ToList();
         service.Execute();

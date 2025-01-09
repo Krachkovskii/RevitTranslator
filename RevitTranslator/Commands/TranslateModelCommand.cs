@@ -11,6 +11,7 @@ public class TranslateModelCommand : ExternalCommand
     public override void Execute()
     {
         var instances = Document.EnumerateInstances().ToArray();
+        if (instances.Length == 0) return;
         
         var service = new BaseTranslationService();
         service.SelectedElements = instances;
