@@ -5,7 +5,7 @@ namespace RevitTranslator.Common.Models;
 
 public partial class ObservableCategoryType : ObservableObject
 {
-    [ObservableProperty] private bool? _isChecked;
+    [ObservableProperty] private bool? _isChecked = false;
     [ObservableProperty] private ObservableCategoryDescriptor[] _categories = [];
     [ObservableProperty] private List<ObservableCategoryDescriptor> _filteredCategories = [];
 
@@ -47,22 +47,20 @@ public partial class ObservableCategoryType : ObservableObject
     {
         if (args.PropertyName != nameof(IsChecked)) return;
         if (_isInternalChange) return;
-
-        if (Enumerable.All<ObservableCategoryDescriptor>(Categories, category => category.IsChecked))
-        {
-            _isInternalChange = true;
-            IsChecked = true;
-            return;
-        }
-        
-        if (!Enumerable.Any<ObservableCategoryDescriptor>(Categories, category => category.IsChecked))
-        {
-            _isInternalChange = true;
-            IsChecked = false;
-            return;
-        }
         
         _isInternalChange = true;
-        IsChecked = null;
+        if (Categories.All(category => category.IsChecked))
+        {
+            IsChecked = true;
+        }
+        else if (Categories.All(category => !category.IsChecked))
+        {
+            IsChecked = false;
+        }
+        else
+        {
+            IsChecked = null;
+        }
+        _isInternalChange = false;
     }
 }
