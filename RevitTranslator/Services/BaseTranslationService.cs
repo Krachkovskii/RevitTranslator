@@ -2,7 +2,6 @@ using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.App.Messages;
 using RevitTranslator.Common.Messages;
-using RevitTranslator.Contracts;
 using RevitTranslator.Models;
 using RevitTranslator.UI.Views;
 using RevitTranslator.Utils.App;
@@ -13,7 +12,7 @@ using TranslationService.Utils;
 
 namespace RevitTranslator.Services;
 
-public class BaseTranslationService : IService, IRecipient<TokenCancellationRequestedMessage>
+public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly CancellationTokenSource _cts = new();
     private List<DocumentTranslationEntityGroup>? _documentEntities;
@@ -35,7 +34,7 @@ public class BaseTranslationService : IService, IRecipient<TokenCancellationRequ
         var view = new ProgressWindow(viewModel);
         view.Show();
         
-        _documentEntities = RetrieveText();
+        _documentEntities = GetTextFromElements();
 
         Task.Run(async () =>
         {
@@ -44,13 +43,13 @@ public class BaseTranslationService : IService, IRecipient<TokenCancellationRequ
         });
     }
 
-    private List<DocumentTranslationEntityGroup> RetrieveText()
+    private List<DocumentTranslationEntityGroup> GetTextFromElements()
     {
-        var units = new BatchTextRetriever()
+        var entities = new BatchTextRetriever()
             .CreateEntities(SelectedElements, false, out var unitCount);
         StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(unitCount));
 
-        return units;
+        return entities;
     }
     
     private async Task Translate()
