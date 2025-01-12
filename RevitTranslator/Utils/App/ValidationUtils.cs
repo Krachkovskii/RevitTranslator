@@ -1,8 +1,7 @@
 using System.Text.RegularExpressions;
-using RevitTranslator.Enums;
-using RevitTranslator.Models;
 
 namespace RevitTranslator.Utils.App;
+
 /// <summary>
 /// Utilities for text validation
 /// </summary>
@@ -46,18 +45,4 @@ public static class ValidationUtils
     {
         return element.Category?.BuiltInCategory == BuiltInCategory.OST_TitleBlocks;
     }
-
-    /// <summary>
-    /// Checks if translation is applied to parameter or element name. 
-    /// If yes, checks for illegal Revit characters
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-     public static bool NameHasIllegalCharacters(this TranslationEntity entity)
-     {
-         if (entity.Element is not Parameter && entity.TranslationDetails != TranslationDetails.ElementName)
-             return false;
-
-         return entity.TranslatedText.Any(c => ForbiddenParameterSymbols.Contains(c));
-     }
 }

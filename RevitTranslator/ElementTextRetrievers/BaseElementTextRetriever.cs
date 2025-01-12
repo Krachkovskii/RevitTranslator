@@ -1,17 +1,18 @@
-﻿using RevitTranslator.Models;
+﻿using RevitTranslator.Extensions;
+using RevitTranslator.Models;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
+namespace RevitTranslator.ElementTextRetrievers;
 
 /// <summary>
 /// Base class for retrieving text properties from elements
 /// </summary>
 public class BaseElementTextRetriever : IDisposable
 {
-    public List<TranslationEntity> ElementTranslationUnits { get; private set; } = [];
+    public List<TranslationEntity> ElementTranslationUnits { get; } = [];
 
     protected virtual void AddUnitToList(TranslationEntity entity)
     {
-        if (entity.OriginalText == string.Empty) return;
+        if (!entity.HasText()) return;
 
         ElementTranslationUnits.Add(entity);
     }
@@ -19,7 +20,6 @@ public class BaseElementTextRetriever : IDisposable
     public void Dispose()
     {
         ElementTranslationUnits.Clear();
-        ElementTranslationUnits = null;
     }
     
     protected virtual void Process(object Object) => throw new NotImplementedException();
