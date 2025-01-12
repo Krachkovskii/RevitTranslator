@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using RevitTranslator.Common.App.Models;
+using CommunityToolkit.Mvvm.Input;
+using RevitTranslator.Common.Models;
 
 namespace RevitTranslator.UI.Contracts;
 

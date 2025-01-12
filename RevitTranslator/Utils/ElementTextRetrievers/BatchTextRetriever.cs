@@ -29,8 +29,6 @@ public class BatchTextRetriever : BaseElementTextRetriever
         instancesTypesFamilies.UnionWith(_elementTypes);
         instancesTypesFamilies.UnionWith(_families);
 
-        // var elementsToTranslate = instancesTypesFamilies.Where(element => element is not null).ToArray();
-
         foreach (var element in instancesTypesFamilies)
         {
             Process(element);
@@ -38,6 +36,7 @@ public class BatchTextRetriever : BaseElementTextRetriever
 
         if (translateProjectParameters)
         {
+            //TODO: Implement project parameter handling
             var paramRetriever = new ProjectParameterTextRetriever();
         }
 

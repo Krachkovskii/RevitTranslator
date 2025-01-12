@@ -15,6 +15,8 @@ public class TranslateSelectionCommand : ExternalCommand
             .GetSelectedElements()
             .ToArray();
         
+        if (selection.Length == 0) return;
+        
         var service = new BaseTranslationService();
         service.SelectedElements = selection;
         service.Execute();

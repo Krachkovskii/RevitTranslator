@@ -6,10 +6,12 @@ namespace RevitTranslator.Utils.ElementTextRetrievers;
 public class DimensionTextRetriever : BaseElementTextRetriever
 {
     private readonly Dimension _dimension;
+    private readonly bool _isSingleSegment;
     
     public DimensionTextRetriever(Dimension dimension)
     {
         _dimension = dimension;
+        _isSingleSegment = _dimension.HasOneSegment();
         Process(dimension);
     }
 
@@ -17,45 +19,36 @@ public class DimensionTextRetriever : BaseElementTextRetriever
     {
         if (Object is not Dimension dim) return;
 
-        var hasOneSegment = dim.HasOneSegment();
-        if (hasOneSegment)
+        if (_isSingleSegment)
         {
             ProcessDimension(dim);
         }
         else
         {
-            ProcessMultiSegmentDimension();
+            foreach (var segment in _dimension.Segments.OfType<DimensionSegment>())
+            {
+                ProcessDimension(segment);
+            }
         }
     }
 
-    private void ProcessMultiSegmentDimension()
+    private void ProcessDimension(object dimensionObject)
     {
-        var segments = _dimension.Segments;
-        foreach (var segment in segments)
-        {
-            if (segment is not DimensionSegment seg) continue;
-            
-            ProcessDimension(seg);
-        }
+        ProcessDimensionOverride(dimensionObject, TranslationDetails.DimensionAbove);
+        ProcessDimensionOverride(dimensionObject, TranslationDetails.DimensionBelow);
+        ProcessDimensionOverride(dimensionObject, TranslationDetails.DimensionPrefix);
+        ProcessDimensionOverride(dimensionObject, TranslationDetails.DimensionSuffix);
+        ProcessDimensionOverride(dimensionObject, TranslationDetails.DimensionOverride);
     }
 
-    private void ProcessDimension(object segment)
+    private void ProcessDimensionOverride(object dimensionObject, TranslationDetails details)
     {
-        ProcessDimensionOverride(segment, false, TranslationDetails.DimensionAbove);
-        ProcessDimensionOverride(segment, false, TranslationDetails.DimensionBelow);
-        ProcessDimensionOverride(segment, false, TranslationDetails.DimensionPrefix);
-        ProcessDimensionOverride(segment, false, TranslationDetails.DimensionSuffix);
-        ProcessDimensionOverride(segment, false, TranslationDetails.DimensionOverride);
-    }
-
-    private void ProcessDimensionOverride(object dimensionObject, bool isSingleSegment, TranslationDetails details)
-    {
-        var value = ExtractDimensionText(dimensionObject, details, isSingleSegment);
+        var value = ExtractDimensionText(dimensionObject, details);
         if (!ValidationUtils.HasText(value)) return;
 
         var unit = new TranslationEntity();
 
-        if (isSingleSegment)
+        if (_isSingleSegment)
         {
             unit.Element = _dimension;
         }
@@ -74,14 +67,14 @@ public class DimensionTextRetriever : BaseElementTextRetriever
         AddUnitToList(unit);
     }
 
-    private string ExtractDimensionText(object d, TranslationDetails details, bool isSingleSegment)
+    private string ExtractDimensionText(object dimension, TranslationDetails details)
     {
         string value;
         object dimensionObject;
 
-        if (isSingleSegment)
+        if (_isSingleSegment)
         {
-            dimensionObject = (Dimension)d;
+            dimensionObject = (Dimension)dimension;
 
             value = details switch
             {
@@ -96,7 +89,7 @@ public class DimensionTextRetriever : BaseElementTextRetriever
 
         else
         {
-            dimensionObject = (DimensionSegment)d;
+            dimensionObject = (DimensionSegment)dimension;
 
             value = details switch
             {

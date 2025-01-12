@@ -3,10 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using RevitTranslator.Common.App.Models;
+using RevitTranslator.Common.Extensions;
+using RevitTranslator.Common.Models;
 using RevitTranslator.UI.Contracts;
-
-// using RevitTranslator.Models;
 
 namespace RevitTranslator.Demo.ViewModels;
 

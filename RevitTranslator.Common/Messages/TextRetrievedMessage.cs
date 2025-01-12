@@ -1,3 +1,3 @@
-namespace RevitTranslator.Common.App.Messages;
+namespace RevitTranslator.Common.Messages;
 
 public record TextRetrievedMessage(int UnitCount);

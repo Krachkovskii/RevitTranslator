@@ -2,7 +2,7 @@ using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Common.App.Messages;
+using RevitTranslator.Common.Messages;
 using RevitTranslator.Demo.Utils;
 using RevitTranslator.UI.Contracts;
 

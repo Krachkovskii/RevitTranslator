@@ -1,36 +1,35 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using RevitTranslator.Common.App.Models;
+using RevitTranslator.Common.Models;
 using RevitTranslator.Extensions;
+using RevitTranslator.Services;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.Utils.Revit;
 
 namespace RevitTranslator.ViewModels;
 public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindowViewModel
 {
-    [ObservableProperty] private string _mainButtonText = "Select elements to translate";
+    [ObservableProperty] private bool _isLoading;
+    [ObservableProperty] private string _mainButtonText = "Select categories to translate";
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private List<ObservableCategoryType> _filteredCategoryTypes = [];
-    [ObservableProperty] private bool _isLoading;
+    [ObservableProperty] private List<ObservableCategoryDescriptor> _selectedCategories = [];
     
-    [ObservableProperty] 
     [Required]
     [NotifyDataErrorInfo]
-    [MinLength(1)]
+    [Range(1, int.MaxValue)]
     [NotifyCanExecuteChangedFor(nameof(TranslateCommand))]
-    private List<ObservableCategoryDescriptor> _selectedCategories = [];
+    [ObservableProperty] private int _elementCount;
 
-    private int _elementCount;
     private string _previousSearch = string.Empty;
 
-    public ObservableCategoryType[] CategoryTypes { get; set; } = null!;
+    public ObservableCategoryType[] CategoryTypes { get; private set; } = null!;
     
     public CategoriesViewModel()
     {
         IsLoading = true;
         Task.Run(async () =>
         {
-            MainButtonText = "Translate";
             await CreateCategoryTypes();
             FilteredCategoryTypes = CategoryTypes.ToList();
             
@@ -81,42 +80,60 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
         if (category.IsChecked)
         {
             SelectedCategories.Add(category);
-            await UpdateElementCounter(category, true);
-            MainButtonText = _elementCount == 0 
-                ? "No elements in selected categories" 
-                : $"Translate {_elementCount} elements";
+            await UpdateElementCounter();
             return;
         }
         
         SelectedCategories.Remove(category);
-        await UpdateElementCounter(category, false);
-        
-        MainButtonText = _elementCount == 0 
-            ? "Select category to translate" 
-            : $"Translate {_elementCount} elements";
+        await UpdateElementCounter();
     }
 
-    private async Task UpdateElementCounter(ObservableCategoryDescriptor category, bool add)
+    private async Task UpdateElementCounter()
     {
         await Task.Run(() =>
         {
-            var elementCount = new FilteredElementCollector(Context.ActiveDocument)
-                .OfCategory(Category.GetCategory(Context.ActiveDocument, category.Id.ToElementId()).BuiltInCategory)
-                .GetElementCount();
-            
-            // var elementCount = Context.ActiveDocument.EnumerateInstances(category.Id.ToElementId()).Count();
-            if (add)
+            if (SelectedCategories.Count == 0)
             {
-                _elementCount += elementCount;
+                ElementCount = 0;
                 return;
             }
 
-            _elementCount -= elementCount;
+            var categories = SelectedCategories
+                .Select(cat =>
+                    Category.GetCategory(Context.ActiveDocument, cat.Id.ToElementId()).BuiltInCategory)
+                .ToArray();
+            
+            var elementCount = new FilteredElementCollector(Context.ActiveDocument)
+                .WherePasses(new ElementMulticategoryFilter(categories))
+                .GetElementCount();
+
+            ElementCount = elementCount;
         });
+    }
+
+    partial void OnElementCountChanged(int value)
+    {
+        if (value == 0)
+        {
+            MainButtonText = SelectedCategories.Count == 0
+                ? "Select category to translate"
+                : "No elements in selected categories";
+            
+            return;
+        }
+        
+        MainButtonText = $"Translate {_elementCount} elements";
     }
 
     async partial void OnSearchTextChanged(string value)
     {
+        if (value == string.Empty)
+        {
+            FilteredCategoryTypes = CategoryTypes.ToList();
+            _previousSearch = string.Empty;
+            return;
+        }
+        
         var searchSource = value.Contains(_previousSearch)
             ? FilteredCategoryTypes.ToArray()
             : CategoryTypes;
@@ -141,8 +158,8 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
                 }
                 if (!validCategoryType) continue;
 
-                filteredTypes.Add(categoryType);
                 categoryType.FilteredCategories = filteredCategories;
+                filteredTypes.Add(categoryType);
             }
 
             IsLoading = false;
@@ -153,6 +170,17 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
     [RelayCommand(CanExecute = nameof(CanTranslate))] 
     private void Translate()
     {
+        var elements = new FilteredElementCollector(Context.ActiveDocument)
+            .WherePasses(
+                new ElementMulticategoryFilter(SelectedCategories
+                    .Select(category => new ElementId(category.Id))
+                    .ToArray()))
+            .ToArray();
+
+        var service = new BaseTranslationService();
+        service.SelectedElements = elements;
+        
+        service.Execute();
     }
 
     public void OnCloseRequested()
