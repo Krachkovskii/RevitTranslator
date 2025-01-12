@@ -1,6 +1,7 @@
 using Autodesk.Revit.UI;
 
 namespace RevitTranslator.Extensions;
+
 public static class ElementRetrievalExtensions
 {
     /// <summary>
@@ -14,6 +15,7 @@ public static class ElementRetrievalExtensions
         return document.Selection
             .GetElementIds()
             .Select(id => id.ToElement())
+            .OfType<Element>()
             .ToList();
     }
 

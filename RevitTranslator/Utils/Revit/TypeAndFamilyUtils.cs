@@ -1,5 +1,5 @@
-﻿
-namespace RevitTranslator.Utils.Revit;
+﻿namespace RevitTranslator.Utils.Revit;
+
 public static class TypeAndFamilyUtils
 {
     /// <summary>
@@ -12,6 +12,7 @@ public static class TypeAndFamilyUtils
     public static Family? GetFamily(Element element)
     {
         if (element is not FamilyInstance instance) return null;
+        // ReSharper disable once ConvertTypeCheckPatternToNullCheck
         if (instance.Symbol is not FamilySymbol symbol) return null;
 
         var family = symbol.Family;

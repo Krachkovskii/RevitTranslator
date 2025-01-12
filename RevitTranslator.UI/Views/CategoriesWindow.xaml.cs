@@ -7,6 +7,7 @@ using Wpf.Ui.Controls;
 using ListView = Wpf.Ui.Controls.ListView;
 
 namespace RevitTranslator.UI.Views;
+
 /// <summary>
 /// Interaction logic for SelectCategoriesWindow.xaml
 /// </summary>

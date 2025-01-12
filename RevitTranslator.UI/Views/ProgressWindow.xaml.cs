@@ -4,6 +4,7 @@ using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
 namespace RevitTranslator.UI.Views;
+
 /// <summary>
 /// Interaction logic for ProgressWindow.xaml
 /// </summary>

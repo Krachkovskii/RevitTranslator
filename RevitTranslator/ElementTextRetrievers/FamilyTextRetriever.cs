@@ -1,51 +1,39 @@
 ﻿using RevitTranslator.Models;
 using RevitTranslator.Utils.Revit;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
+namespace RevitTranslator.ElementTextRetrievers;
+
 public class FamilyTextRetriever : BaseElementTextRetriever
 {
     // this list can be further extended
-    private readonly List<Type> _filterTypes = [
+    private readonly List<Type> _usableTypesInFamily = [
         typeof(TextElement)
     ];
     
-    private Family _family;
-    private Document _familyDoc;
+    private readonly Document _familyDoc = null!;
     
     public FamilyTextRetriever(Family family)
     {
-        if (family == null || !family.IsEditable) return;
-
+        if (!family.IsEditable) return;
+        
+        _familyDoc = TypeAndFamilyUtils.GetFamilyDocument(family);
         Process(family);
     }
 
     /// <summary>
     /// EntityGroup associated with this family document.
     /// </summary>
-    public DocumentTranslationEntityGroup EntityGroup { get; private set; } = null;
+    public DocumentTranslationEntityGroup? EntityGroup { get; private set; }
 
     protected override sealed void Process(object Object)
     {
-        if ( Object is not Family family)
-        {
-            return;
-        }
-
-        var familyDoc = TypeAndFamilyUtils.GetFamilyDocument(family);
-
-        _family = family;
-        _familyDoc = familyDoc;
+        if ( Object is not Family) return;
 
         var elements = RetrieveFamilyElements();
-
         // family with no elements to process doesn't to be processed any further
-        if (elements.Count == 0)
-        {
-            return;
-        }
+        if (elements.Count == 0) return;
 
-        EntityGroup = new DocumentTranslationEntityGroup(familyDoc);
-
+        EntityGroup = new DocumentTranslationEntityGroup(_familyDoc);
         foreach (var element in elements)
         {
             ProcessFamilyElement(element);
@@ -58,7 +46,7 @@ public class FamilyTextRetriever : BaseElementTextRetriever
     {
         var collector = new FilteredElementCollector(_familyDoc);
         collector.WhereElementIsNotElementType();
-        collector.WherePasses( new ElementMulticlassFilter(_filterTypes) );
+        collector.WherePasses( new ElementMulticlassFilter(_usableTypesInFamily) );
         
         return collector.ToList();
     }
@@ -83,7 +71,7 @@ public class FamilyTextRetriever : BaseElementTextRetriever
     {
         foreach (var unit in ElementTranslationUnits)
         {
-            EntityGroup.TranslationEntities.Add(unit);
+            EntityGroup?.TranslationEntities.Add(unit);
         }
     }
 }

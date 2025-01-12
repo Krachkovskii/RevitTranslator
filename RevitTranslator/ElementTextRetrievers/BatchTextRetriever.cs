@@ -2,7 +2,8 @@
 using RevitTranslator.Models;
 using RevitTranslator.Utils.Revit;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
+namespace RevitTranslator.ElementTextRetrievers;
+
 /// <summary>
 /// Use this class to retrieve text from a list of elements.
 /// This is the primary class to process elements in a document.
@@ -37,6 +38,7 @@ public class BatchTextRetriever : BaseElementTextRetriever
         if (translateProjectParameters)
         {
             //TODO: Implement project parameter handling
+            // ReSharper disable once UnusedVariable
             var paramRetriever = new ProjectParameterTextRetriever();
         }
 
@@ -98,8 +100,8 @@ public class BatchTextRetriever : BaseElementTextRetriever
 
     private void AddFamilyUnitGroupToList(FamilyTextRetriever retriever)
     {
-        if (retriever.EntityGroup == null) return;
-
+        if (retriever.EntityGroup is null) return;
+        
         _unitGroups.Add(retriever.EntityGroup);
     }
     
@@ -107,12 +109,12 @@ public class BatchTextRetriever : BaseElementTextRetriever
     {
         if (units.Count == 0) return;
         
-        var u = units[0];
-        var group = _unitGroups.FirstOrDefault(g => g.Document.Equals(u.Document));
+        var document = units[0].Document;
+        var documentGroup = _unitGroups.First(group => group.Document.Equals(document));
 
         foreach (var unit in units)
         {
-            group?.TranslationEntities.Add(unit);
+            documentGroup?.TranslationEntities.Add(unit);
         }
     }
 }
