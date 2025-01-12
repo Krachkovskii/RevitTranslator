@@ -2,8 +2,9 @@
 using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
-public class ProjectParameterTextRetriever : BaseParameterTextRetriever
+namespace RevitTranslator.ElementTextRetrievers;
+
+public class ProjectParameterTextRetriever : BaseElementTextRetriever
 {
     public ProjectParameterTextRetriever()
     {

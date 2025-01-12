@@ -1,6 +1,7 @@
 ﻿using RevitTranslator.Models;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
+namespace RevitTranslator.ElementTextRetrievers;
+
 public class TextElementTextRetriever : BaseElementTextRetriever
 {
     public TextElementTextRetriever(TextElement textElement)

@@ -2,7 +2,8 @@
 using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
+namespace RevitTranslator.ElementTextRetrievers;
+
 /// <summary>
 /// This class handles an element's text attributes (name and parameters).
 /// </summary>

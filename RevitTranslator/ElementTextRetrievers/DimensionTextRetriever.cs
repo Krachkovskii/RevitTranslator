@@ -2,7 +2,8 @@
 using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
+namespace RevitTranslator.ElementTextRetrievers;
+
 public class DimensionTextRetriever : BaseElementTextRetriever
 {
     private readonly Dimension _dimension;

@@ -1,10 +1,10 @@
 using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
+using RevitTranslator.ElementTextRetrievers;
 using RevitTranslator.Models;
 using RevitTranslator.UI.Views;
 using RevitTranslator.Utils.App;
-using RevitTranslator.Utils.ElementTextRetrievers;
 using RevitTranslator.Utils.Revit;
 using RevitTranslator.ViewModels;
 using TranslationService.Utils;
