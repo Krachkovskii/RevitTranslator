@@ -1,9 +1,8 @@
 using Moq;
 using RevitTranslator.Models;
-using RevitTranslator.Utils.App;
 using Xunit;
 
-namespace RevitTranslatorAddin.Tests
+namespace RevitTranslator.Tests
 {
     public class ConcurrentTranslationHandlerTests
     {

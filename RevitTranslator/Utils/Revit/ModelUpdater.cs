@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Common.App.Messages;
+using RevitTranslator.Common.Messages;
 using RevitTranslator.Enums;
 using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
