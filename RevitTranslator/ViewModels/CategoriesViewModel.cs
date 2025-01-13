@@ -173,7 +173,7 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
         var elements = new FilteredElementCollector(Context.ActiveDocument)
             .WherePasses(
                 new ElementMulticategoryFilter(SelectedCategories
-                    .Select(category => new ElementId(category.Id))
+                    .Select(category => category.Id.ToElementId())
                     .ToArray()))
             .ToArray();
 
