@@ -31,7 +31,7 @@ public class ProjectParameterTextRetriever : BaseElementTextRetriever
     
     private void ProcessProjectInfoProperty(string propertyText, TranslationDetails details)
     {
-        if (!ValidationUtils.HasText(propertyText)) return;
+        if (!propertyText.HasText()) return;
 
         var unit = new TranslationEntity
         {

@@ -7,13 +7,10 @@ namespace RevitTranslator.Utils.App;
 /// </summary>
 public static class ValidationUtils
 {
-    /// <summary>
-    /// Preset regex to avoid initialization on every call
-    /// </summary>
     private static readonly Regex NumberOnlyRegex = new(@"^\d+$");
 
     /// <summary>
-    /// Checks if the input contains only text and is not a null, whitespace, numeric or alphanumeric sequence.
+    /// Checks if the input contains letters and is not a null, whitespace or numeric sequence.
     /// </summary>
     /// <param name="input">
     /// String to check.
@@ -21,7 +18,7 @@ public static class ValidationUtils
     /// <returns>
     /// Bool that indicates whether the input contains only numbers
     /// </returns>
-    public static bool HasText(string input)
+    public static bool HasText(this string input)
     {
         return !(string.IsNullOrWhiteSpace(input) || NumberOnlyRegex.IsMatch(input));
     }

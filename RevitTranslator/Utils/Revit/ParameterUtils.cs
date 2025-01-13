@@ -11,11 +11,9 @@ public static class ParameterUtils
                && !param.Definition.Name.Equals("Text Font");
     }
     
-    public static string GetText(object Object)
+    public static string GetText(this Parameter parameter)
     {
-        if (Object is not Parameter param) return string.Empty;
-
-        var value = param.AsString();
-        return !ValidationUtils.HasText(value) ? string.Empty : value;
+        var value = parameter.AsString();
+        return !value.HasText() ? string.Empty : value;
     }
 }

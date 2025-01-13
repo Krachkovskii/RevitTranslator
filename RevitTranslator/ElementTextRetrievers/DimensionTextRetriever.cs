@@ -45,7 +45,7 @@ public class DimensionTextRetriever : BaseElementTextRetriever
     private void ProcessDimensionOverride(object dimensionObject, TranslationDetails details)
     {
         var value = ExtractDimensionText(dimensionObject, details);
-        if (!ValidationUtils.HasText(value)) return;
+        if (!value.HasText()) return;
 
         var unit = new TranslationEntity();
 

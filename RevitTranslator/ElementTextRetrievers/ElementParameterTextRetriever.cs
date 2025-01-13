@@ -1,5 +1,6 @@
 ﻿using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
+using RevitTranslator.Utils.Revit;
 using ParameterUtils = RevitTranslator.Utils.Revit.ParameterUtils;
 
 namespace RevitTranslator.ElementTextRetrievers;
@@ -34,8 +35,8 @@ public class ElementParameterTextRetriever : BaseElementTextRetriever
     
     private void ProcessParameter(Parameter param)
     {
-        var text = base.GetText(param);
-        if (!ValidationUtils.HasText(text)) return;
+        var text = param.GetText();
+        if (!text.HasText()) return;
 
         var unit = new TranslationEntity
         {
