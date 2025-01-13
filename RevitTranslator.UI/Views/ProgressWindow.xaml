@@ -1,0 +1,125 @@
+﻿<ui:FluentWindow x:Class="RevitTranslator.UI.Views.ProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
+        xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance contracts:IProgressWindowViewModel}"
+        ExtendsContentIntoTitleBar="True"
+        Width="600" 
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Closing="OnWindowClosing">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/ResourceDictionaries/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <DockPanel>
+            <ui:TitleBar
+                DockPanel.Dock="Top"
+                Title="Translation Progress"
+                Height="32"
+                ShowMinimize="True"
+                ShowMaximize="False"
+                CloseClicked="OnCloseClicked"/>
+            <Button 
+                DockPanel.Dock="Bottom"
+                Content="{Binding ButtonText, FallbackValue=Cancel Translation}"
+                Command="{Binding CancelTranslationCommand}"
+                Style="{StaticResource LargeRectangularButton}"
+                IsEnabled="{Binding IsProgressBarIntermediate}"
+                Cursor="Hand"/>
+
+            <ProgressBar 
+                DockPanel.Dock="Top"
+                Height="20"
+                Margin="20 20 20 0"
+                Value="{Binding FinishedTranslationCount, FallbackValue=50}"
+                Maximum="{Binding TotalTranslationCount, FallbackValue=100}"
+                IsIndeterminate="{Binding IsProgressBarIntermediate,
+                    Converter={converters:InverseBoolConverter},
+                    Mode=OneWay,
+                    UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Grid
+                Margin="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Rectangle 
+                    Grid.Column="0"
+                    Width="1"
+                    HorizontalAlignment="Right"
+                    Fill="LightGray" />
+                <Rectangle
+                    Grid.Column="1"
+                    Width="1"
+                    HorizontalAlignment="Right"
+                    Fill="LightGray" />
+
+                <StackPanel
+                    Grid.Column="0"
+                    Orientation="Vertical"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Text="Translations completed"
+                        Style="{StaticResource Annotation}" />
+                    <TextBlock
+                        FontSize="25"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center">
+                        <Run Text="{Binding FinishedTranslationCount, FallbackValue=999}" />
+                        <Run Text="/" />
+                        <Run Text="{Binding TotalTranslationCount, FallbackValue=9999}" />
+                    </TextBlock>
+                </StackPanel>
+
+                <StackPanel
+                    Orientation="Vertical"
+                    VerticalAlignment="Center"
+                    Grid.Column="1">
+                    <TextBlock 
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Text="Characters translated"
+                        Style="{StaticResource Annotation}" />
+                    <TextBlock 
+                        FontSize="25"
+                        Text="{Binding SessionCharacterCount, FallbackValue=9999999}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <TextBlock 
+                    Grid.Column="2"
+                    TextAlignment="Right"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource Annotation}"
+                    LineHeight="1.5">
+                    <Run Text="Monthly usage:" />
+                    <Run Text="{Binding MonthlyCharacterCount, FallbackValue=9999999}" />
+                    <Run Text="ch" />
+                    <LineBreak />
+                    <Run Text="Limit:" />
+                    <Run Text="{Binding MonthlyCharacterLimit, FallbackValue=9999999}" />
+                    <Run Text="ch/mo" />
+                </TextBlock>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</ui:FluentWindow>

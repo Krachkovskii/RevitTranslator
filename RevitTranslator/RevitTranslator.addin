@@ -1,0 +1,12 @@
+﻿<RevitAddIns>
+    <AddIn Type="Application">
+        <Name>Revit Translator</Name>
+		<Description>Add-in for machine translation of model text via DeepL API.</Description>
+		<VisibilityMode>NotVisibleWhenNoActiveDocument</VisibilityMode>
+        <Assembly>RevitTranslator/RevitTranslator.dll</Assembly>
+        <AddInId>77C2A51D-29E8-4854-A6C5-A3B4EC1A08E2</AddInId>
+        <FullClassName>RevitTranslator.Application</FullClassName>
+        <VendorId>IKR</VendorId>
+        <VendorDescription>Ilia Krachkovskii</VendorDescription>
+    </AddIn>
+</RevitAddIns>

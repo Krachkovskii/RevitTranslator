@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <OutputType>exe</OutputType>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Configuration>Installer</Configuration>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Build" Version="17.*" />
+      <PackageReference Include="WixSharp" Version="1.*" />
+      <PackageReference Include="WixSharp.wix.bin" Version="3.*" />
+    </ItemGroup>
+
+</Project>
