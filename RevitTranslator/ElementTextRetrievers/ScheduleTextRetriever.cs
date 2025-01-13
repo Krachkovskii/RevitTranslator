@@ -1,7 +1,8 @@
 ﻿using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
+namespace RevitTranslator.ElementTextRetrievers;
+
 public class ScheduleTextRetriever : BaseElementTextRetriever
 {
     public ScheduleTextRetriever(ViewSchedule schedule)

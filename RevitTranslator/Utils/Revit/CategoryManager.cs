@@ -1,8 +1,9 @@
 ﻿namespace RevitTranslator.Utils.Revit;
+
 /// <summary>
 /// Retrieve and filter all user-visible and modifiable categories
 /// </summary>
-public static class CategoryFilter
+public static class CategoryManager
 {
     private static readonly BuiltInCategory[] SpecialCategories =
     [

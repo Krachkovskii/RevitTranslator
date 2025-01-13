@@ -1,6 +1,4 @@
-﻿using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using RevitTranslator.UI.Contracts;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
@@ -10,7 +8,7 @@ namespace RevitTranslator.UI.Views;
 /// <summary>
 /// Interaction logic for SettingsWindow.xaml
 /// </summary>
-public partial class SettingsWindow : FluentWindow
+public partial class SettingsWindow
 {
     public SettingsWindow(ISettingsViewModel viewModel)
     {
@@ -27,20 +25,7 @@ public partial class SettingsWindow : FluentWindow
         }
         else
         {
-            Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0, 245, 245, 245));
+            Background = new SolidColorBrush(Color.FromArgb(0, 245, 245, 245));
         }
-    }
-
-    private void Titlebar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.ClickCount == 1)
-        {
-            DragMove();
-        }
-    }
-
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
-    {
-        Close();
     }
 }

@@ -2,13 +2,14 @@
 using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
+namespace RevitTranslator.ElementTextRetrievers;
+
 /// <summary>
 /// This class handles an element's text attributes (name and parameters).
 /// </summary>
-public class GenericElementTextRetriever : BaseElementTextRetriever
+public class ElementTextRetriever : BaseElementTextRetriever
 {
-    public GenericElementTextRetriever(Element element)
+    public ElementTextRetriever(Element element)
     {
         Process(element);
     }
@@ -46,7 +47,7 @@ public class GenericElementTextRetriever : BaseElementTextRetriever
     private void ProcessElementName(Element element)
     {
         var name = element.Name;
-        if (!ValidationUtils.HasText(name)) return;
+        if (!name.HasText()) return;
 
         var unit = new TranslationEntity
         {

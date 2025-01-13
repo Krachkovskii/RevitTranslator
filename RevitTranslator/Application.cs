@@ -3,7 +3,7 @@ using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
 using Nice3point.Revit.Toolkit.External;
 using Nice3point.Revit.Toolkit.External.Handlers;
-using RevitTranslator.Utils.Revit;
+using RevitTranslator.Handlers;
 
 namespace RevitTranslator;
 /// <summary>
@@ -15,7 +15,7 @@ public class Application : ExternalApplication
     public override void OnStartup()
     {
         CreateRibbonPanel();
-        Handlers.ActionHandler = new ActionEventHandler();
+        EventHandlers.ActionHandler = new ActionEventHandler();
     }
 
     private void CreateRibbonPanel()

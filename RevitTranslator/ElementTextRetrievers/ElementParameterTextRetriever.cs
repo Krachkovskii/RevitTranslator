@@ -1,14 +1,14 @@
 ﻿using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
+using RevitTranslator.Utils.Revit;
+using ParameterUtils = RevitTranslator.Utils.Revit.ParameterUtils;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
-public class ElementParameterTextRetriever : BaseParameterTextRetriever
+namespace RevitTranslator.ElementTextRetrievers;
+
+public class ElementParameterTextRetriever : BaseElementTextRetriever
 {
-    private readonly Element _parentElement;
-
     public ElementParameterTextRetriever(Element element)
     {
-        _parentElement = element;
         Process(element);
     }
 
@@ -29,14 +29,14 @@ public class ElementParameterTextRetriever : BaseParameterTextRetriever
     {
         return element.Parameters
             .Cast<Parameter>()
-            .Where(CanUseParameter)
+            .Where(ParameterUtils.CanUseParameter)
             .ToList();
     }
     
     private void ProcessParameter(Parameter param)
     {
-        var text = base.GetText(param);
-        if (!ValidationUtils.HasText(text)) return;
+        var text = param.GetText();
+        if (!text.HasText()) return;
 
         var unit = new TranslationEntity
         {

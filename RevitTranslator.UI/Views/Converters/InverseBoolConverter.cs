@@ -11,7 +11,7 @@ public sealed class InverseBoolConverter : MarkupExtension, IValueConverter
         return !(bool)value!;
     }
 
-    public object ConvertBack(object? value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         return !(bool)value!;
     }

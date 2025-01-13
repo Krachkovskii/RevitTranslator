@@ -28,9 +28,6 @@ public static class TranslationUtils
     /// Checks if translation can be performed based on the provided settingsUtils. 
     /// This method attempts to translate a single word.
     /// </summary>
-    /// <param name="settingsUtils">
-    /// The Settings object containing the API key and target language.
-    /// </param>
     /// <returns>
     /// True if translation can be performed, false otherwise.
     /// </returns>
@@ -62,13 +59,16 @@ public static class TranslationUtils
         Usage = usage.CharacterCount;
         Limit = usage.CharacterLimit;
     }
-    
+
     /// <summary>
     /// Translates a given text using the DeepL translation API.
     /// This is a base method that simply returns translated text.
     /// </summary>
     /// <param name="text">
     /// Text to be translated.
+    /// </param>
+    /// <param name="token">
+    /// Cancellation token.
     /// </param>
     /// <returns>
     /// Translated text.

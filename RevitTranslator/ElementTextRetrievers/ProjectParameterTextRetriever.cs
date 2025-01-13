@@ -2,8 +2,9 @@
 using RevitTranslator.Models;
 using RevitTranslator.Utils.App;
 
-namespace RevitTranslator.Utils.ElementTextRetrievers;
-public class ProjectParameterTextRetriever : BaseParameterTextRetriever
+namespace RevitTranslator.ElementTextRetrievers;
+
+public class ProjectParameterTextRetriever : BaseElementTextRetriever
 {
     public ProjectParameterTextRetriever()
     {
@@ -30,7 +31,7 @@ public class ProjectParameterTextRetriever : BaseParameterTextRetriever
     
     private void ProcessProjectInfoProperty(string propertyText, TranslationDetails details)
     {
-        if (!ValidationUtils.HasText(propertyText)) return;
+        if (!propertyText.HasText()) return;
 
         var unit = new TranslationEntity
         {

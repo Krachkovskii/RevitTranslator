@@ -1,20 +1,16 @@
 using System.Text.RegularExpressions;
-using RevitTranslator.Enums;
-using RevitTranslator.Models;
 
 namespace RevitTranslator.Utils.App;
+
 /// <summary>
 /// Utilities for text validation
 /// </summary>
 public static class ValidationUtils
 {
-    /// <summary>
-    /// Preset regex to avoid initialization on every call
-    /// </summary>
     private static readonly Regex NumberOnlyRegex = new(@"^\d+$");
 
     /// <summary>
-    /// Checks if the input contains only text and is not a null, whitespace, numeric or alphanumeric sequence.
+    /// Checks if the input contains letters and is not a null, whitespace or numeric sequence.
     /// </summary>
     /// <param name="input">
     /// String to check.
@@ -22,7 +18,7 @@ public static class ValidationUtils
     /// <returns>
     /// Bool that indicates whether the input contains only numbers
     /// </returns>
-    public static bool HasText(string input)
+    public static bool HasText(this string input)
     {
         return !(string.IsNullOrWhiteSpace(input) || NumberOnlyRegex.IsMatch(input));
     }
@@ -46,18 +42,4 @@ public static class ValidationUtils
     {
         return element.Category?.BuiltInCategory == BuiltInCategory.OST_TitleBlocks;
     }
-
-    /// <summary>
-    /// Checks if translation is applied to parameter or element name. 
-    /// If yes, checks for illegal Revit characters
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-     public static bool NameHasIllegalCharacters(this TranslationEntity entity)
-     {
-         if (entity.Element is not Parameter && entity.TranslationDetails != TranslationDetails.ElementName)
-             return false;
-
-         return entity.TranslatedText.Any(c => ForbiddenParameterSymbols.Contains(c));
-     }
 }
