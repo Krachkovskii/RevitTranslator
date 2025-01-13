@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_LastSelectedProfileId>C:\Users\mi\source\repos\RevitTranslatorAddin\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="Views\ProgressWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\TranslateCategoriesWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Resources\ResourceDictionaries\Styles.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\ProgressWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\TranslateCategoriesWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\SettingsWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+</Project>
