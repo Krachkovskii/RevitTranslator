@@ -41,7 +41,7 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
     {
         await Task.Run(() =>
         {
-            var categories = CategoryFilter.ValidCategories;
+            var categories = CategoryManager.ValidCategories;
             CategoryTypes = categories.Select(category => category.CategoryType)
                 .Distinct()
                 .Select(type => new ObservableCategoryType

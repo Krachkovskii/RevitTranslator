@@ -3,7 +3,7 @@ using RevitTranslator.Common.Messages;
 using RevitTranslator.Models;
 using TranslationService.Utils;
 
-namespace RevitTranslator.Utils.App;
+namespace RevitTranslator.Handlers;
 
 public class ConcurrentTranslationHandler
 {
@@ -38,6 +38,7 @@ public class ConcurrentTranslationHandler
             StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage());
             return;
         }
+        
         entity.TranslatedText = translated;
         StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(translated.Length));
     }

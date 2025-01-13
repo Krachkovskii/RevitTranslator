@@ -2,10 +2,10 @@ using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
 using RevitTranslator.ElementTextRetrievers;
+using RevitTranslator.Handlers;
 using RevitTranslator.Models;
 using RevitTranslator.UI.Views;
 using RevitTranslator.Utils.App;
-using RevitTranslator.Utils.Revit;
 using RevitTranslator.ViewModels;
 using TranslationService.Utils;
 
@@ -44,7 +44,7 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
 
     private List<DocumentTranslationEntityGroup> GetTextFromElements()
     {
-        var entities = new BatchTextRetriever()
+        var entities = new MultiElementTextRetriever()
             .CreateEntities(SelectedElements, false, out var unitCount);
         StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(unitCount));
 
@@ -71,7 +71,7 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
 
     private void UpdateRevitModel()
     {
-        Handlers.ActionHandler.Raise(_ => new ModelUpdater().Update(_documentEntities!));
+        EventHandlers.ActionHandler.Raise(_ => new ModelUpdater().Update(_documentEntities!));
     }
 
     public void Receive(TokenCancellationRequestedMessage message)
