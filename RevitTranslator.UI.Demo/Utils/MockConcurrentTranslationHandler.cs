@@ -1,23 +1,23 @@
-using Bogus;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
+using TranslationService.Utils;
 
 namespace RevitTranslator.Demo.Utils;
 
-public class MockConcurrentTranslationHandler
+public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly List<Task> _tasks = [];
-    private readonly Faker _faker = new();
+    private readonly CancellationTokenSource _cts = new();
     private CancellationToken _cancellationToken;
 
-    public async Task Translate(string[] texts, CancellationToken cancellationToken)
+    public async Task Translate(string[] texts)
     {
-        _cancellationToken = cancellationToken;
+        _cancellationToken = _cts.Token;
+        StrongReferenceMessenger.Default.Register(this);
         try
         {
             foreach (var text in texts)
             {
-                await Task.Delay(_faker.Random.Int(100, 500), _cancellationToken);
                 _cancellationToken.ThrowIfCancellationRequested();
                 AddTranslationTask(text);
             }
@@ -38,9 +38,16 @@ public class MockConcurrentTranslationHandler
         _tasks.Add(Task.Run(async () =>
         {
             _cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(_faker.Random.Int(500, 4000), _cancellationToken);
-            Console.WriteLine($"Translated: {text}");
+            await TranslationUtils.Translate(text, _cancellationToken);
+            
             StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));
-        }));
+        }, _cancellationToken));
     } 
+    
+    public void Receive(TokenCancellationRequestedMessage message)
+    {
+        if (_cts.IsCancellationRequested) return;
+        
+        _cts.Cancel();
+    }
 }

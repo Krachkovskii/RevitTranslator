@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.Input;
+using RevitTranslator.Demo.Utils;
 using RevitTranslator.Demo.ViewModels;
 using RevitTranslator.UI.Views;
 
@@ -31,5 +32,11 @@ public partial class DemoViewModel
         var view = new CategoriesWindow(vm);
         
         view.Show();
+    }
+
+    [RelayCommand]
+    private void TestTranslation()
+    {
+        new MockTranslationPipeline().Execute();
     }
 }
