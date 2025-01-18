@@ -27,7 +27,7 @@
         <DockPanel>
             <ui:TitleBar
                 DockPanel.Dock="Top"
-                Title="Translation Progress"
+                Title="Revit Translator | Progress"
                 Height="32"
                 ShowMinimize="True"
                 ShowMaximize="False"
@@ -37,7 +37,8 @@
                 Content="{Binding ButtonText, FallbackValue=Cancel Translation}"
                 Command="{Binding CancelTranslationCommand}"
                 Style="{StaticResource LargeRectangularButton}"
-                IsEnabled="{Binding IsProgressBarIntermediate}"
+                IsEnabled="{Binding IsProgressBarIntermediate, 
+                    Converter={converters:InverseBoolConverter}}"
                 Cursor="Hand"/>
 
             <ProgressBar 
@@ -47,7 +48,6 @@
                 Value="{Binding FinishedTranslationCount, FallbackValue=50}"
                 Maximum="{Binding TotalTranslationCount, FallbackValue=100}"
                 IsIndeterminate="{Binding IsProgressBarIntermediate,
-                    Converter={converters:InverseBoolConverter},
                     Mode=OneWay,
                     UpdateSourceTrigger=PropertyChanged}"/>
 

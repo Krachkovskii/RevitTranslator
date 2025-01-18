@@ -20,6 +20,10 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
     
     public void Execute()
     {
+        if (DeeplSettingsUtils.CurrentSettings is null)
+        {
+            DeeplSettingsUtils.Load();
+        }
         var test = TranslationUtils.TryTestTranslate();
         if (!test)
         {

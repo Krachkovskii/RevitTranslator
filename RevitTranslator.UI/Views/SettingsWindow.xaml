@@ -27,7 +27,7 @@
             <ui:TitleBar
                 DockPanel.Dock="Top"
                 Height="30"
-                Title="Revit Translator Settings" 
+                Title="Revit Translator | Settings" 
                 ShowMaximize="False"
                 ShowMinimize="False"/>
             <Button 
@@ -100,12 +100,11 @@
                         <ui:TextBlock
                             Style="{StaticResource Annotation}" />
                         <ui:Button
-                            Height="40"
-                            Width="40"
+                            Height="38"
+                            Width="38"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
-                            FontSize="15"
-                            Content="{ui:SymbolIcon ArrowRepeat124}"
+                            Content="{ui:SymbolIcon ArrowUndo16}"
                             Command="{Binding SwitchLanguagesCommand}"
                             IsEnabled="{Binding IsAutoDetectChecked, 
                             Converter={converters:InverseBoolConverter}}"

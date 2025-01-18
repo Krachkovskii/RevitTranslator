@@ -24,8 +24,13 @@
                 <ui:CardAction
                     Margin="0 5"
                     Icon="{ui:SymbolIcon Circle24}"
-                    Content="Progress Window"
+                    Content="Mock Progress Window"
                     Command="{Binding ShowProgressWindowCommand}" />
+                <ui:CardAction
+                    Margin="0 5"
+                    Icon="{ui:SymbolIcon LocalLanguage24}"
+                    Content="Test Actual Translation"
+                    Command="{Binding TestTranslationCommand}" />
                 <ui:CardAction
                     Margin="0 5"
                     Icon="{ui:SymbolIcon List24}"

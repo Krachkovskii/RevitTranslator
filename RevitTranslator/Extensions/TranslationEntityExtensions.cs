@@ -13,7 +13,7 @@ public static class TranslationEntityExtensions
 
     public static bool IsTranslated(this TranslationEntity entity)
     {
-        return string.IsNullOrWhiteSpace(entity.TranslatedText) && entity.TranslatedText != entity.OriginalText;
+        return !string.IsNullOrWhiteSpace(entity.TranslatedText) && entity.TranslatedText != entity.OriginalText;
     }
     
     public static bool NameHasIllegalCharacters(this TranslationEntity entity)

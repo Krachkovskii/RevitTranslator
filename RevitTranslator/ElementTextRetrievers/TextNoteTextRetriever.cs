@@ -16,7 +16,7 @@ public class TextElementTextRetriever : BaseElementTextRetriever
         var text = GetText(textElement);
         var unit = new TranslationEntity
         {
-            Element = textElement.Document,
+            Element = textElement,
             ElementId = textElement.Id,
             Document = textElement.Document,
             OriginalText = text,

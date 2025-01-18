@@ -5,13 +5,16 @@ using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
 using RevitTranslator.Demo.Utils;
 using RevitTranslator.UI.Contracts;
+using TranslationService.Utils;
 
 namespace RevitTranslator.Demo.ViewModels;
 
 public partial class MockProgressWindowViewModel : ObservableObject, 
         IProgressWindowViewModel, 
         IRecipient<EntityTranslatedMessage>,
-        IRecipient<TranslationFinishedMessage>
+        IRecipient<TranslationFinishedMessage>,
+        IRecipient<ModelUpdatedMessage>,
+        IRecipient<TextRetrievedMessage>
 {
     [ObservableProperty] private int _totalTranslationCount;
     [ObservableProperty] private int _finishedTranslationCount;
@@ -22,7 +25,9 @@ public partial class MockProgressWindowViewModel : ObservableObject,
     [ObservableProperty] private bool _isProgressBarIntermediate;
     [ObservableProperty] private bool _modelUpdateFinished;
 
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private int _threadSafeTranslationCount;
+    private int _threadSafeSessionCharacterCount;
+    private int _threadSafeMonthlyCharacterCount;
 
     public MockProgressWindowViewModel()
     {
@@ -50,19 +55,37 @@ public partial class MockProgressWindowViewModel : ObservableObject,
             MonthlyCharacterCount = (int)(MonthlyCharacterLimit * faker.Random.Double(0, 0.2));
 
             await new MockConcurrentTranslationHandler()
-                .Translate(translations.ToArray(), _cancellationTokenSource.Token);
+                .Translate(translations.ToArray(), true);
         });
+    }
+
+    public MockProgressWindowViewModel(bool useTranslationService)
+    {
+        StrongReferenceMessenger.Default.RegisterAll(this);
+        
+        IsProgressBarIntermediate = true;
+        ButtonText = "Collecting text from elements";
+        
+        Task.Run(async () =>
+        {
+            await TranslationUtils.CheckUsageAsync();
+
+            if (TranslationUtils.Usage == -1)
+            {
+                CancelTranslation();
+                return;
+            }
+            
+            _threadSafeMonthlyCharacterCount = TranslationUtils.Usage;
+            MonthlyCharacterCount = _threadSafeMonthlyCharacterCount;
+            MonthlyCharacterLimit = TranslationUtils.Limit;
+        }).GetAwaiter().GetResult();
     }
 
     [RelayCommand]
     private void CancelTranslation()
     {
-        if (IsProgressBarIntermediate) return;
-        _cancellationTokenSource.Cancel();
-        
-        ButtonText = "Canceling translation...";
-        
-        // await Task.Delay(1000);
+        StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage());
         ButtonText = "Translation cancelled";
     }
 
@@ -89,19 +112,26 @@ public partial class MockProgressWindowViewModel : ObservableObject,
 
     public void UpdateProgress(int translationLength)
     {
-        SessionCharacterCount += translationLength;
-        MonthlyCharacterCount += translationLength;
-        FinishedTranslationCount++;
+        var translationCount = Interlocked.Add(ref _threadSafeTranslationCount, 1);
+        var sessionCharacterCount = Interlocked.Add(ref _threadSafeSessionCharacterCount, translationLength);
+        var monthlyCharacterCount = Interlocked.Add(ref _threadSafeMonthlyCharacterCount, translationLength);
+        
+        SessionCharacterCount = sessionCharacterCount;
+        MonthlyCharacterCount = monthlyCharacterCount;
+        FinishedTranslationCount = translationCount;
+        Console.WriteLine($"Updated UI value to {translationCount}");
 
         if (MonthlyCharacterCount >= MonthlyCharacterLimit)
         {
             CancelTranslation();
         }
-        // ReSharper disable once InvertIf
-        if (FinishedTranslationCount == TotalTranslationCount)
-        {
-            FinalizeTranslation();
-        }
+    }
+
+    public void Receive(TextRetrievedMessage message)
+    {
+        IsProgressBarIntermediate = false;
+        TotalTranslationCount = message.EntityCount;
+        ButtonText = "Cancel translation";
     }
 
     public void Receive(EntityTranslatedMessage message)
@@ -109,8 +139,15 @@ public partial class MockProgressWindowViewModel : ObservableObject,
         UpdateProgress(message.CharacterCount);
     }
 
-    public void Receive(TranslationFinishedMessage message) 
+    public void Receive(TranslationFinishedMessage message)
     {
-        FinalizeTranslation();
+        IsProgressBarIntermediate = true;
+        ButtonText = "Updating model...";
+    }
+
+    public void Receive(ModelUpdatedMessage message)
+    {
+        IsProgressBarIntermediate = false;
+        ButtonText = "Model successfully updated";
     }
 }

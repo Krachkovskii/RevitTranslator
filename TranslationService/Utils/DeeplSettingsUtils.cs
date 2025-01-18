@@ -19,7 +19,7 @@ public static class DeeplSettingsUtils
         JsonDirectoryPath,
         "settings.json");
 
-    public static DeeplSettingsDescriptor CurrentSettings { get; set; } = new();
+    public static DeeplSettingsDescriptor? CurrentSettings { get; set; }
     public static string TranslationUrl { get; private set; } = "https://api-free.deepl.com/v2/translate";
     public static string UsageUrl { get; private set; } = "https://api-free.deepl.com/v2/usage";
 

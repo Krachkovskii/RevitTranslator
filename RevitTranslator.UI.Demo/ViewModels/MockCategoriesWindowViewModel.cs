@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿#nullable enable
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,6 +15,7 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private List<ObservableCategoryType> _filteredCategoryTypes = [];
     [ObservableProperty] private bool _isLoading;
+    [ObservableProperty] private int _elementCount;
     
     [ObservableProperty] 
     [Required]
@@ -22,17 +24,16 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
     [NotifyCanExecuteChangedFor(nameof(TranslateCommand))]
     private List<ObservableCategoryDescriptor> _selectedCategories = [];
 
-    private int _elementCount;
-    
-    public ObservableCategoryType[] CategoryTypes { get; private set; }
+    private string _previousSearch = string.Empty;
+    private Dictionary<ObservableCategoryDescriptor, int> _elementCountDict = new();
+
+    public ObservableCategoryType[] CategoryTypes { get; private set; } = [];
 
     public MockCategoriesWindowViewModel()
     {
         IsLoading = true;
-        Task.Run(async () =>
+        Task.Run(() =>
         {
-            await Task.Delay(1000);
-            
             CategoryTypes = new Faker<ObservableCategoryType>()
                 .RuleFor(type => type.Name, faker => faker.Lorem.Word())
                 .GenerateBetween(3, 10)
@@ -52,60 +53,113 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
                 foreach (var category in categoryType.Categories)
                 {
                     category.PropertyChanged += OnCategoryPropertyChanged;
+                    _elementCountDict[category] = new Faker().Random.Int(0, 100);
                     category.IsChecked = new Faker().Random.Bool();
                 }
             }
 
+            ElementCount = SelectedCategories.Sum(category => _elementCountDict[category]);
             FilteredCategoryTypes = CategoryTypes.ToList();
             IsLoading = false;
-        });
+        }).GetAwaiter().GetResult();
     }
 
     private void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
         if (args.PropertyName != nameof(ObservableCategoryDescriptor.IsChecked)) return;
+        
+        var tempCategories = SelectedCategories.GetRange(0, SelectedCategories.Count);
         var category = (ObservableCategoryDescriptor)sender!;
-
+        
         if (category.IsChecked)
         {
-            SelectedCategories.Add(category);
-            _elementCount += new Faker().Random.Int(0, 50);
-            MainButtonText = $"Translate {_elementCount} elements";
+            tempCategories.Add(category);
+            SelectedCategories = tempCategories;
+            UpdateCategoryTypeCheckbox(category.CategoryType);
             return;
         }
         
-        SelectedCategories.Remove(category);
-        _elementCount -= new Faker().Random.Int(0, 50);
-        
-        if (_elementCount == 0) MainButtonText = "Select category to translate";
+        tempCategories.Remove(category);
+        SelectedCategories = tempCategories;
+        UpdateCategoryTypeCheckbox(category.CategoryType);
     }
 
-    partial void OnSearchTextChanged(string value)
+    private void UpdateCategoryTypeCheckbox(ObservableCategoryType categoryType)
     {
-        IsLoading = true;
-        Task.Run(() =>
+        if (categoryType.Categories.All(category => category.IsChecked))
         {
-            List<ObservableCategoryType> filteredCategories = [];
-            foreach (var categoryType in CategoryTypes)
-            {
-                categoryType.FilteredCategories.Clear();
-                var validCategory = false;
-                foreach (var category in categoryType.Categories)
-                {
-                    var contains = category.Name.Contains(value, StringComparison.OrdinalIgnoreCase);
-                    if (!contains) continue;
-
-                    validCategory = true;
-                    categoryType.FilteredCategories.Add(category);
-                }
-
-                if (validCategory) filteredCategories.Add(categoryType);
-            }
-
-            IsLoading = false;
-            FilteredCategoryTypes = filteredCategories.ToList();
-        });
+            categoryType.IsChecked = true;
+        }
+        else if (categoryType.Categories.Any(category => category.IsChecked))
+        {
+            categoryType.IsChecked = null;
+        }
+        else
+        {
+            categoryType.IsChecked = false;
+        }
     }
+
+    partial void OnSelectedCategoriesChanged(List<ObservableCategoryDescriptor> value)
+    {
+        ElementCount = value.Sum(category => _elementCountDict[category]);
+    }
+
+    partial void OnElementCountChanged(int value)
+    {
+        if (value == 0)
+        {
+            MainButtonText = SelectedCategories.Count == 0
+                ? "Select category to translate"
+                : "No elements in selected categories";
+            
+            return;
+        }
+        
+        MainButtonText = $"Translate {_elementCount} elements";
+    }
+
+    // TODO: Fix search logic; at the moment, updating the list with expander throws animation error
+    // async partial void OnSearchTextChanged(string value)
+    // {
+    //     if (value == string.Empty)
+    //     {
+    //         FilteredCategoryTypes = CategoryTypes.ToList();
+    //         _previousSearch = string.Empty;
+    //         return;
+    //     }
+    //     
+    //     var searchSource = value.Contains(_previousSearch)
+    //         ? FilteredCategoryTypes
+    //         : CategoryTypes.ToList();
+    //     
+    //     _previousSearch = value;
+    //     IsLoading = true;
+    //     
+    //     FilteredCategoryTypes = await Task.Run(() =>
+    //     {
+    //         var categoryTypes = searchSource.GetRange(0, searchSource.Count);
+    //         List<ObservableCategoryType> filteredCategoryTypes = [];
+    //         foreach (var categoryType in categoryTypes)
+    //         {
+    //             categoryType.FilteredCategories.Clear();
+    //             var validCategory = false;
+    //             foreach (var category in categoryType.Categories)
+    //             {
+    //                 var contains = category.Name.Contains(value, StringComparison.OrdinalIgnoreCase);
+    //                 if (!contains) continue;
+    //
+    //                 validCategory = true;
+    //                 categoryType.FilteredCategories.Add(category);
+    //             }
+    //
+    //             if (validCategory) filteredCategoryTypes.Add(categoryType);
+    //         }
+    //
+    //         IsLoading = false;
+    //         return filteredCategoryTypes.ToList();
+    //     });
+    // }
 
     [RelayCommand(CanExecute = nameof(CanTranslate))] 
     private void Translate()
@@ -120,5 +174,14 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
     public void OnCloseRequested()
     {
         
+    }
+
+    [RelayCommand]
+    private void CategoryTypeChecked(ObservableCategoryType categoryType)
+    {
+        if (categoryType.IsChecked == null) return;
+        
+        var isChecked = (bool)categoryType.IsChecked;
+        categoryType.Categories.ToList().ForEach(category => category.IsChecked = isChecked);
     }
 }
