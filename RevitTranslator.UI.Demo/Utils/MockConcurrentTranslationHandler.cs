@@ -9,10 +9,13 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
     private readonly List<Task> _tasks = [];
     private readonly CancellationTokenSource _cts = new();
     private CancellationToken _cancellationToken;
+    private bool _useMockTranslations;
 
-    public async Task Translate(string[] texts)
+    public async Task Translate(string[] texts, bool useMockTranslations)
     {
         _cancellationToken = _cts.Token;
+        _useMockTranslations = useMockTranslations;
+        
         StrongReferenceMessenger.Default.Register(this);
         try
         {
@@ -38,7 +41,14 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
         _tasks.Add(Task.Run(async () =>
         {
             _cancellationToken.ThrowIfCancellationRequested();
-            await TranslationUtils.Translate(text, _cancellationToken);
+            if (_useMockTranslations)
+            {
+                await Task.Delay(500); // Simulate translation delay
+            }
+            else
+            {
+                await TranslationUtils.Translate(text, _cancellationToken);
+            }
             
             StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));
         }, _cancellationToken));
