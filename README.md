@@ -1,4 +1,4 @@
-# Removing language barriers in international BIM collaboration.
+# Erasing language barriers in international BIM collaboration.
 Revit Translator is a free add-in for Autodesk Revit that translates and update various text data in your Revit models. Use it to translate views, schedules, annotations, parameters and much more.
 
 It uses DeepL API to perform quick and accurate translations of whole Revit projects within seconds. DeepL account with API key is required.
