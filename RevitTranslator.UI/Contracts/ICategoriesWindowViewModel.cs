@@ -16,4 +16,5 @@ public interface ICategoriesWindowViewModel
     void OnCloseRequested();
     
     IRelayCommand TranslateCommand { get; }
+    IRelayCommand<ObservableCategoryType> CategoryTypeCheckedCommand { get; } 
 }
