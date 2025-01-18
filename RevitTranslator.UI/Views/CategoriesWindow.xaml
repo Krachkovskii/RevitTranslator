@@ -12,9 +12,7 @@
                  Title="Translate Categories Window"
                  Height="600"
                  MinHeight="300"
-                 Width="500"
-                 MinWidth="400"
-                 MaxWidth="600">
+                 Width="500">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -28,13 +26,15 @@
         <DockPanel>
             <ui:TitleBar
                 DockPanel.Dock="Top"
-                Title="Category translation"
+                Title="Revit Translator | Select Categories"
                 Height="32"
                 ShowMinimize="True"
                 ShowMaximize="False" />
+            <!-- TODO: Fix textbox behavior; it will be disabled until fixed -->
             <ui:TextBox
+                Visibility="Collapsed"
                 DockPanel.Dock="Top"
-                IsEnabled="{Binding IsLoading, 
+                IsEnabled="{Binding IsLoading,
                     Converter={converters:InverseBoolConverter},
                     UpdateSourceTrigger=PropertyChanged}"
                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -64,7 +64,8 @@
                 </StackPanel>
                 <ui:ListView
                     DockPanel.Dock="Top"
-                    Margin="20 0 5 0"
+                    x:Name="CategoryTypeCards"
+                    Margin="20 20 5 0"
                     ItemsSource="{Binding FilteredCategoryTypes}"
                     ScrollViewer.CanContentScroll="False"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
@@ -92,13 +93,15 @@
                                 <ui:CardExpander.Header>
                                     <CheckBox
                                         IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                        Command="{Binding DataContext.CategoryTypeCheckedCommand, 
+                                            ElementName=CategoryTypeCards}"
+                                        CommandParameter="{Binding}"
                                         Content="{Binding Name, Mode=OneWay}"
                                         VerticalContentAlignment="Center" />
                                 </ui:CardExpander.Header>
                                 <ui:CardExpander.Content>
                                     <ui:ListView
                                         ItemsSource="{Binding Categories}"
-                                        SelectionChanged="UpdateCheckbox"
                                         Focusable="False">
                                         <ui:ListView.ItemTemplate>
                                             <DataTemplate>
@@ -115,76 +118,6 @@
                         </DataTemplate>
                     </ui:ListView.ItemTemplate>
                 </ui:ListView>
-                <!-- <TreeView -->
-                <!--     x:Name="CategoriesView" -->
-                <!--     DockPanel.Dock="Top" -->
-                <!--     ItemsSource="{Binding FilteredCategoryTypes, -->
-                <!--         FallbackValue={x:Static fallback:CategoryTypeFallbackDescriptor.FilteredCategoryTypes}}" -->
-                <!--     ScrollViewer.HorizontalScrollBarVisibility="Disabled" -->
-                <!--     Visibility="{Binding IsLoading, -->
-                <!--         Converter={converters:InverseBoolVisibilityConverter}, -->
-                <!--         UpdateSourceTrigger=PropertyChanged}" -->
-                <!--     Focusable="False"> -->
-                <!--     <TreeView.ItemContainerStyle> -->
-                <!--         <Style -->
-                <!--             TargetType="TreeViewItem"> -->
-                <!--             <Setter Property="Focusable" Value="False"/> -->
-                <!--         </Style> -->
-                <!--     </TreeView.ItemContainerStyle> -->
-                <!--     <TreeView.ItemTemplate> -->
-                <!--         <DataTemplate> -->
-                <!--             <TreeViewItem -->
-                <!--                 IsExpanded="True" -->
-                <!--                 Focusable="False"> -->
-                <!--                 <TreeViewItem.Header> -->
-                <!--                     <StackPanel -->
-                <!--                         Orientation="Horizontal" -->
-                <!--                         HorizontalAlignment="Stretch"> -->
-                <!--                         <CheckBox -->
-                <!--                             IsChecked="{Binding IsChecked, Mode=TwoWay}" /> -->
-                <!--                         <ui:TextBlock -->
-                <!--                             VerticalAlignment="Center" -->
-                <!--                             Text="{Binding Name, Mode=OneWay}" /> -->
-                <!--                     </StackPanel> -->
-                <!--                 </TreeViewItem.Header> -->
-                <!--                 <TreeView -->
-                <!--                     Margin="-20 0 0 0" -->
-                <!--                     ItemsSource="{Binding FilteredCategories}"> -->
-                <!--                     <TreeView.ItemContainerStyle> -->
-                <!--                         <Style -->
-                <!--                             TargetType="TreeViewItem"> -->
-                <!--                             <Setter Property="Focusable" Value="False" /> -->
-                <!--                             <Setter Property="Margin" Value="-20, 0 0 0" /> -->
-                <!--                             <Setter Property="Padding" Value="0"/> -->
-                <!--                             <Setter Property="IsExpanded" Value="True"/> -->
-                <!--                         </Style> -->
-                <!--                     </TreeView.ItemContainerStyle> -->
-                <!--                     <TreeView.ItemTemplate> -->
-                <!--                         <DataTemplate> -->
-                <!--                             <TreeViewItem -->
-                <!--                                 Width="{Binding ActualWidth, -->
-                <!--                                     ElementName=CategoriesView}" -->
-                <!--                                 MouseLeftButtonUp="OnCategoryClicked" -->
-                <!--                                 Margin="-20 0 0 0"> -->
-                <!--                                 <TreeViewItem.Header> -->
-                <!--                                     <StackPanel -->
-                <!--                                         Orientation="Horizontal"> -->
-                <!--                                         <CheckBox -->
-                <!--                                             x:Name="CategoryCheckBox" -->
-                <!--                                             IsChecked="{Binding IsChecked}" /> -->
-                <!--                                         <ui:TextBlock -->
-                <!--                                             VerticalAlignment="Center" -->
-                <!--                                             Text="{Binding Name}" /> -->
-                <!--                                     </StackPanel> -->
-                <!--                                 </TreeViewItem.Header> -->
-                <!--                             </TreeViewItem> -->
-                <!--                         </DataTemplate> -->
-                <!--                     </TreeView.ItemTemplate> -->
-                <!--                 </TreeView> -->
-                <!--             </TreeViewItem> -->
-                <!--         </DataTemplate> -->
-                <!--     </TreeView.ItemTemplate> -->
-                <!-- </TreeView> -->
             </Grid>
         </DockPanel>
     </Grid>

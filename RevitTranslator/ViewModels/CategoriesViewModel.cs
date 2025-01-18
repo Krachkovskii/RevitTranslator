@@ -21,9 +21,10 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
     [NotifyCanExecuteChangedFor(nameof(TranslateCommand))]
     [ObservableProperty] private int _elementCount;
 
-    private string _previousSearch = string.Empty;
+    // private string _previousSearch = string.Empty;
+    private bool _isInternalCheckboxUpdate;
 
-    public ObservableCategoryType[] CategoryTypes { get; private set; } = null!;
+    public ObservableCategoryType[] CategoryTypes { get; private set; } = [];
     
     public CategoriesViewModel()
     {
@@ -39,11 +40,12 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
 
     private async Task CreateCategoryTypes()
     {
-        await Task.Run(() =>
+        CategoryTypes = await Task.Run(() =>
         {
             var categories = CategoryManager.ValidCategories;
-            CategoryTypes = categories.Select(category => category.CategoryType)
+            var categoryTypes = categories.Select(category => category.CategoryType)
                 .Distinct()
+                .OrderBy(type => type.ToString())
                 .Select(type => new ObservableCategoryType
                 {
                     Categories = categories
@@ -56,11 +58,11 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
                         })
                         .OrderBy(category => category.Name)
                         .ToArray(),
-                    Name = type.ToString()
+                    Name = type.ToString().StartsWith("Analytical") ? "Analytical Model" : type.ToString()
                 })
                 .ToArray();
 
-            foreach (var categoryType in CategoryTypes)
+            foreach (var categoryType in categoryTypes)
             {
                 categoryType.FilteredCategories = categoryType.Categories.ToList();
                 foreach (var category in categoryType.Categories)
@@ -69,45 +71,48 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
                     category.PropertyChanged += OnCategoryPropertyChanged;
                 }
             }
+            
+            return categoryTypes;
         });
     }
-
-    private async void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs args)
+    
+    private void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
         if (args.PropertyName != nameof(ObservableCategoryDescriptor.IsChecked)) return;
+        if (_isInternalCheckboxUpdate) return;
         
         var category = (ObservableCategoryDescriptor)sender!;
         if (category.IsChecked)
         {
+            // TODO: set flags for updating category types as a whole, instead of individually updating each category
+            // this can be done by adding a RelayCommand<bool?> for Type's checkbox
             SelectedCategories.Add(category);
-            await UpdateElementCounter();
+            OnSelectedCategoriesChanged(SelectedCategories);
             return;
         }
         
         SelectedCategories.Remove(category);
-        await UpdateElementCounter();
+        OnSelectedCategoriesChanged(SelectedCategories);
     }
 
-    private async Task UpdateElementCounter()
+    async partial void OnSelectedCategoriesChanged(List<ObservableCategoryDescriptor> value)
     {
-        await Task.Run(() =>
+        if (SelectedCategories.Count == 0)
         {
-            if (SelectedCategories.Count == 0)
-            {
-                ElementCount = 0;
-                return;
-            }
-
+            ElementCount = 0;
+            return;
+        }
+        
+        ElementCount = await Task.Run(() =>
+        {
             var categories = SelectedCategories
                 .Select(cat =>
                     Category.GetCategory(Context.ActiveDocument, cat.Id.ToElementId()).BuiltInCategory)
                 .ToArray();
             
-            var elementCount = new FilteredElementCollector(Context.ActiveDocument)
+            return new FilteredElementCollector(Context.ActiveDocument)
                 .WherePasses(new ElementMulticategoryFilter(categories))
                 .GetElementCount();
-
-            ElementCount = elementCount;
         });
     }
 
@@ -125,46 +130,81 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
         MainButtonText = $"Translate {_elementCount} elements";
     }
 
-    async partial void OnSearchTextChanged(string value)
+    // TODO: Fix filtering, atm it causes animation crashes
+    // async partial void OnSearchTextChanged(string value)
+    // {
+    //     if (value == string.Empty)
+    //     {
+    //         FilteredCategoryTypes = CategoryTypes.ToList();
+    //         _previousSearch = string.Empty;
+    //         return;
+    //     }
+    //     
+    //     var searchSource = value.Contains(_previousSearch)
+    //         ? FilteredCategoryTypes.ToArray()
+    //         : CategoryTypes;
+    //     
+    //     _previousSearch = value;
+    //     IsLoading = true;
+    //     
+    //     FilteredCategoryTypes = await Task.Run(() =>
+    //     {
+    //         var filteredTypes = new List<ObservableCategoryType>();
+    //         foreach (var categoryType in searchSource)
+    //         {
+    //             var filteredCategories = new List<ObservableCategoryDescriptor>();
+    //             var validCategoryType = false;
+    //             foreach (var category in categoryType.Categories)
+    //             {
+    //                 var contains = category.Name.Contains(value, StringComparison.OrdinalIgnoreCase);
+    //                 if (!contains) continue;
+    //
+    //                 validCategoryType = true;
+    //                 filteredCategories.Add(category);
+    //             }
+    //             if (!validCategoryType) continue;
+    //
+    //             categoryType.FilteredCategories = filteredCategories;
+    //             filteredTypes.Add(categoryType);
+    //         }
+    //
+    //         IsLoading = false;
+    //         return filteredTypes;
+    //     });
+    // }
+
+    [RelayCommand]
+    private void CategoryTypeChecked(ObservableCategoryType categoryType)
     {
-        if (value == string.Empty)
+        var value = categoryType.IsChecked;
+        var tempCategories = SelectedCategories.GetRange(0, SelectedCategories.Count);
+        _isInternalCheckboxUpdate = true;
+
+        switch (value)
         {
-            FilteredCategoryTypes = CategoryTypes.ToList();
-            _previousSearch = string.Empty;
-            return;
-        }
-        
-        var searchSource = value.Contains(_previousSearch)
-            ? FilteredCategoryTypes.ToArray()
-            : CategoryTypes;
-        
-        _previousSearch = value;
-        IsLoading = true;
-        
-        FilteredCategoryTypes = await Task.Run(() =>
-        {
-            var filteredTypes = new List<ObservableCategoryType>();
-            foreach (var categoryType in searchSource)
+            case true:
             {
-                var filteredCategories = new List<ObservableCategoryDescriptor>();
-                var validCategoryType = false;
                 foreach (var category in categoryType.Categories)
                 {
-                    var contains = category.Name.Contains(value, StringComparison.OrdinalIgnoreCase);
-                    if (!contains) continue;
-
-                    validCategoryType = true;
-                    filteredCategories.Add(category);
+                    category.IsChecked = true;
+                    tempCategories.Add(category);
                 }
-                if (!validCategoryType) continue;
-
-                categoryType.FilteredCategories = filteredCategories;
-                filteredTypes.Add(categoryType);
+                break;
             }
-
-            IsLoading = false;
-            return filteredTypes;
-        });
+            case false:
+            {
+                foreach (var category in categoryType.Categories)
+                {
+                    category.IsChecked = false;
+                    tempCategories.Remove(category);
+                }
+                
+                break;
+            }
+        }
+        
+        SelectedCategories = tempCategories;
+        _isInternalCheckboxUpdate = false;
     }
 
     [RelayCommand(CanExecute = nameof(CanTranslate))] 
