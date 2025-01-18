@@ -25,7 +25,6 @@ public partial class MockProgressWindowViewModel : ObservableObject,
     [ObservableProperty] private bool _isProgressBarIntermediate;
     [ObservableProperty] private bool _modelUpdateFinished;
 
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
     private int _threadSafeTranslationCount;
     private int _threadSafeSessionCharacterCount;
     private int _threadSafeMonthlyCharacterCount;

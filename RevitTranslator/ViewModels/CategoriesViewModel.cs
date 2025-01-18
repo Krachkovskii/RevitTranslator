@@ -29,19 +29,17 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
     public CategoriesViewModel()
     {
         IsLoading = true;
-        Task.Run(async () =>
+        Task.Run(() =>
         {
-            await CreateCategoryTypes();
+            CategoryTypes = CreateCategoryTypes();
             FilteredCategoryTypes = CategoryTypes.ToList();
             
             IsLoading = false;
         });
     }
 
-    private async Task CreateCategoryTypes()
+    private ObservableCategoryType[] CreateCategoryTypes()
     {
-        CategoryTypes = await Task.Run(() =>
-        {
             var categories = CategoryManager.ValidCategories;
             var categoryTypes = categories.Select(category => category.CategoryType)
                 .Distinct()
@@ -73,7 +71,6 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
             }
             
             return categoryTypes;
-        });
     }
     
     private void OnCategoryPropertyChanged(object? sender, PropertyChangedEventArgs args)
@@ -84,8 +81,6 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
         var category = (ObservableCategoryDescriptor)sender!;
         if (category.IsChecked)
         {
-            // TODO: set flags for updating category types as a whole, instead of individually updating each category
-            // this can be done by adding a RelayCommand<bool?> for Type's checkbox
             SelectedCategories.Add(category);
             OnSelectedCategoriesChanged(SelectedCategories);
             return;
