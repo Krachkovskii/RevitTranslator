@@ -1,5 +1,5 @@
 # Erasing language barriers in international BIM collaboration.
-Revit Translator is a free add-in for Autodesk Revit that translates and update various text data in your Revit models. Use it to translate views, schedules, annotations, parameters and much more.
+Revit Translator is a free add-in for Autodesk Revit that translates and updates various text data in your Revit models. Use it to translate views, schedules, annotations, parameters and much more.
 
 It uses DeepL API to perform quick and accurate translations of whole Revit projects within seconds. DeepL account with API key is required.
 
@@ -47,7 +47,7 @@ Translations can be stopped mid-way. To do this, click "Cancel translation" in t
 
 # Translated elements
 The following text information can be translated:
-* **Elements**: Element name; All parameter values for user-selectable elements. For all 
+* **Elements**: Element name; All parameter values for user-selectable elements. This type of translation also applies for all elements below - i.e. for Schedules, not only headers, but also all parameter values will be applied.
   * **Families**
   * **Family types**
   * **Family instances**
@@ -77,17 +77,9 @@ There are lots of things I would love to improve. Eventually I will deal with so
 * Add at least primitive logging.
 
 ## Technical details
-The add-in was tested on Window 10 & 11 and in Revit versions 2022-2023. It should work in all Revit versions from 2021 to 2024.
-
-It uses asynchronous translation methods, so the total number of translations in the progress window that you see at the beginning is not final.
-
-### Currently, the following elements are translated:
-* Elements, i.e. system and downloadable families, views, etc.: Name of the element, all text-based Instance and Type parameters
-* Dimensions: all override values
-* TextElements: text contents
-* Schedules: titles and field headers
+The add-in was tested on Windows 11 and in Revit versions 2023 and 2025. It is designed to work in all Revit versions from 2023 to 2025.
 
 # Afterword
 Do you have any feedback, proposals, inquiries or offers? Feel free to write me on [LinkedIn](https://www.linkedin.com/in/ilia-krachkovskii/). 
 
-I am open to collaborations for BIM development and consulting. My expertise includes 4+ years with international teams on top-level projects, including NEOM, JetBrains HQ and SberCity, where I provided technical assistance on unique solutions for both projects and studios.
+This is a free and open-source plug-in that I have developed on my free time. If you like it, I will appreciate your feedback: share it, write a post, comment, or send me a simple direct message on LinkedIn.
