@@ -10,7 +10,8 @@ public partial class ProgressWindowViewModel : ObservableObject,
     IRecipient<TextRetrievedMessage>,
     IRecipient<EntityTranslatedMessage>,
     IRecipient<TranslationFinishedMessage>,
-    IRecipient<ModelUpdatedMessage>
+    IRecipient<ModelUpdatedMessage>,
+    IRecipient<TokenCancellationRequestedMessage>
 {
     [ObservableProperty] private int _totalTranslationCount;
     [ObservableProperty] private int _finishedTranslationCount;
@@ -21,13 +22,19 @@ public partial class ProgressWindowViewModel : ObservableObject,
     [ObservableProperty] private bool _isProgressBarIntermediate;
     [ObservableProperty] private bool _modelUpdateFinished;
     
+    private int _threadSafeTranslationCount;
+    private int _threadSafeSessionCharacterCount;
+    private int _threadSafeMonthlyCharacterCount;
+    private bool _wasTranslationCanceled;
+    
     public ProgressWindowViewModel()
     {
         StrongReferenceMessenger.Default.Register<TextRetrievedMessage>(this);
         StrongReferenceMessenger.Default.Register<EntityTranslatedMessage>(this);
         StrongReferenceMessenger.Default.Register<TranslationFinishedMessage>(this);
         StrongReferenceMessenger.Default.Register<ModelUpdatedMessage>(this);
-        
+
+        IsProgressBarIntermediate = true;
         ButtonText = "Retrieving text from elements...";
 
         Task.Run(async () =>
@@ -40,7 +47,8 @@ public partial class ProgressWindowViewModel : ObservableObject,
                 return;
             }
             
-            MonthlyCharacterCount = TranslationUtils.Usage;
+            _threadSafeMonthlyCharacterCount = TranslationUtils.Usage;
+            MonthlyCharacterCount = _threadSafeMonthlyCharacterCount;
             MonthlyCharacterLimit = TranslationUtils.Limit;
         }).GetAwaiter().GetResult();
     }
@@ -60,9 +68,13 @@ public partial class ProgressWindowViewModel : ObservableObject,
 
     public void UpdateProgress(int translationLength)
     {
-        SessionCharacterCount += translationLength;
-        MonthlyCharacterCount += translationLength;
-        FinishedTranslationCount++;
+        var translationCount = Interlocked.Add(ref _threadSafeTranslationCount, 1);
+        var sessionCharacterCount = Interlocked.Add(ref _threadSafeSessionCharacterCount, translationLength);
+        var monthlyCharacterCount = Interlocked.Add(ref _threadSafeMonthlyCharacterCount, translationLength);
+        
+        SessionCharacterCount = sessionCharacterCount;
+        MonthlyCharacterCount = monthlyCharacterCount;
+        FinishedTranslationCount = translationCount;
 
         if (MonthlyCharacterCount >= MonthlyCharacterLimit)
         {
@@ -73,7 +85,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
     public void Receive(TextRetrievedMessage message)
     {
         IsProgressBarIntermediate = false;
-        TotalTranslationCount = message.UnitCount;
+        TotalTranslationCount = message.EntityCount;
         ButtonText = "Cancel translation";
     }
 
@@ -91,6 +103,13 @@ public partial class ProgressWindowViewModel : ObservableObject,
     public void Receive(ModelUpdatedMessage message)
     {
         IsProgressBarIntermediate = false;
-        ButtonText = "Model successfully updated";
+        ButtonText = _wasTranslationCanceled 
+            ? "Model successfully updated. Translation was canceled"
+            : "Model successfully updated";
+    }
+
+    public void Receive(TokenCancellationRequestedMessage message)
+    {
+        _wasTranslationCanceled = true;
     }
 }
