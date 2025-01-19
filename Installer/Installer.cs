@@ -13,7 +13,7 @@ public static class Installer
         {
             var configDir = GetConfigurationPath(version);
                 
-            var assemblies = new Files(configDir);
+            var assemblies = new Files($@"{configDir}\*.*");
             var manifest = new Files($@"{MainDirectoryPath}\{Constants.ProjectName}.addin");
             
             var project = new Project
@@ -33,7 +33,7 @@ public static class Installer
                 },
                 Dirs =
                 [
-                    new Dir(@$"%ProgramFiles%\Autodesk\Revit\Addins\20{version}\", 
+                    new Dir(@$"%AppData%\Autodesk\Revit\Addins\20{version}\", 
                         new Dir($@"{Constants.ProjectName}\", assemblies),
                         manifest
                         )
