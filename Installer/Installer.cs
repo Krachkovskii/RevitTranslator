@@ -33,7 +33,7 @@ public static class Installer
                 },
                 Dirs =
                 [
-                    new Dir(@$"%ProgramFiles%\Autodesk\Revit\Addins\20{version}\", 
+                    new Dir(@$"%AppData%\Autodesk\Revit\Addins\20{version}\", 
                         new Dir($@"{Constants.ProjectName}\", assemblies),
                         manifest
                         )
