@@ -32,6 +32,7 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
                     "Translation Service Error");
             return;
         }
+        StrongReferenceMessenger.Default.Register(this);
         
         var viewModel = new ProgressWindowViewModel();
         var view = new ProgressWindow(viewModel);
@@ -43,6 +44,8 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
         {
             await Translate();
             UpdateRevitModel();
+            
+            StrongReferenceMessenger.Default.UnregisterAll(this);
         });
     }
 
