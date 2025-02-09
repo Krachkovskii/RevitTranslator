@@ -83,7 +83,8 @@
                                 UpdateSourceTrigger=PropertyChanged}"
                             SelectedItem="{Binding SelectedSourceLanguage,
                                 Mode=TwoWay,
-                                UpdateSourceTrigger=PropertyChanged}"/>
+                                UpdateSourceTrigger=PropertyChanged}"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                         <CheckBox
                             Content="Detect language"
                             VerticalAlignment="Top"
@@ -122,7 +123,8 @@
                             ItemsSource="{Binding 
                                 Source={x:Static languageModels:DeeplLanguageCodes.TargetLanguages}}"
                             DisplayMemberPath="VisibleName"
-                            SelectedItem="{Binding SelectedTargetLanguage}" />
+                            SelectedItem="{Binding SelectedTargetLanguage}" 
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"/>
                         <TextBlock 
                             DockPanel.Dock="Bottom"
                             HorizontalAlignment="Right"
