@@ -80,7 +80,7 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
     {
         EventHandlers.ActionHandler.Raise(_ => new ModelUpdater().Update(_documentEntities!));
     }
-
+    
     public void Receive(TokenCancellationRequestedMessage message)
     {
         _cts.Cancel();

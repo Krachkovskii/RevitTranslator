@@ -10,6 +10,7 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
     private readonly CancellationTokenSource _cts = new();
     private CancellationToken _cancellationToken;
     private bool _useMockTranslations;
+    private static readonly SemaphoreSlim Semaphore = new(5, 10);
 
     public async Task Translate(string[] texts, bool useMockTranslations)
     {
@@ -43,7 +44,7 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
             _cancellationToken.ThrowIfCancellationRequested();
             if (_useMockTranslations)
             {
-                await Task.Delay(500); // Simulate translation delay
+                await SimulateTranslationWithSemaphore();
             }
             else
             {
@@ -52,7 +53,25 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
             
             StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));
         }, _cancellationToken));
-    } 
+    }
+
+    private async Task SimulateTranslationWithSemaphore()
+    {
+        await Semaphore.WaitAsync(_cancellationToken);
+        try
+        {
+            _cancellationToken.ThrowIfCancellationRequested();
+            await Task.Delay(500);
+        }
+        catch (OperationCanceledException)
+        {
+            // do nothing
+        }
+        finally
+        {
+            Semaphore.Release();
+        }
+    }
     
     public void Receive(TokenCancellationRequestedMessage message)
     {
