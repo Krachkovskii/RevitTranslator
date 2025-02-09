@@ -35,19 +35,13 @@ public partial class MockProgressWindowViewModel : ObservableObject,
         
         Task.Run(async () =>
         {
-            List<string> translations = [];
             var faker = new Faker();
             IsProgressBarIntermediate = true;
             ButtonText = "Collecting text from elements";
-            
-            for (var i = 0; i < faker.Random.Int(10, 500); i++)
-            {
-                await Task.Delay(faker.Random.Int(50, 100));
-                translations.Add(faker.Lorem.Sentence());
-                TotalTranslationCount++;
-            }
-            
-            Console.WriteLine($"Total char count: {translations.Sum(t => t.Length)}");
+
+            await Task.Delay(2000);
+            var translations = faker.Lorem.Words(faker.Random.Int(10, 500));
+            TotalTranslationCount = translations.Length;
             
             IsProgressBarIntermediate = false;
             ButtonText = "Cancel translation";
@@ -120,6 +114,11 @@ public partial class MockProgressWindowViewModel : ObservableObject,
         MonthlyCharacterCount = monthlyCharacterCount;
         FinishedTranslationCount = translationCount;
         Console.WriteLine($"Updated UI value to {translationCount}");
+
+        SessionCharacterCount += translationLength;
+        MonthlyCharacterCount += translationLength;
+        FinishedTranslationCount++;
+        Console.WriteLine($"Updated UI value to {FinishedTranslationCount}");
 
         if (MonthlyCharacterCount >= MonthlyCharacterLimit)
         {

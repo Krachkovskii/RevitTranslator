@@ -24,12 +24,18 @@ public static class DeeplSettingsUtils
     public static string UsageUrl { get; private set; } = "https://api-free.deepl.com/v2/usage";
 
     /// <summary>
-    /// Loads the settings from a JSON file.
+    /// Loads the settings from a JSON file. 
+    /// If file is not created yet, it is created with default settings.
     /// </summary>
     /// <returns>An instance of the Settings class with the loaded settings.</returns>
     public static void Load()
     {
-        if (!File.Exists(JsonFilePath)) return;
+        if (!File.Exists(JsonFilePath))
+        {
+            var descriptor = new DeeplSettingsDescriptor();
+            descriptor.SaveToJson();
+            return;
+        }
         
         var json = File.ReadAllText(JsonFilePath);
         CurrentSettings = JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json)!;
@@ -37,6 +43,12 @@ public static class DeeplSettingsUtils
 
     public static void Save(this DeeplSettingsDescriptor descriptor)
     {
+        if (CurrentSettings is null)
+        {
+            descriptor.SaveToJson();
+            return;
+        }
+        
         if (descriptor.IsPaidPlan != CurrentSettings.IsPaidPlan)
         {
             var translationUrl = CurrentSettings.IsPaidPlan
@@ -50,7 +62,6 @@ public static class DeeplSettingsUtils
         }
         
         descriptor.SaveToJson();
-        CurrentSettings = descriptor;
     }
 
     private static void SaveToJson(this DeeplSettingsDescriptor descriptor)
