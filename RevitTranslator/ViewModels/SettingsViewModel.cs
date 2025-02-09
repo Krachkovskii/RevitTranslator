@@ -71,34 +71,36 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
         newSettings.Save();
 
         var test = TranslationUtils.TryTestTranslate();
-        if (!test)
+        if (test)
         {
-            oldSettings.Save();
-            SetSettingsValues();
-            ButtonText = "Invalid credentials. Settings were restored.";
-            Task.Run(async () =>
-            {
-                await Task.Delay(3000);
-                ButtonText = "Settings saved";
-            });
-            
+            ButtonText = "Settings saved";
             return;
         }
+
+        ButtonText = "Invalid credentials";
+        if (oldSettings is null) return;
         
-        ButtonText = "Settings saved";
+        oldSettings.Save();
+        SetSettingsValues();
+        Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            ButtonText = "Settings were restored";
+        });
     }
 
     private void SetSettingsValues()
     {
+        if (DeeplSettingsUtils.CurrentSettings is null) return;
+        
         IsPaidPlan = DeeplSettingsUtils.CurrentSettings.IsPaidPlan;
         DeeplApiKey = DeeplSettingsUtils.CurrentSettings.DeeplApiKey;
         SelectedSourceLanguage = DeeplSettingsUtils.CurrentSettings.SourceLanguage;
         SelectedTargetLanguage = DeeplSettingsUtils.CurrentSettings.TargetLanguage;
 
-        if (SelectedSourceLanguage is null)
-        {
-            IsAutoDetectChecked = true;
-        }
+        if (SelectedSourceLanguage is null) return;
+            
+        IsAutoDetectChecked = true;
     }
 
     partial void OnIsAutoDetectCheckedChanged(bool value)
@@ -117,7 +119,9 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
     private bool CanExecuteSaveSettings()
     {
         var savedSettings = DeeplSettingsUtils.CurrentSettings;
-        var hasChanges = savedSettings.IsPaidPlan != IsPaidPlan ||
+        if (savedSettings is null) return true;
+        
+        var hasChanges = savedSettings?.IsPaidPlan != IsPaidPlan ||
                            savedSettings.DeeplApiKey != DeeplApiKey ||
                            savedSettings.SourceLanguage != SelectedSourceLanguage ||
                            savedSettings.TargetLanguage != SelectedTargetLanguage;
