@@ -1,4 +1,5 @@
 ﻿using WixSharp;
+using File = System.IO.File;
 
 namespace Installer;
 
@@ -12,6 +13,7 @@ public static class Installer
         foreach (var version in VersionList)
         {
             var configDir = GetConfigurationPath(version);
+            if (!AreBinariesFresh(configDir)) throw new Exception($"Binaries for Revit 20{version} are not fresh.");
                 
             var assemblies = new Files($@"{configDir}\*.*");
             var manifest = new Files($@"{MainDirectoryPath}\{Constants.ProjectName}.addin");
@@ -67,5 +69,16 @@ public static class Installer
     {
         return Directory.GetDirectories($@"{MainDirectoryPath}\bin\")
             .First(dir => dir.EndsWith($"Release R{version}"));
+    }
+
+    /// <summary>
+    /// To avoid using old binaries, if main executable was not updated in the last 30 minutes, installer will not be created
+    /// </summary>
+    /// <param name="configDir"></param>
+    /// <returns></returns>
+    public static bool AreBinariesFresh(string configDir)
+    {
+        var publishTime = File.GetLastWriteTime(Path.Combine(configDir, "RevitTranslator.dll"));
+        return publishTime > DateTime.Now.AddMinutes(-30);
     }
 }

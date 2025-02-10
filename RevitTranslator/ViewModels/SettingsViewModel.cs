@@ -23,8 +23,8 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
     [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
     private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.TargetLanguages[1];
     
+    [ObservableProperty] private string _buttonText = string.Empty;
     [ObservableProperty] private bool _isAutoDetectChecked;
-    [ObservableProperty] private string _buttonText;
     
     private LanguageDescriptor? _previousLanguage;
 

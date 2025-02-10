@@ -7,7 +7,7 @@ It uses DeepL API to perform quick and accurate translations of whole Revit proj
 
 ![github-poster](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/34d3c2e5-4887-45ca-9d2a-754ee7dc71a2)
 
-# How to install
+# How to set up
 ### Installation steps
 1. Go to the latest GitHub release.
 2. Download .msi file for each Revit version that you're using.
@@ -16,10 +16,8 @@ It uses DeepL API to perform quick and accurate translations of whole Revit proj
 
     ![image](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/48934b38-dfbd-4b14-bbfd-de40818c45d5)
 
-
-## How to set up
-To use the addin, you need to set up a DeepL Pro account. Free account has a limit of 500 000 characters/month, while Paid tier offers unlimited paid translations.
 ### DeepL setup steps
+To use the addin, you need to set up a DeepL Pro account. Free account has a limit of 500 000 characters/month, while Paid tier offers unlimited paid translations.
 1. Go to [DeepL website](www.deepl.com), register an account;
 2. Set up your billing; it's necessary even for free accounts. You won't be charged, but unfortunately, bank cards of some countries may not be permitted;
 3. Create an API key. It can be copied later.
@@ -31,9 +29,9 @@ To use the addin, you need to set up a DeepL Pro account. Free account has a lim
 
     ![image](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/910ef370-b7b9-4b71-a11e-69cd0c200b6a)
 
-Settings configurations are saved in this path: `%appdata%\Autodesk\Revit\Addins\(RevitVersion)\RevitTranslatorAddin\Settings\settings.json`. You can copy this file to another computer or Revit version instead of manually filling translation setup.
+Settings configurations are saved in this path: `%appdata%\Autodesk\ApplicationPlugins\RevitTranslator\settings.json`. This file is used by all Revit versions. If 
 
-# How to use  
+# How to use
 The app has three modes of translation: `Current selection`, `Categories` and `Model`.
 ### Current selection
 The app gets all currently selected elements and translates them. You can select elements in the viewport, as well as elements in the project browser, such as Views or Family Types.
@@ -55,31 +53,31 @@ The following text information can be translated:
 * **Views**
 * **Schedules**: schedule column headers;
 * **Dimensions**: all overrides - `above`, `below`, `suffix`, `prefix` and `value override`. Single- and multi-segment dimensions are supported;
-* **Titleblocks**: all `TextElements` *inside* a titleblock will be translated.
+* **Titleblocks**: all `TextElements` *inside* a titleblock family will be translated.
 
-## How to uninstall
-1. Open Windows' Run command (Win + R) and insert the following path: `%appdata%\Autodesk\Revit\Addins`, click Enter.
-2. Open the corresponding Revit version folder.
-3. Make sure Revit is not running.
+# How to uninstall
+1. Make sure Revit is not running.
+2. Open Windows' Run command (Win + R) and insert the following path: `%appdata%\Autodesk\Revit\Addins`, click Enter.
+3. Open the corresponding Revit version folder.
 4. Remove the folder `RevitTranslatorAddin` and manifest file `RevitTranslatorAddin.addin`.
-5. Go to `Control Panel` -> `Programs and Features`. Select `Revit Translator` and click "uninstall".
+5. Go to `Control Panel` -> `Programs and Features`. Select corresponding version of `Revit Translator` and click "uninstall".
 
-## Roadmap
+# Roadmap
 There are lots of things I would love to improve. Eventually I will deal with some of them in my free time.
 ### UI:
 * Introduce "Black list" (or is it a white list?) for parameter names and values to prevent their translation.
 * Add glossaries.
-* Maybe add a "translator" mode with a dockable pane, where you can just translate stuff.
 ### Revit:
-* Increase number of translatable element types.
 * Add translation of parameter names (at least global and user-added from downloadable families).
 ### Application:
-* Add at least primitive logging.
+* Add basic logging.
+* Add automatic updater functionality.
 
 ## Technical details
 The add-in was tested on Windows 11 and in Revit versions 2023 and 2025. It is designed to work in all Revit versions from 2023 to 2025.
 
 # Afterword
-Do you have any feedback, proposals, inquiries or offers? Feel free to write me on [LinkedIn](https://www.linkedin.com/in/ilia-krachkovskii/). 
+Do you have any feedback, proposals, inquiries or offers? Feel free to write me on [LinkedIn](https://www.linkedin.com/in/ilia-krachkovskii/), or send me an [email](mailto:i.krachkovskii@gmail.com). 
 
-This is a free and open-source plug-in that I have developed on my free time. If you like it, I will appreciate your feedback: share it, write a post, comment, or send me a simple direct message on LinkedIn.
+This is a free and open-source plug-in that I have developed in my free time. If something doesn't work, let me know and I will try to fix it as soon as possible. 
+If you like it, a kind word goes a long way: share it, write a post, comment, or send me a simple direct message on LinkedIn.
