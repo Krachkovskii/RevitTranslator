@@ -23,9 +23,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Bogus" Version="35.*" />
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
-      <PackageReference Include="WPF-UI" Version="4.0.0-rc.3" />
+      <PackageReference Include="Bogus"  />
+      <PackageReference Include="CommunityToolkit.Mvvm"  />
+      <PackageReference Include="WPF-UI" />
     </ItemGroup>
 
     <ItemGroup>

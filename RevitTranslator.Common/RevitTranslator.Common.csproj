@@ -33,14 +33,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-      <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.*" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="8.*"/>
-      <PackageReference Include="PolySharp" Version="1.*">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
+      <PackageReference Include="CommunityToolkit.Mvvm"/>
+      <PackageReference Include="JetBrains.Annotations"/>
+      <PackageReference Include="Newtonsoft.Json"/>
+        <PackageReference Include="Microsoft.Extensions.Options"/>
+      <PackageReference Include="PolySharp" />
     </ItemGroup>
 
     <ItemGroup>
