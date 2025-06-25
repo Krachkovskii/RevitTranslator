@@ -49,7 +49,7 @@ public partial class MockProgressWindowViewModel : ObservableObject,
             MonthlyCharacterCount = (int)(MonthlyCharacterLimit * faker.Random.Double(0, 0.2));
 
             await new MockConcurrentTranslationHandler()
-                .Translate(translations.ToArray(), true);
+                .TranslateAsync(translations.ToArray(), true);
         });
     }
 

@@ -56,7 +56,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
     [RelayCommand]
     private void CancelTranslation()
     {
-        StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage());
+        StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage("Translation was cancelled by user"));
         ButtonText = "Translation cancelled";
     }
 

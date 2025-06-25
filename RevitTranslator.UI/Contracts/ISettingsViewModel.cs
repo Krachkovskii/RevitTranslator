@@ -13,6 +13,6 @@ public interface ISettingsViewModel
     public LanguageDescriptor SelectedTargetLanguage { get; set; }
 
     IRelayCommand<string> OpenLinkedinCommand { get; }
-    IRelayCommand SaveSettingsCommand { get; }
+    IAsyncRelayCommand SaveSettingsCommand { get; }
     IRelayCommand SwitchLanguagesCommand { get; }
 }

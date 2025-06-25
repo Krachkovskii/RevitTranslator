@@ -46,16 +46,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.*" />
         <PackageReference Include="Nice3point.Revit.Build.Tasks" Version="2.*" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
-        <PackageReference Include="System.Net.Http" Version="4.3.4" />
-        <PackageReference Include="System.Text.Json" Version="9.0.0" />
+        <PackageReference Include="System.Net.Http" Version="4.*" />
+        <PackageReference Include="System.Text.Json" Version="8.*" />
 		<PackageReference Include="Nice3point.Revit.Toolkit" Version="$(RevitVersion).*"/>
 		<PackageReference Include="Nice3point.Revit.Extensions" Version="$(RevitVersion).*" />
 		<PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" />
 		<PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" />
-		<PackageReference Include="WPF-UI" Version="4.0.0-rc.2" />
+		<PackageReference Include="WPF-UI" Version="4.*" />
         <PackageReference Include="PolySharp" Version="1.*">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

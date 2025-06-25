@@ -72,7 +72,7 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
         };
         newSettings.Save();
 
-        var test = TranslationUtils.TryTestTranslate();
+        var test = TranslationUtils.TryTestTranslateAsync();
         if (!test)
         {
             oldSettings.Save();

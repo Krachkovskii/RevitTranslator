@@ -35,16 +35,12 @@ public static class TranslationUtils
     /// <returns>
     /// True if translation can be performed, false otherwise.
     /// </returns>
-    public static bool TryTestTranslate()
+    public static async Task<bool> TryTestTranslateAsync()
     {
         if (string.IsNullOrWhiteSpace(DeeplSettingsUtils.CurrentSettings?.DeeplApiKey)) return false;
-
-        var test = Task.Run(async () =>
-        {
-            var res = await ProcessTranslationRequest("bonjour", new CancellationTokenSource().Token);
-            return res is not null;
-        }).Result;
-        return test;
+        
+        var res = await ProcessTranslationRequestAsync("bonjour", new CancellationTokenSource().Token);
+        return res is not null;
     }
 
     public static async Task CheckUsageAsync()
@@ -73,13 +69,13 @@ public static class TranslationUtils
     /// If server response does not allow further translation (e.g. quota exceeded,
     /// or request configuration is invalid), <c>OperationCanceledException</c> will be thrown, 
     /// and token cancellation will be requested.</returns>
-    public static async Task<string?> Translate(string text, CancellationToken token)
+    public static async Task<string?> TranslateAsync(string text, CancellationToken token)
     {
         await Semaphore.WaitAsync(token);
         try
         {
             token.ThrowIfCancellationRequested();
-            return await ProcessTranslationRequest(text, token);
+            return await ProcessTranslationRequestAsync(text, token);
         }
         catch
         {
@@ -91,7 +87,7 @@ public static class TranslationUtils
         }
     }
 
-    private static async Task<string?> ProcessTranslationRequest(string text, CancellationToken token)
+    private static async Task<string?> ProcessTranslationRequestAsync(string text, CancellationToken token)
     {
         var content = new FormUrlEncodedContent(
         [
@@ -106,7 +102,7 @@ public static class TranslationUtils
         {
             token.ThrowIfCancellationRequested();
             
-            var response = await SendTranslationRequestWithRateLimit(content, token);
+            var response = await SendTranslationRequestWithRateLimitAsync(content, token);
             if (response is null) return null;
         
             // ReSharper disable once MethodSupportsCancellation
@@ -121,7 +117,7 @@ public static class TranslationUtils
         }
     }
 
-    private static async Task<HttpResponseMessage?> SendTranslationRequestWithRateLimit(FormUrlEncodedContent content, CancellationToken token)
+    private static async Task<HttpResponseMessage?> SendTranslationRequestWithRateLimitAsync(FormUrlEncodedContent content, CancellationToken token)
     {
         try
         {
@@ -142,13 +138,20 @@ public static class TranslationUtils
                         await Task.Delay(TimeSpan.FromMilliseconds(retryCount * 200), token);
                         continue;
                     
-                    case (HttpStatusCode) 456 // quota exceeded
-                        or (HttpStatusCode) 400 // bad request (wrong parameters)
-                        or (HttpStatusCode) 403 // authorisation failed
+                    case (HttpStatusCode) 400 // bad request (wrong parameters)
                         or (HttpStatusCode) 404: // URL is wrong
                         // cannot proceed after these codes
-                        throw new OperationCanceledException();
+                        throw new OperationCanceledException(
+                            "Unknown internal exception. Please contact developer via e-mail or LinkedIn.");
                     
+                    case (HttpStatusCode) 403: // authorization error
+                        throw new OperationCanceledException(
+                            "Authorisation failed. Please check your API key and \"Pro\" plan checkbox.");
+                    
+                    case (HttpStatusCode) 456: // quota exceeded
+                        throw new OperationCanceledException(
+                            "Quota exceeded. Please try again later.");
+                        
                     case HttpStatusCode.OK:
                         return response;
                     
@@ -161,9 +164,9 @@ public static class TranslationUtils
                 }
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException exception)
         {
-            StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage());
+            StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage(exception.Message));
             return null;
         }
     }
