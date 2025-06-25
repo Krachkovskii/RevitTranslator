@@ -19,9 +19,19 @@ public static class DeeplSettingsUtils
         JsonDirectoryPath,
         "settings.json");
 
-    public static DeeplSettingsDescriptor? CurrentSettings { get; set; }
-    public static string TranslationUrl { get; private set; } = "https://api-free.deepl.com/v2/translate";
-    public static string UsageUrl { get; private set; } = "https://api-free.deepl.com/v2/usage";
+    private static DeeplSettingsDescriptor? _currentSettings;
+    public static DeeplSettingsDescriptor? CurrentSettings 
+    { 
+        get => _currentSettings;
+        private set 
+        {
+            _currentSettings = value;
+            SetDeeplUrls(value); 
+        }
+    }
+
+    public static string TranslationUrl { get; private set; } = string.Empty;
+    public static string UsageUrl { get; private set; } = string.Empty;
 
     /// <summary>
     /// Loads the settings from a JSON file. 
@@ -41,28 +51,7 @@ public static class DeeplSettingsUtils
         CurrentSettings = JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json)!;
     }
 
-    public static void Save(this DeeplSettingsDescriptor descriptor)
-    {
-        if (CurrentSettings is null)
-        {
-            descriptor.SaveToJson();
-            return;
-        }
-        
-        if (descriptor.IsPaidPlan != CurrentSettings.IsPaidPlan)
-        {
-            var translationUrl = CurrentSettings.IsPaidPlan
-                ? "https://api.deepl.com/v2/"
-                : "https://api-free.deepl.com/v2";
-            var usageUrl = CurrentSettings.IsPaidPlan
-                ? "https://api.deepl.com/v2/"
-                : "https://api-free.deepl.com/v2";
-            TranslationUrl = $"{translationUrl}/translate";
-            UsageUrl = $"{usageUrl}/usage";
-        }
-        
-        descriptor.SaveToJson();
-    }
+    public static void Save(this DeeplSettingsDescriptor descriptor) => descriptor.SaveToJson();
 
     private static void SaveToJson(this DeeplSettingsDescriptor descriptor)
     {
@@ -74,5 +63,20 @@ public static class DeeplSettingsUtils
         File.WriteAllText(JsonFilePath, json);
         
         CurrentSettings = descriptor;
+    }
+
+    private static void SetDeeplUrls(DeeplSettingsDescriptor? descriptor)
+    {
+        if (descriptor is null) return;
+        
+        var translationUrl = descriptor.IsPaidPlan
+            ? "https://api.deepl.com/v2"
+            : "https://api-free.deepl.com/v2";
+        var usageUrl = descriptor.IsPaidPlan
+            ? "https://api.deepl.com/v2"
+            : "https://api-free.deepl.com/v2";
+        
+        TranslationUrl = $"{translationUrl}/translate";
+        UsageUrl = $"{usageUrl}/usage";
     }
 }
