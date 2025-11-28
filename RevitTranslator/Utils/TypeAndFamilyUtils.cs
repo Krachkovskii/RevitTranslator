@@ -1,4 +1,4 @@
-﻿namespace RevitTranslator.Utils.Revit;
+﻿namespace RevitTranslator.Utils;
 
 public static class TypeAndFamilyUtils
 {

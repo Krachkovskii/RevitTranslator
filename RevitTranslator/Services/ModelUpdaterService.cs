@@ -4,11 +4,11 @@ using RevitTranslator.Common.Messages;
 using RevitTranslator.Enums;
 using RevitTranslator.Extensions;
 using RevitTranslator.Models;
-using RevitTranslator.Utils.Revit;
+using RevitTranslator.Utils;
 
-namespace RevitTranslator.Utils.App;
+namespace RevitTranslator.Services;
 
-public class ModelUpdater
+public class ModelUpdaterService
 {
     private readonly List<string> _nonUpdatableElements = [];
     private TranslationEntity _currentEntity = null!;

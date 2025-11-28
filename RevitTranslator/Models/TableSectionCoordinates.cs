@@ -3,4 +3,4 @@
 /// <summary>
 /// Represents grid coordinates (row and column) of a Schedule cell
 /// </summary>
-public record ScheduleCellCoordinates (int Row, int Column);
+public sealed record ScheduleCellCoordinates (int Row, int Column);

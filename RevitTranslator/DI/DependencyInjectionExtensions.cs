@@ -2,7 +2,6 @@
 using RevitTranslator.Handlers;
 using RevitTranslator.Services;
 using RevitTranslator.UI.Contracts;
-using RevitTranslator.Utils.App;
 using RevitTranslator.ViewModels;
 
 namespace RevitTranslator.DI;
@@ -24,7 +23,7 @@ public static class DependencyInjectionExtensions
             return serviceCollection
                 .AddScoped<BaseTranslationService>()
                 .AddScoped<ConcurrentTranslationHandler>()
-                .AddScoped<ModelUpdater>();
+                .AddScoped<ModelUpdaterService>();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace RevitTranslator.Utils.Revit;
+﻿namespace RevitTranslator.Utils;
 /// <summary>
 /// Implementation of IFamilyLoadOptions for this project. Overrides parameter values on load.
 /// </summary>

@@ -1,4 +1,4 @@
-﻿namespace RevitTranslator.Utils.Revit;
+﻿namespace RevitTranslator.Utils;
 
 /// <summary>
 /// Retrieve and filter all user-visible and modifiable categories

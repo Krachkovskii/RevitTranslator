@@ -4,7 +4,7 @@ using RevitTranslator.Common.Models;
 using RevitTranslator.Extensions;
 using RevitTranslator.Services;
 using RevitTranslator.UI.Contracts;
-using RevitTranslator.Utils.Revit;
+using RevitTranslator.Utils;
 
 namespace RevitTranslator.ViewModels;
 public partial class CategoriesWindowViewModel : ObservableValidator, ICategoriesWindowViewModel
