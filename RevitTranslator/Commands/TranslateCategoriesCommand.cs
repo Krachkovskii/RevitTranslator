@@ -1,7 +1,8 @@
 ﻿using Autodesk.Revit.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslator.UI.Views;
-using CategoriesViewModel = RevitTranslator.ViewModels.CategoriesViewModel;
+using RevitTranslator.ViewModels;
 
 namespace RevitTranslator.Commands;
 
@@ -11,8 +12,6 @@ public class TranslateCategoriesCommand : ExternalCommand
 {
     public override void Execute()
     {
-        var viewModel = new CategoriesViewModel();
-        var view = new CategoriesWindow(viewModel);
-        view.ShowDialog();
+        Host.ServiceProvider.GetRequiredService<CategoriesWindow>().ShowDialog();
     }
 }

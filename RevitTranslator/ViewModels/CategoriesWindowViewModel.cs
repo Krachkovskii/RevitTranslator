@@ -7,8 +7,10 @@ using RevitTranslator.UI.Contracts;
 using RevitTranslator.Utils.Revit;
 
 namespace RevitTranslator.ViewModels;
-public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindowViewModel
+public partial class CategoriesWindowViewModel : ObservableValidator, ICategoriesWindowViewModel
 {
+    private readonly BaseTranslationService _baseTranslationService;
+    
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private string _mainButtonText = "Select categories to translate";
     [ObservableProperty] private string _searchText = string.Empty;
@@ -26,8 +28,9 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
 
     public ObservableCategoryType[] CategoryTypes { get; private set; } = [];
     
-    public CategoriesViewModel()
+    public CategoriesWindowViewModel(BaseTranslationService baseTranslationService)
     {
+        _baseTranslationService = baseTranslationService;
         IsLoading = true;
         Task.Run(() =>
         {
@@ -212,10 +215,8 @@ public partial class CategoriesViewModel : ObservableValidator, ICategoriesWindo
                     .ToArray()))
             .ToArray();
 
-        var service = new BaseTranslationService();
-        service.SelectedElements = elements;
-        
-        service.Execute();
+        _baseTranslationService.SelectedElements = elements;
+        _baseTranslationService.Execute();
     }
 
     public void OnCloseRequested()

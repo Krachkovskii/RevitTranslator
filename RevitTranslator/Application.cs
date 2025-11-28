@@ -14,6 +14,7 @@ public class Application : ExternalApplication
 {
     public override void OnStartup()
     {
+        _ = new Host();
         CreateRibbonPanel();
         EventHandlers.ActionHandler = new ActionEventHandler();
     }

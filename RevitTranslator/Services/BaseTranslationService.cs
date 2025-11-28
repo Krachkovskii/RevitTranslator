@@ -11,7 +11,10 @@ using TranslationService.Utils;
 
 namespace RevitTranslator.Services;
 
-public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessage>
+public class BaseTranslationService(
+    ProgressWindow window,
+    ConcurrentTranslationHandler handler,
+    ModelUpdater modelUpdater) : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly CancellationTokenSource _cts = new();
     private List<DocumentTranslationEntityGroup>? _documentEntities;
@@ -37,9 +40,7 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
         
         StrongReferenceMessenger.Default.Register(this);
 
-        var viewModel = new ProgressWindowViewModel();
-        var view = new ProgressWindow(viewModel);
-        view.Show();
+        window.Show();
         
         _documentEntities = GetTextFromElements();
 
@@ -81,7 +82,7 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
 
     private void UpdateRevitModel()
     {
-        EventHandlers.ActionHandler.Raise(_ => new ModelUpdater().Update(_documentEntities!));
+        EventHandlers.ActionHandler.Raise(_ => modelUpdater.Update(_documentEntities!));
     }
     
     public void Receive(TokenCancellationRequestedMessage message)
