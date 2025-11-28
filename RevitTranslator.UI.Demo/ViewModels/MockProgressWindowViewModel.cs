@@ -79,7 +79,7 @@ public partial class MockProgressWindowViewModel : ObservableObject,
     [RelayCommand]
     private void CancelTranslation()
     {
-        StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage());
+        StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage(""));
         ButtonText = "Translation cancelled";
     }
 
@@ -89,13 +89,13 @@ public partial class MockProgressWindowViewModel : ObservableObject,
         CancelTranslation();
     }
 
-    public void FinalizeTranslation()
+    public Task FinalizeTranslationAsync()
     {
         IsProgressBarIntermediate = true;
-        UpdateModel();
+        return UpdateModelAsync();
     }
 
-    private async void UpdateModel()
+    private async Task UpdateModelAsync()
     {
         ButtonText = "Updating model";
         await Task.Delay(2000);
@@ -113,12 +113,10 @@ public partial class MockProgressWindowViewModel : ObservableObject,
         SessionCharacterCount = sessionCharacterCount;
         MonthlyCharacterCount = monthlyCharacterCount;
         FinishedTranslationCount = translationCount;
-        Console.WriteLine($"Updated UI value to {translationCount}");
 
         SessionCharacterCount += translationLength;
         MonthlyCharacterCount += translationLength;
         FinishedTranslationCount++;
-        Console.WriteLine($"Updated UI value to {FinishedTranslationCount}");
 
         if (MonthlyCharacterCount >= MonthlyCharacterLimit)
         {

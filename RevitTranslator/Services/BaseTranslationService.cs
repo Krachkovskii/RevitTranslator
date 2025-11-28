@@ -21,6 +21,7 @@ public class BaseTranslationService(
 
     public Element[] SelectedElements { get; set; } = [];
     
+    // TODO: pass selection as a parameter
     public void Execute()
     {
         if (DeeplSettingsUtils.CurrentSettings is null)
@@ -29,6 +30,7 @@ public class BaseTranslationService(
         }
 
         // weird, but necessary to stay on an STA thread (until I fix the architecture)
+        // TODO: Refactor as async method
         var canTranslate = Task.Run(async () => await TranslationUtils.TryTestTranslateAsync()).Result;
         if (!canTranslate)
         {
@@ -44,6 +46,7 @@ public class BaseTranslationService(
         
         _documentEntities = GetTextFromElements();
 
+        // TODO: Refactor as async invocation, without task
         Task.Run(async () =>
         {
             await TranslateAsync();
@@ -62,14 +65,13 @@ public class BaseTranslationService(
         return entities;
     }
     
+    // todo: rename method
     private async Task TranslateAsync()
     {
-        var handler = new ConcurrentTranslationHandler();
-
         try
         {
             _cts.Token.ThrowIfCancellationRequested();
-            await handler.Translate(_documentEntities!.SelectMany(entity => entity.TranslationEntities).ToArray(),
+            await handler.TranslateAsync(_documentEntities!.SelectMany(entity => entity.TranslationEntities).ToArray(),
                 _cts.Token);
 
             StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(false));
