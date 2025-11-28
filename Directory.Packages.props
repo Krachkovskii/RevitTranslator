@@ -6,8 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Build -->
-    <PackageVersion Include="Microsoft.Build" Version="17.*" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Build" Version="17.13.*" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.*" />
     <PackageVersion Include="WixSharp" Version="1.*" />
     <PackageVersion Include="WixSharp.wix.bin" Version="3.*" />
     <!-- Revit References -->

@@ -10,9 +10,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Build" Version="17.*" />
-      <PackageReference Include="WixSharp" Version="1.*" />
-      <PackageReference Include="WixSharp.wix.bin" Version="3.*" />
+      <PackageReference Include="Microsoft.Build"/>
+      <PackageReference Include="WixSharp"/>
+      <PackageReference Include="WixSharp.wix.bin"/>
     </ItemGroup>
 
 </Project>
