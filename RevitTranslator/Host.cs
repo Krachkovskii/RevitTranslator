@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using RevitTranslator.Common.DI;
 using RevitTranslator.DI;
 using RevitTranslator.UI.DI;
 
@@ -12,6 +14,7 @@ public class Host
             .AddUi()
             .AddRevitUiImpl()
             .AddRevitServices()
+            .AddCommonServices()
             .BuildServiceProvider();
     }
     

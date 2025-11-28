@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RevitTranslator.Common.DI;
 using RevitTranslator.Demo.DI;
 using RevitTranslator.UI.DI;
 
@@ -11,6 +12,7 @@ public class Host
         ServiceProvider = new ServiceCollection()
             .AddUi()
             .AddMockUiImpl()
+            .AddCommonServices()
             .BuildServiceProvider();
     }
     
