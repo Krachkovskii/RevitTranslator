@@ -12,8 +12,8 @@
         Width="600" 
         SizeToContent="Height"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
-        Closing="OnWindowClosing">
+        Topmost="True"
+        WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <ResourceDictionary>

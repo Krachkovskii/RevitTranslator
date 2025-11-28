@@ -24,16 +24,19 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
         {
             DeeplSettingsUtils.Load();
         }
-        var test = TranslationUtils.TryTestTranslate();
-        if (!test)
+
+        // weird, but necessary to stay on an STA thread (until I fix the architecture)
+        var canTranslate = Task.Run(async () => await TranslationUtils.TryTestTranslateAsync()).Result;
+        if (!canTranslate)
         {
             MessageBox
                 .Show("Could not connect to translation service.\nPlease check your credentials and internet connection, and try again.",
                     "Translation Service Error");
             return;
         }
-        StrongReferenceMessenger.Default.Register(this);
         
+        StrongReferenceMessenger.Default.Register(this);
+
         var viewModel = new ProgressWindowViewModel();
         var view = new ProgressWindow(viewModel);
         view.Show();
@@ -42,7 +45,7 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
 
         Task.Run(async () =>
         {
-            await Translate();
+            await TranslateAsync();
             UpdateRevitModel();
             
             StrongReferenceMessenger.Default.UnregisterAll(this);
@@ -58,7 +61,7 @@ public class BaseTranslationService : IRecipient<TokenCancellationRequestedMessa
         return entities;
     }
     
-    private async Task Translate()
+    private async Task TranslateAsync()
     {
         var handler = new ConcurrentTranslationHandler();
 

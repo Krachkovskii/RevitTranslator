@@ -36,7 +36,7 @@ public class ConcurrentTranslationHandler
         {
             token.ThrowIfCancellationRequested();
             
-            var translated = await TranslationUtils.Translate(entity.OriginalText, token);
+            var translated = await TranslationUtils.TranslateAsync(entity.OriginalText, token);
             switch (translated)
             {
                 case null:
@@ -51,9 +51,9 @@ public class ConcurrentTranslationHandler
 
             StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(translated.Length));
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException exception)
         {
-            StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage());
+            StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage(exception.Message));
         }
     }
 }

@@ -56,7 +56,7 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
     }
     
     [RelayCommand(CanExecute = nameof(CanExecuteSaveSettings))]
-    private void SaveSettings()
+    private async Task SaveSettingsAsync()
     {
         ButtonText = "Saving settings...";
         
@@ -70,7 +70,7 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
         };
         newSettings.Save();
 
-        var test = TranslationUtils.TryTestTranslate();
+        var test = await TranslationUtils.TryTestTranslateAsync();
         if (test)
         {
             ButtonText = "Settings saved";
@@ -82,11 +82,9 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
         
         oldSettings.Save();
         SetSettingsValues();
-        Task.Run(async () =>
-        {
-            await Task.Delay(3000);
-            ButtonText = "Settings were restored";
-        });
+        
+        await Task.Delay(3000);
+        ButtonText = "Settings were restored";
     }
 
     private void SetSettingsValues()
@@ -122,9 +120,9 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
         if (savedSettings is null) return true;
         
         var hasChanges = savedSettings?.IsPaidPlan != IsPaidPlan ||
-                           savedSettings.DeeplApiKey != DeeplApiKey ||
-                           savedSettings.SourceLanguage != SelectedSourceLanguage ||
-                           savedSettings.TargetLanguage != SelectedTargetLanguage;
+                         savedSettings.DeeplApiKey != DeeplApiKey ||
+                         savedSettings.SourceLanguage != SelectedSourceLanguage ||
+                         savedSettings.TargetLanguage != SelectedTargetLanguage;
         
         ButtonText =  hasChanges ? "Save Settings" : "Settings saved";
         

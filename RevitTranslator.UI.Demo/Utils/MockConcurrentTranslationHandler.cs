@@ -12,7 +12,7 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
     private bool _useMockTranslations;
     private static readonly SemaphoreSlim Semaphore = new(5, 10);
 
-    public async Task Translate(string[] texts, bool useMockTranslations)
+    public async Task TranslateAsync(string[] texts, bool useMockTranslations)
     {
         _cancellationToken = _cts.Token;
         _useMockTranslations = useMockTranslations;
@@ -44,18 +44,18 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
             _cancellationToken.ThrowIfCancellationRequested();
             if (_useMockTranslations)
             {
-                await SimulateTranslationWithSemaphore();
+                await SimulateTranslationWithSemaphoreAsync();
             }
             else
             {
-                await TranslationUtils.Translate(text, _cancellationToken);
+                await TranslationUtils.TranslateAsync(text, _cancellationToken);
             }
             
             StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));
         }, _cancellationToken));
     }
 
-    private async Task SimulateTranslationWithSemaphore()
+    private async Task SimulateTranslationWithSemaphoreAsync()
     {
         await Semaphore.WaitAsync(_cancellationToken);
         try

@@ -25,10 +25,6 @@ public partial class ProgressWindow
         }
     }
 
-    private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
-    {
-    }
-
     private void OnCloseClicked(TitleBar sender, RoutedEventArgs args)
     {
         _viewModel.CloseRequested();

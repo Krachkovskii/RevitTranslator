@@ -17,14 +17,11 @@
         <Reference Include="System.Core"/>
         <Reference Include="System.Data"/>
         <Reference Include="System.Xml"/>
-        <Reference Include="Wpf.Ui">
-          <HintPath>..\..\..\..\.nuget\packages\wpf-ui\4.0.0-rc.2\lib\net8.0-windows7.0\Wpf.Ui.dll</HintPath>
-        </Reference>
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
-      <PackageReference Include="WPF-UI" Version="4.0.0-rc.2" />
+      <PackageReference Include="CommunityToolkit.Mvvm" />
+      <PackageReference Include="WPF-UI" />
     </ItemGroup>
     
     <ItemGroup>

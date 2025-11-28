@@ -27,7 +27,7 @@ public class MockTranslationPipeline
             await Task.Delay(2000);
             StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(wordCount));
 
-            await new MockConcurrentTranslationHandler().Translate(words, false);
+            await new MockConcurrentTranslationHandler().TranslateAsync(words, false);
             
             await Task.Delay(2000);
             StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
