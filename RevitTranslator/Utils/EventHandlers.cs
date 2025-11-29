@@ -1,6 +1,6 @@
 using Nice3point.Revit.Toolkit.External.Handlers;
 
-namespace RevitTranslator.Handlers;
+namespace RevitTranslator.Utils;
 
 public static class EventHandlers
 {

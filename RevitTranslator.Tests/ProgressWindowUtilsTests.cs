@@ -4,7 +4,7 @@ using Xunit;
 
 namespace RevitTranslator.Tests
 {
-    public class ConcurrentTranslationHandlerTests
+    public class ConcurrentTranslationServiceTests
     {
         [Fact]
         public void CalculateTotalTranslations_ShouldReturnCorrectCount()

@@ -6,21 +6,24 @@ namespace RevitTranslator.Extensions;
 
 public static class TranslationEntityExtensions
 {
-    public static bool HasText(this TranslationEntity entity)
+    extension(TranslationEntity entity)
     {
-        return !string.IsNullOrWhiteSpace(entity.OriginalText);
-    }
+        public bool HasText()
+        {
+            return !string.IsNullOrWhiteSpace(entity.OriginalText);
+        }
 
-    public static bool IsTranslated(this TranslationEntity entity)
-    {
-        return !string.IsNullOrWhiteSpace(entity.TranslatedText) && entity.TranslatedText != entity.OriginalText;
-    }
-    
-    public static bool NameHasIllegalCharacters(this TranslationEntity entity)
-    {
-        if (entity.Element is not Parameter && entity.TranslationDetails != TranslationDetails.ElementName)
-            return false;
+        public bool IsTranslated()
+        {
+            return !string.IsNullOrWhiteSpace(entity.TranslatedText) && entity.TranslatedText != entity.OriginalText;
+        }
 
-        return entity.TranslatedText.Any(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c));
+        public bool NameHasIllegalCharacters()
+        {
+            if (entity.Element is not Parameter && entity.TranslationDetails != TranslationDetails.ElementName)
+                return false;
+
+            return entity.TranslatedText.Any(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c));
+        }
     }
 }

@@ -2,9 +2,9 @@ using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
 using RevitTranslator.ElementTextRetrievers;
-using RevitTranslator.Handlers;
 using RevitTranslator.Models;
 using RevitTranslator.UI.Views;
+using RevitTranslator.Utils;
 using RevitTranslator.ViewModels;
 using TranslationService.Utils;
 
@@ -12,7 +12,7 @@ namespace RevitTranslator.Services;
 
 public class BaseTranslationService(
     ProgressWindow window,
-    ConcurrentTranslationHandler handler,
+    ConcurrentTranslationService service,
     ModelUpdaterService modelUpdaterService) : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly CancellationTokenSource _cts = new();
@@ -70,7 +70,7 @@ public class BaseTranslationService(
         try
         {
             _cts.Token.ThrowIfCancellationRequested();
-            await handler.TranslateAsync(_documentEntities!.SelectMany(entity => entity.TranslationEntities).ToArray(),
+            await service.TranslateAsync(_documentEntities!.SelectMany(entity => entity.TranslationEntities).ToArray(),
                 _cts.Token);
 
             StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(false));

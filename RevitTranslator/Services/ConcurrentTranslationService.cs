@@ -3,9 +3,9 @@ using RevitTranslator.Common.Messages;
 using RevitTranslator.Models;
 using TranslationService.Utils;
 
-namespace RevitTranslator.Handlers;
+namespace RevitTranslator.Services;
 
-public class ConcurrentTranslationHandler
+public class ConcurrentTranslationService
 {
     private readonly List<Task> _translationTasks = [];
     
