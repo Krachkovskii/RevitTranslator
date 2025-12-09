@@ -1,26 +1,29 @@
-﻿<ui:FluentWindow x:Class="RevitTranslator.UI.Views.CategoriesWindow"
-                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                 xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
-                 xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
-                 mc:Ignorable="d"
-                 d:DataContext="{d:DesignInstance contracts:ICategoriesWindowViewModel}"
-                 ExtendsContentIntoTitleBar="True"
-                 Title="Translate Categories Window"
-                 Height="600"
-                 MinHeight="300"
-                 Width="500">
+﻿<ui:FluentWindow
+    x:Class="RevitTranslator.UI.Views.CategoriesWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
+    xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:listView="clr-namespace:RevitTranslator.Ui.Library.Controls.ListView;assembly=RevitTranslator.Ui.Library"
+    mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance contracts:ICategoriesWindowViewModel}"
+    ExtendsContentIntoTitleBar="True"
+    Title="Translate Categories Window"
+    Height="600"
+    MinHeight="300"
+    Width="500">
 
-    <Window.Resources>
+    <ui:FluentWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ui:WpfUiDictionary />
                 <ResourceDictionary Source="../Resources/ResourceDictionaries/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </Window.Resources>
+    </ui:FluentWindow.Resources>
 
     <Grid>
         <DockPanel>
@@ -62,22 +65,22 @@
                         Width="20"
                         IsIndeterminate="True" />
                 </StackPanel>
-                <ui:ListView
+                <listView:ListView
                     DockPanel.Dock="Top"
                     x:Name="CategoryTypeCards"
                     Margin="20 20 5 0"
                     ItemsSource="{Binding FilteredCategoryTypes}"
                     ScrollViewer.CanContentScroll="False"
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
-                    <ListView.Resources>
+                    <listView:ListView.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
                                          Color="Transparent" />
-                    </ListView.Resources>
-                    <ui:ListView.ItemContainerStyle>
-                        <Style TargetType="ui:ListViewItem">
+                    </listView:ListView.Resources>
+                    <listView:ListView.ItemContainerStyle>
+                        <Style TargetType="listView:ListViewItem">
                             <Setter Property="Template">
                                 <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type ui:ListViewItem}">
+                                    <ControlTemplate TargetType="{x:Type listView:ListViewItem}">
                                         <ContentPresenter />
                                     </ControlTemplate>
                                 </Setter.Value>
@@ -86,8 +89,8 @@
                             <Setter Property="HorizontalAlignment" Value="Stretch" />
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         </Style>
-                    </ui:ListView.ItemContainerStyle>
-                    <ui:ListView.ItemTemplate>
+                    </listView:ListView.ItemContainerStyle>
+                    <listView:ListView.ItemTemplate>
                         <DataTemplate>
                             <ui:CardExpander>
                                 <ui:CardExpander.Header>
@@ -100,10 +103,10 @@
                                         VerticalContentAlignment="Center" />
                                 </ui:CardExpander.Header>
                                 <ui:CardExpander.Content>
-                                    <ui:ListView
+                                    <listView:ListView
                                         ItemsSource="{Binding Categories}"
                                         Focusable="False">
-                                        <ui:ListView.ItemTemplate>
+                                        <listView:ListView.ItemTemplate>
                                             <DataTemplate>
                                                 <CheckBox
                                                     x:Name="CategoryCheckBox"
@@ -111,13 +114,13 @@
                                                     Content="{Binding Name, Mode=OneWay}"
                                                     VerticalContentAlignment="Center" />
                                             </DataTemplate>
-                                        </ui:ListView.ItemTemplate>
-                                    </ui:ListView>
+                                        </listView:ListView.ItemTemplate>
+                                    </listView:ListView>
                                 </ui:CardExpander.Content>
                             </ui:CardExpander>
                         </DataTemplate>
-                    </ui:ListView.ItemTemplate>
-                </ui:ListView>
+                    </listView:ListView.ItemTemplate>
+                </listView:ListView>
             </Grid>
         </DockPanel>
     </Grid>

@@ -1,43 +1,46 @@
-﻿<ui:FluentWindow x:Class="RevitTranslator.UI.Views.SettingsWindow"
-                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                d:DataContext="{d:DesignInstance contracts:ISettingsViewModel}"
-                xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-                xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
-                xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
-                xmlns:languageModels="clr-namespace:TranslationService.Models;assembly=TranslationService"
-                mc:Ignorable="d" 
-                Width="500"
-                Height="400"
-                ResizeMode="NoResize"
-                ExtendsContentIntoTitleBar="True">
+﻿<ui:FluentWindow
+    x:Class="RevitTranslator.UI.Views.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    d:DataContext="{d:DesignInstance contracts:ISettingsViewModel}"
+    xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
+    xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
+    xmlns:languageModels="clr-namespace:TranslationService.Models;assembly=TranslationService"
+    xmlns:markup="clr-namespace:RevitTranslator.Ui.Library.Markup;assembly=RevitTranslator.Ui.Library"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    mc:Ignorable="d"
+    Width="500"
+    Height="400"
+    ResizeMode="NoResize"
+    ExtendsContentIntoTitleBar="True">
 
-    <Window.Resources>
+    <ui:FluentWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../Resources/ResourceDictionaries/Styles.xaml"/>
+                <ui:WpfUiDictionary />
+                <ResourceDictionary Source="../Resources/ResourceDictionaries/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </Window.Resources>
+    </ui:FluentWindow.Resources>
 
     <Grid>
         <DockPanel>
             <ui:TitleBar
                 DockPanel.Dock="Top"
                 Height="30"
-                Title="Revit Translator | Settings" 
+                Title="Revit Translator | Settings"
                 ShowMaximize="False"
-                ShowMinimize="False"/>
-            <Button 
-                DockPanel.Dock="Bottom" 
+                ShowMinimize="False" />
+            <Button
+                DockPanel.Dock="Bottom"
                 Content="{Binding ButtonText}"
                 Command="{Binding SaveSettingsCommand}"
-                Style="{StaticResource LargeRectangularButton}"/>
+                Style="{StaticResource LargeRectangularButton}" />
             <DockPanel
                 Margin="20">
-                
+
                 <StackPanel
                     DockPanel.Dock="Top">
                     <ui:TextBlock
@@ -48,12 +51,12 @@
                             UpdateSourceTrigger=PropertyChanged}"
                         Height="40"
                         Margin="0 10"
-                        ToolTip="Insert your DeepL API key here"/>
+                        ToolTip="Insert your DeepL API key here" />
                     <CheckBox
                         Content="I'm using paid DeepL API plan"
                         IsChecked="{Binding IsPaidPlan,
                             Mode=TwoWay,
-                            UpdateSourceTrigger=PropertyChanged}"/>
+                            UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <Rectangle
                     DockPanel.Dock="Top"
@@ -84,7 +87,7 @@
                             SelectedItem="{Binding SelectedSourceLanguage,
                                 Mode=TwoWay,
                                 UpdateSourceTrigger=PropertyChanged}"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                            ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         <CheckBox
                             Content="Detect language"
                             VerticalAlignment="Top"
@@ -95,7 +98,7 @@
                             ToolTip="Enable language auto-detect"
                             Cursor="Hand" />
                     </StackPanel>
-                    <StackPanel 
+                    <StackPanel
                         Grid.Column="1"
                         Orientation="Vertical">
                         <ui:TextBlock
@@ -105,7 +108,7 @@
                             Width="38"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
-                            Content="{ui:SymbolIcon ArrowUndo16}"
+                            Content="{markup:SymbolIcon ArrowUndo16}"
                             Command="{Binding SwitchLanguagesCommand}"
                             IsEnabled="{Binding IsAutoDetectChecked, 
                             Converter={converters:InverseBoolConverter}}"
@@ -123,9 +126,9 @@
                             ItemsSource="{Binding 
                                 Source={x:Static languageModels:DeeplLanguageCodes.TargetLanguages}}"
                             DisplayMemberPath="VisibleName"
-                            SelectedItem="{Binding SelectedTargetLanguage}" 
-                            ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                        <TextBlock 
+                            SelectedItem="{Binding SelectedTargetLanguage}"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                        <TextBlock
                             DockPanel.Dock="Bottom"
                             HorizontalAlignment="Right"
                             TextAlignment="Right"
@@ -133,14 +136,15 @@
                             VerticalAlignment="Top"
                             Style="{StaticResource Annotation}">
                             <Run Text="Developed by" />
-                            <Hyperlink 
+                            <Hyperlink
                                 Command="{Binding OpenLinkedinCommand}"
                                 CommandParameter="https://www.linkedin.com/in/ilia-krachkovskii/">
                                 <Run Text="Ilia Krachokvskii" />
                             </Hyperlink>
                         </TextBlock>
                     </StackPanel>
-                </Grid></DockPanel>
+                </Grid>
+            </DockPanel>
         </DockPanel>
 
     </Grid>

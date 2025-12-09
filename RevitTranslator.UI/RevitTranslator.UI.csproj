@@ -21,12 +21,12 @@
 
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
-        <PackageReference Include="WPF-UI"/>
         <PackageReference Include="System.Text.Json"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj"/>
+        <ProjectReference Include="..\RevitTranslator.Ui.Library\RevitTranslator.Ui.Library.csproj" />
         <ProjectReference Include="..\TranslationService\TranslationService.csproj"/>
     </ItemGroup>
 </Project>

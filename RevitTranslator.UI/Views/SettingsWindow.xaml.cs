@@ -1,7 +1,7 @@
 ﻿using System.Windows.Media;
 using RevitTranslator.UI.Contracts;
-using Wpf.Ui.Appearance;
-using Wpf.Ui.Controls;
+using RevitTranslator.Ui.Library.Appearance;
+using RevitTranslator.Ui.Library.Controls;
 
 namespace RevitTranslator.UI.Views;
 
