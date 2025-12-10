@@ -26,10 +26,10 @@
       <PackageReference Include="Bogus"  />
       <PackageReference Include="CommunityToolkit.Mvvm"  />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-      <PackageReference Include="WPF-UI" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\RevitTranslator.Ui.Library\RevitTranslator.Ui.Library.csproj" />
       <ProjectReference Include="..\RevitTranslator.UI\RevitTranslator.UI.csproj" />
     </ItemGroup>
 
