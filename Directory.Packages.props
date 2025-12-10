@@ -1,51 +1,47 @@
 <Project>
-    <PropertyGroup>
-        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-        <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
-        <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    </PropertyGroup>
-    <ItemGroup>
-        <!-- Build -->
-        <PackageVersion Include="Microsoft.Build" Version="17.*" />
-        <PackageVersion Include="WixSharp" Version="1.*" />
-        <PackageVersion Include="WixSharp.wix.bin" Version="3.*" />
-
-        <!-- Revit References -->
-        <PackageVersion Include="Nice3point.Revit.Build.Tasks" Version="2.*"/>
-        <PackageVersion Include="Nice3point.Revit.Extensions" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''"/>
-        <PackageVersion Include="Nice3point.Revit.Toolkit" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''"/>
-        <PackageVersion Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''"/>
-        <PackageVersion Include="Nice3point.Revit.Api.AdWindows" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''"/>
-        <PackageVersion Include="Nice3point.Revit.Api.UIFramework" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''"/>
-        <PackageVersion Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''"/>
-        
-        <!-- Common -->
-        <PackageVersion Include="JetBrains.Annotations" Version="2024.*" />
-        <PackageVersion Include="Newtonsoft.Json" Version="13.*" />
-        <PackageVersion Include="Microsoft.Extensions.Options" Version="8.*"/>
-        <PackageVersion Include="PolySharp" Version="1.*">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageVersion>
-
-        <!-- Tests -->
-        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.*" />
-        <PackageVersion Include="Moq" Version="4.*" />
-        <PackageVersion Include="MSTest.TestAdapter" Version="3.*" />
-        <PackageVersion Include="MSTest.TestFramework" Version="3.*" />
-        <PackageVersion Include="xunit" Version="2.*" />
-        <PackageVersion Include="xunit.runner.visualstudio" Version="2.*">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageVersion>
-
-        <!-- UI -->
-        <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.*" />
-        <PackageVersion Include="WPF-UI" Version="4.*" />
-
-        <!-- Data -->
-        <PackageVersion Include="Bogus" Version="35.*" />
-        <PackageVersion Include="System.Net.Http" Version="4.*" />
-        <PackageVersion Include="System.Text.Json" Version="8.*" />
-    </ItemGroup>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Build -->
+    <PackageVersion Include="Microsoft.Build" Version="17.13.*" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.*" />
+    <PackageVersion Include="WixSharp" Version="1.*" />
+    <PackageVersion Include="WixSharp.wix.bin" Version="3.*" />
+    <!-- Revit References -->
+    <PackageVersion Include="Nice3point.Revit.Build.Tasks" Version="2.*" />
+    <PackageVersion Include="Nice3point.Revit.Extensions" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
+    <PackageVersion Include="Nice3point.Revit.Toolkit" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
+    <PackageVersion Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
+    <PackageVersion Include="Nice3point.Revit.Api.AdWindows" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
+    <PackageVersion Include="Nice3point.Revit.Api.UIFramework" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
+    <PackageVersion Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
+    <!-- Common -->
+    <PackageVersion Include="JetBrains.Annotations" Version="2024.*" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.*" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.*" />
+    <PackageVersion Include="PolySharp" Version="1.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+    <!-- Tests -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageVersion Include="Moq" Version="4.*" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.*" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.*" />
+    <PackageVersion Include="xunit" Version="2.*" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+    <!-- UI -->
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.*" />
+    <PackageVersion Include="WPF-UI" Version="4.*" />
+    <!-- Data -->
+    <PackageVersion Include="Bogus" Version="35.*" />
+    <PackageVersion Include="System.Net.Http" Version="4.*" />
+    <PackageVersion Include="System.Text.Json" Version="8.*" />
+  </ItemGroup>
 </Project>

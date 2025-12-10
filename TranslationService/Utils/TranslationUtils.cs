@@ -45,8 +45,11 @@ public static class TranslationUtils
 
     public static async Task CheckUsageAsync()
     {
+        // todo: potential issue when attempting to launch a command without having valid settings
+        if (DeeplSettingsUtils.CurrentSettings is null) return;
+        
         HttpClient.DefaultRequestHeaders.Authorization = 
-            new AuthenticationHeaderValue("DeepL-Auth-Key", DeeplSettingsUtils.CurrentSettings!.DeeplApiKey);
+            new AuthenticationHeaderValue("DeepL-Auth-Key", DeeplSettingsUtils.CurrentSettings.DeeplApiKey);
         HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("RevitTranslator");
 
         var response = await HttpClient.GetAsync(DeeplSettingsUtils.UsageUrl);

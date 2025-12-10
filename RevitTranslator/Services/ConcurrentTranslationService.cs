@@ -3,20 +3,20 @@ using RevitTranslator.Common.Messages;
 using RevitTranslator.Models;
 using TranslationService.Utils;
 
-namespace RevitTranslator.Handlers;
+namespace RevitTranslator.Services;
 
-public class ConcurrentTranslationHandler
+public class ConcurrentTranslationService
 {
     private readonly List<Task> _translationTasks = [];
     
-    public async Task Translate(TranslationEntity[] entities, CancellationToken token)
+    public async Task TranslateAsync(TranslationEntity[] entities, CancellationToken token)
     {
         try
         {
             foreach (var entity in entities)
             {
                 token.ThrowIfCancellationRequested();
-                _translationTasks.Add(Task.Run(async () => await TranslateEntityAsync(entity, token), token));
+                _translationTasks.Add(Task.Run(() => TranslateEntityAsync(entity, token), token));
             }
         }
         catch (OperationCanceledException exception)
@@ -30,7 +30,7 @@ public class ConcurrentTranslationHandler
         }
     }
     
-    private async Task TranslateEntityAsync(TranslationEntity entity, CancellationToken token)
+    private static async Task TranslateEntityAsync(TranslationEntity entity, CancellationToken token)
     {
         try
         {

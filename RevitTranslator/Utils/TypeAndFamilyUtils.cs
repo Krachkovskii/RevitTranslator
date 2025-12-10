@@ -1,4 +1,4 @@
-﻿namespace RevitTranslator.Utils.Revit;
+﻿namespace RevitTranslator.Utils;
 
 public static class TypeAndFamilyUtils
 {
@@ -9,7 +9,7 @@ public static class TypeAndFamilyUtils
     /// <returns>
     /// Family for this element, null if not available.
     /// </returns>
-    public static Family? GetFamily(Element element)
+    private static Family? GetFamily(Element element)
     {
         if (element is not FamilyInstance instance) return null;
         // ReSharper disable once ConvertTypeCheckPatternToNullCheck
@@ -39,7 +39,7 @@ public static class TypeAndFamilyUtils
     /// <returns>
     /// FamilyType for this element, null if not available.
     /// </returns>
-    public static ElementType GetElementType(Element element)
+    private static ElementType GetElementType(Element element)
     {
         return (ElementType)Context.ActiveDocument!.GetElement(element.GetTypeId());
     }

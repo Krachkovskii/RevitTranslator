@@ -9,34 +9,30 @@ namespace RevitTranslator.Demo.ViewModels;
 
 public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewModel
 {
-    [ObservableProperty] 
-    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private string _deeplApiKey = string.Empty;
-    
-    [ObservableProperty] 
-    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private bool _isPaidPlan;
-    
-    [ObservableProperty] 
-    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private LanguageDescriptor? _selectedSourceLanguage = DeeplLanguageCodes.TargetLanguages[0];
-    
-    [ObservableProperty] 
-    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))] 
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.TargetLanguages[1];
-    
+
     [ObservableProperty] private bool _isAutoDetectChecked;
     [ObservableProperty] private string _buttonText;
-    
+
     private LanguageDescriptor? _previousLanguage;
-    
+
     public MockSettingsViewModel()
     {
         DeeplSettingsUtils.Load();
         SetSettingsValues();
         ButtonText = "Save Settings";
     }
-    
+
     [RelayCommand]
     private void SwitchLanguages()
     {
@@ -45,9 +41,9 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
         var lang2 = SelectedTargetLanguage;
 
         SelectedSourceLanguage = lang2;
-        SelectedTargetLanguage = lang1!;    
+        SelectedTargetLanguage = lang1!;
     }
-    
+
     [RelayCommand]
     private void OpenLinkedin(string uri)
     {
@@ -56,12 +52,12 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
             Process.Start(new ProcessStartInfo(validUri.AbsoluteUri) { UseShellExecute = true });
         }
     }
-    
+
     [RelayCommand(CanExecute = nameof(CanExecuteSaveSettings))]
-    private void SaveSettings()
+    private async Task SaveSettingsAsync()
     {
         ButtonText = "Saving settings...";
-        
+
         var oldSettings = DeeplSettingsUtils.CurrentSettings;
         var newSettings = new DeeplSettingsDescriptor
         {
@@ -72,21 +68,19 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
         };
         newSettings.Save();
 
-        var test = TranslationUtils.TryTestTranslateAsync();
+        var test = await TranslationUtils.TryTestTranslateAsync();
         if (!test)
         {
-            oldSettings.Save();
+            oldSettings?.Save();
             SetSettingsValues();
             ButtonText = "Invalid credentials. Settings were restored.";
-            Task.Run(async () =>
-            {
-                await Task.Delay(3000);
-                ButtonText = "Settings saved";
-            });
-            
+
+            await Task.Delay(3000);
+            ButtonText = "Settings saved";
+
             return;
         }
-        
+
         ButtonText = "Settings saved";
     }
 
@@ -120,12 +114,12 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
     {
         var savedSettings = DeeplSettingsUtils.CurrentSettings;
         var hasChanges = savedSettings.IsPaidPlan != IsPaidPlan ||
-                           savedSettings.DeeplApiKey != DeeplApiKey ||
-                           savedSettings.SourceLanguage != SelectedSourceLanguage ||
-                           savedSettings.TargetLanguage != SelectedTargetLanguage;
-        
-        ButtonText =  hasChanges ? "Save Settings" : "Settings saved";
-        
+                         savedSettings.DeeplApiKey != DeeplApiKey ||
+                         savedSettings.SourceLanguage != SelectedSourceLanguage ||
+                         savedSettings.TargetLanguage != SelectedTargetLanguage;
+
+        ButtonText = hasChanges ? "Save Settings" : "Settings saved";
+
         return hasChanges;
     }
 }

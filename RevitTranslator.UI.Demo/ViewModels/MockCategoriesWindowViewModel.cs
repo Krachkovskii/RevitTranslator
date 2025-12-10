@@ -50,6 +50,7 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
                     .ToArray();
                 categoryType.FilteredCategories = categoryType.Categories.ToList();
 
+                // todo: refactor faker invocation, one is more than enough
                 foreach (var category in categoryType.Categories)
                 {
                     category.PropertyChanged += OnCategoryPropertyChanged;

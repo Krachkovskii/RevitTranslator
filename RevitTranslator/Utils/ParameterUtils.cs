@@ -1,6 +1,4 @@
-using RevitTranslator.Utils.App;
-
-namespace RevitTranslator.Utils.Revit;
+namespace RevitTranslator.Utils;
 
 public static class ParameterUtils
 {

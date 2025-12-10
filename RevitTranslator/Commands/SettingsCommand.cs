@@ -1,5 +1,8 @@
 ﻿using Autodesk.Revit.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
+using RevitTranslator.Common.Extensions;
+using RevitTranslator.Common.Services;
 using RevitTranslator.UI.Views;
 using SettingsViewModel = RevitTranslator.ViewModels.SettingsViewModel;
 
@@ -11,8 +14,7 @@ public class SettingsCommand : ExternalCommand
 {
     public override void Execute()
     {
-        var viewModel = new SettingsViewModel();
-        var settingsWindow = new SettingsWindow(viewModel);
-        settingsWindow.Show();
+        var parentWindow = UiApplication.MainWindowHandle.ToWindow();
+        Host.ServiceProvider.GetRequiredService<ScopedWindowService>().Show<SettingsWindow>(parentWindow);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslator.Services;
 
@@ -13,7 +14,7 @@ public class TranslateModelCommand : ExternalCommand
         var instances = Document.EnumerateInstances().ToArray();
         if (instances.Length == 0) return;
         
-        var service = new BaseTranslationService();
+        var service = Host.ServiceProvider.GetRequiredService<BaseTranslationService>();
         service.SelectedElements = instances;
         service.Execute();
     }

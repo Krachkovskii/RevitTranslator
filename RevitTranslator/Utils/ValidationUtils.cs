@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace RevitTranslator.Utils.App;
+namespace RevitTranslator.Utils;
 
 /// <summary>
 /// Utilities for text validation

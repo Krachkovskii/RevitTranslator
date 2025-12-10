@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslator.Extensions;
 using RevitTranslator.Services;
@@ -17,7 +18,7 @@ public class TranslateSelectionCommand : ExternalCommand
         
         if (selection.Length == 0) return;
         
-        var service = new BaseTranslationService();
+        var service = Host.ServiceProvider.GetRequiredService<BaseTranslationService>();
         service.SelectedElements = selection;
         service.Execute();
     }

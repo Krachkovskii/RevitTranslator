@@ -11,24 +11,22 @@
         <Platform>AnyCPU</Platform>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    
+
     <ItemGroup>
         <Reference Include="System"/>
         <Reference Include="System.Core"/>
         <Reference Include="System.Data"/>
         <Reference Include="System.Xml"/>
     </ItemGroup>
-    
+
     <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Mvvm" />
-      <PackageReference Include="WPF-UI" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj" />
-      <ProjectReference Include="..\TranslationService\TranslationService.csproj" />
+        <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="WPF-UI"/>
+        <PackageReference Include="System.Text.Json"/>
     </ItemGroup>
 
-<!--    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>-->
-
+    <ItemGroup>
+        <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj"/>
+        <ProjectReference Include="..\TranslationService\TranslationService.csproj"/>
+    </ItemGroup>
 </Project>
