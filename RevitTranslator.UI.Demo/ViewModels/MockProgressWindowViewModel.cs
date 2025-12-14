@@ -89,6 +89,8 @@ public partial class MockProgressWindowViewModel : ObservableObject,
         CancelTranslation();
     }
 
+    public IAsyncRelayCommand LoadedCommand { get; }
+
     public Task FinalizeTranslationAsync()
     {
         IsProgressBarIntermediate = true;

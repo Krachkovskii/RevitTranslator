@@ -9,7 +9,7 @@ public class ConcurrentTranslationService
 {
     private readonly List<Task> _translationTasks = [];
     
-    public async Task TranslateAsync(TranslationEntity[] entities, CancellationToken token)
+    public async Task TranslateEntitiesAsync(TranslationEntity[] entities, CancellationToken token)
     {
         try
         {
@@ -36,7 +36,7 @@ public class ConcurrentTranslationService
         {
             token.ThrowIfCancellationRequested();
             
-            var translated = await TranslationUtils.TranslateAsync(entity.OriginalText, token);
+            var translated = await TranslationUtils.TranslateTextAsync(entity.OriginalText, token);
             switch (translated)
             {
                 case null:

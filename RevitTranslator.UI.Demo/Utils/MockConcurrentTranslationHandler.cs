@@ -48,7 +48,7 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
             }
             else
             {
-                await TranslationUtils.TranslateAsync(text, _cancellationToken);
+                await TranslationUtils.TranslateTextAsync(text, _cancellationToken);
             }
             
             StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));

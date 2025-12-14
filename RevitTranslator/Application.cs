@@ -1,9 +1,12 @@
 ﻿using System.Reflection;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
+using Microsoft.Xaml.Behaviors;
 using Nice3point.Revit.Toolkit.External;
 using Nice3point.Revit.Toolkit.External.Handlers;
 using RevitTranslator.Utils;
+using TriggerBase = Microsoft.Xaml.Behaviors.TriggerBase;
 
 namespace RevitTranslator;
 /// <summary>
@@ -16,7 +19,7 @@ public class Application : ExternalApplication
     {
         _ = new Host();
         CreateRibbonPanel();
-        EventHandlers.ActionHandler = new ActionEventHandler();
+        FixBehaviors();
     }
 
     private void CreateRibbonPanel()
@@ -77,5 +80,11 @@ public class Application : ExternalApplication
         pulldownButton.AddPushButton(translateSelectionButtonData);
         pulldownButton.AddSeparator();
         pulldownButton.AddPushButton(settingsButtonData);
+    }
+    
+    private static void FixBehaviors()
+    {
+        //https://github.com/microsoft/XamlBehaviorsWpf/issues/86
+        _ = new DefaultTriggerAttribute(typeof(Trigger), typeof(TriggerBase), null);
     }
 }

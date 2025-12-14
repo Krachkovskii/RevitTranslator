@@ -15,6 +15,6 @@ public class SettingsCommand : ExternalCommand
     public override void Execute()
     {
         var parentWindow = UiApplication.MainWindowHandle.ToWindow();
-        Host.ServiceProvider.GetRequiredService<ScopedWindowService>().Show<SettingsWindow>(parentWindow);
+        Host.ServiceProvider.GetRequiredService<ScopedWindowService>().ShowDialog<SettingsWindow>(parentWindow);
     }
 }

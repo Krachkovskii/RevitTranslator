@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Services;
+using RevitTranslator.Services;
 using RevitTranslator.UI.Views;
 using RevitTranslator.ViewModels;
 
@@ -12,9 +13,21 @@ namespace RevitTranslator.Commands;
 [Transaction(TransactionMode.Manual)]
 public class TranslateCategoriesCommand : ExternalCommand
 {
-    public override void Execute()
+    public override async void Execute()
     {
-        var parentWindow = UiApplication.MainWindowHandle.ToWindow();
-        Host.ServiceProvider.GetRequiredService<ScopedWindowService>().Show<CategoriesWindow>(parentWindow);
+        try
+        {
+            using var scope = Host.ServiceProvider.CreateScope();
+            var categoryService = scope.ServiceProvider.GetRequiredService<CategorySelectionService>();
+            var result = categoryService.Initialize();
+            if (result is not true) return;
+            
+            await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(categoryService.SelectedElements);
+        }
+        catch (Exception ex)
+        {
+            // todo: add logging
+            Console.WriteLine(ex);
+        }
     }
 }

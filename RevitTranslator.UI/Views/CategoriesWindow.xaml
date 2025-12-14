@@ -7,7 +7,7 @@
     xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
     xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    xmlns:listView="clr-namespace:RevitTranslator.Ui.Library.Controls.ListView;assembly=RevitTranslator.Ui.Library"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance contracts:ICategoriesWindowViewModel}"
     ExtendsContentIntoTitleBar="True"
@@ -15,6 +15,12 @@
     Height="600"
     MinHeight="300"
     Width="500">
+
+    <b:Interaction.Triggers>
+        <b:EventTrigger EventName="Loaded">
+            <b:InvokeCommandAction Command="{Binding LoadedCommand}" />
+        </b:EventTrigger>
+    </b:Interaction.Triggers>
 
     <ui:FluentWindow.Resources>
         <ResourceDictionary>
@@ -31,96 +37,134 @@
                 DockPanel.Dock="Top"
                 Title="Revit Translator | Select Categories"
                 Height="32"
-                ShowMinimize="True"
-                ShowMaximize="False" />
-            <!-- TODO: Fix textbox behavior; it will be disabled until fixed -->
-            <ui:TextBox
-                Visibility="Collapsed"
-                DockPanel.Dock="Top"
-                IsEnabled="{Binding IsLoading,
-                    Converter={converters:InverseBoolConverter},
-                    UpdateSourceTrigger=PropertyChanged}"
-                Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                PlaceholderText="Search category name..."
-                Margin="20" />
+                ShowMinimize="False"
+                ShowMaximize="False"
+                CloseClicked="OnCloseClicked" />
             <Button
                 DockPanel.Dock="Bottom"
                 Content="{Binding MainButtonText}"
                 Command="{Binding TranslateCommand}"
                 Click="OnTranslateButtonClicked"
                 Style="{StaticResource LargeRectangularButton}" />
-            <Grid>
-                <StackPanel
-                    Orientation="Vertical"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Visibility="{Binding IsLoading,
-                        Converter={converters:BoolVisibilityConverter},
-                        UpdateSourceTrigger=PropertyChanged}">
-                    <ui:TextBlock
-                        Text="Loading categories..." />
-                    <ui:ProgressRing
-                        Margin="20"
-                        Height="20"
-                        Width="20"
-                        IsIndeterminate="True" />
-                </StackPanel>
-                <listView:ListView
-                    DockPanel.Dock="Top"
-                    x:Name="CategoryTypeCards"
-                    Margin="20 20 5 0"
-                    ItemsSource="{Binding FilteredCategoryTypes}"
-                    ScrollViewer.CanContentScroll="False"
-                    ScrollViewer.VerticalScrollBarVisibility="Auto">
-                    <listView:ListView.Resources>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                         Color="Transparent" />
-                    </listView:ListView.Resources>
-                    <listView:ListView.ItemContainerStyle>
-                        <Style TargetType="listView:ListViewItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type listView:ListViewItem}">
-                                        <ContentPresenter />
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Margin" Value="0 0 15 10" />
-                            <Setter Property="HorizontalAlignment" Value="Stretch" />
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                        </Style>
-                    </listView:ListView.ItemContainerStyle>
-                    <listView:ListView.ItemTemplate>
-                        <DataTemplate>
-                            <ui:CardExpander>
-                                <ui:CardExpander.Header>
-                                    <CheckBox
-                                        IsChecked="{Binding IsChecked, Mode=TwoWay}"
-                                        Command="{Binding DataContext.CategoryTypeCheckedCommand, 
-                                            ElementName=CategoryTypeCards}"
-                                        CommandParameter="{Binding}"
-                                        Content="{Binding Name, Mode=OneWay}"
-                                        VerticalContentAlignment="Center" />
-                                </ui:CardExpander.Header>
-                                <ui:CardExpander.Content>
-                                    <listView:ListView
-                                        ItemsSource="{Binding Categories}"
-                                        Focusable="False">
-                                        <listView:ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <CheckBox
-                                                    x:Name="CategoryCheckBox"
-                                                    IsChecked="{Binding IsChecked, Mode=TwoWay}"
-                                                    Content="{Binding Name, Mode=OneWay}"
-                                                    VerticalContentAlignment="Center" />
-                                            </DataTemplate>
-                                        </listView:ListView.ItemTemplate>
-                                    </listView:ListView>
-                                </ui:CardExpander.Content>
-                            </ui:CardExpander>
-                        </DataTemplate>
-                    </listView:ListView.ItemTemplate>
-                </listView:ListView>
+            <Grid
+                DockPanel.Dock="Top">
+                <ScrollViewer
+                    Margin="14 36 0 0"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl
+                        x:Name="CategoryTypeCards"
+                        DockPanel.Dock="Top"
+                        Margin="0 8 14 14"
+                        ItemsSource="{Binding CategoryTypes}">
+                        <ItemsControl.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                             Color="Transparent" />
+                        </ItemsControl.Resources>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style
+                                TargetType="{x:Type ContentPresenter}">
+                                <Setter
+                                    Property="Visibility"
+                                    Value="{Binding IsVisible,
+                                        Converter={converters:CollapsedBoolVisibilityConverter},
+                                        Mode=OneWay}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ui:CardExpander
+                                    Padding="4 8 16 8"
+                                    Margin="0 4"
+                                    IsExpanded="{Binding IsExpanded,
+                                        Mode=TwoWay,
+                                        UpdateSourceTrigger=PropertyChanged}">
+                                    <ui:CardExpander.Header>
+                                        <CheckBox
+                                            IsChecked="{Binding IsChecked}"
+                                            Content="{Binding Name, Mode=OneWay}"
+                                            VerticalContentAlignment="Center" />
+                                    </ui:CardExpander.Header>
+                                    <ui:CardExpander.Content>
+                                        <ItemsControl
+                                            ItemsSource="{Binding Categories}">
+                                            <ItemsControl.ItemContainerStyle>
+                                                <Style
+                                                    TargetType="{x:Type ContentPresenter}">
+                                                    <Setter
+                                                        Property="Visibility"
+                                                        Value="{Binding IsVisible,
+                                                            Converter={converters:CollapsedBoolVisibilityConverter},
+                                                            Mode=OneWay}" />
+                                                </Style>
+                                            </ItemsControl.ItemContainerStyle>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border
+                                                        x:Name="ItemBorder"
+                                                        Background="Transparent"
+                                                        BorderThickness="1"
+                                                        BorderBrush="Transparent"
+                                                        CornerRadius="4"
+                                                        Padding="0 4"
+                                                        Cursor="Hand"
+                                                        MouseLeftButtonUp="OnItemBorderLeftMouseUp">
+                                                        <CheckBox
+                                                            x:Name="CategoryCheckBox"
+                                                            IsChecked="{Binding IsChecked, 
+                                                                Mode=TwoWay, 
+                                                                UpdateSourceTrigger=PropertyChanged}"
+                                                            Content="{Binding Name, 
+                                                                Mode=OneTime}"
+                                                            VerticalContentAlignment="Center" />
+                                                    </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <Trigger
+                                                            SourceName="ItemBorder"
+                                                            Property="IsMouseOver"
+                                                            Value="True">
+                                                            <Setter
+                                                                TargetName="ItemBorder"
+                                                                Property="Background"
+                                                                Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                            <Setter
+                                                                TargetName="ItemBorder"
+                                                                Property="BorderBrush"
+                                                                Value="{DynamicResource ControlElevationBorderBrush}" />
+                                                        </Trigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ui:CardExpander.Content>
+                                </ui:CardExpander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <ui:TextBox
+                    Icon="{ui:SymbolIcon Search24}"
+                    Background="White"
+                    ShowClearButton="True"
+                    Height="36"
+                    VerticalAlignment="Top"
+                    IsEnabled="{Binding IsLoading,
+                        Converter={converters:InverseBoolConverter},
+                        UpdateSourceTrigger=PropertyChanged}"
+                    Text="{Binding SearchText, 
+                        Mode=TwoWay, 
+                            UpdateSourceTrigger=PropertyChanged}"
+                    PlaceholderText="Search category name..."
+                    Margin="14 4 14 0">
+                    <ui:TextBox.Effect>
+                        <DropShadowEffect
+                            Direction="270"
+                            Opacity="0.1"
+                            BlurRadius="12"
+                            RenderingBias="Performance"
+                            ShadowDepth="8" />
+                    </ui:TextBox.Effect>
+                </ui:TextBox>
             </Grid>
         </DockPanel>
     </Grid>

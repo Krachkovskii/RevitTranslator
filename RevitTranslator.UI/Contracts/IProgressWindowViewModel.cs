@@ -16,4 +16,5 @@ public interface IProgressWindowViewModel
     void CloseRequested();
     
     IRelayCommand CancelTranslationCommand { get; }
+    IAsyncRelayCommand LoadedCommand { get; }
 }

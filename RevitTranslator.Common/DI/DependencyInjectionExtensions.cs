@@ -8,6 +8,7 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddCommonServices(this IServiceCollection serviceCollection)
     {
         return serviceCollection
-            .AddScoped<ScopedWindowService>();
+            .AddScoped<ScopedWindowService>()
+            .AddSingleton<Func<ScopedWindowService>>(sp => sp.GetRequiredService<ScopedWindowService>);
     }
 }

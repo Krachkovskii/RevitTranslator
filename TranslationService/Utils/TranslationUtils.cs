@@ -43,24 +43,26 @@ public static class TranslationUtils
         return res is not null;
     }
 
-    public static async Task CheckUsageAsync()
+    public static async Task<bool> CheckUsageAsync()
     {
         // todo: potential issue when attempting to launch a command without having valid settings
-        if (DeeplSettingsUtils.CurrentSettings is null) return;
+        if (DeeplSettingsUtils.CurrentSettings is null) return false;
         
         HttpClient.DefaultRequestHeaders.Authorization = 
             new AuthenticationHeaderValue("DeepL-Auth-Key", DeeplSettingsUtils.CurrentSettings.DeeplApiKey);
         HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("RevitTranslator");
 
         var response = await HttpClient.GetAsync(DeeplSettingsUtils.UsageUrl);
-        if (!response.IsSuccessStatusCode) return;
+        if (!response.IsSuccessStatusCode) return false;
 
         var responseBody = await response.Content.ReadAsStringAsync();
         var usage = JsonSerializer.Deserialize<DeeplUsage>(responseBody, JsonSettings.Options);
-        if (usage is null) return;
+        if (usage is null) return false;
 
         Usage = usage.CharacterCount;
         Limit = usage.CharacterLimit;
+        
+        return true;
     }
 
     /// <summary>
@@ -72,7 +74,7 @@ public static class TranslationUtils
     /// If server response does not allow further translation (e.g. quota exceeded,
     /// or request configuration is invalid), <c>OperationCanceledException</c> will be thrown, 
     /// and token cancellation will be requested.</returns>
-    public static async Task<string?> TranslateAsync(string text, CancellationToken token)
+    public static async Task<string?> TranslateTextAsync(string text, CancellationToken token)
     {
         await Semaphore.WaitAsync(token);
         try

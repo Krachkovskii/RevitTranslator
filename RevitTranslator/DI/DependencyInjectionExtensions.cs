@@ -1,28 +1,28 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RevitTranslator.Services;
 using RevitTranslator.UI.Contracts;
+using RevitTranslator.Utils;
 using RevitTranslator.ViewModels;
 
 namespace RevitTranslator.DI;
 
 public static class DependencyInjectionExtensions
 {
-    extension(IServiceCollection serviceCollection)
+    public static IServiceCollection AddRevitUiImpl(this IServiceCollection serviceCollection)
     {
-        public IServiceCollection AddRevitUiImpl()
-        {
-            return serviceCollection
-                .AddScoped<ICategoriesWindowViewModel, CategoriesWindowViewModel>()
-                .AddScoped<IProgressWindowViewModel, ProgressWindowViewModel>()
-                .AddScoped<ISettingsViewModel, SettingsViewModel>();
-        }
+        return serviceCollection
+            .AddScoped<ICategoriesWindowViewModel, CategoriesWindowViewModel>()
+            .AddScoped<IProgressWindowViewModel, ProgressWindowViewModel>()
+            .AddScoped<ISettingsViewModel, SettingsViewModel>();
+    }
 
-        public IServiceCollection AddRevitServices()
-        {
-            return serviceCollection
-                .AddScoped<BaseTranslationService>()
-                .AddScoped<ConcurrentTranslationService>()
-                .AddScoped<ModelUpdaterService>();
-        }
+    public static IServiceCollection AddRevitServices(this IServiceCollection serviceCollection)
+    {
+        return serviceCollection
+            .AddScoped<TranslationManager>()
+            .AddScoped<ConcurrentTranslationService>()
+            .AddScoped<CategorySelectionService>()
+            .AddSingleton<EventHandlers>()
+            .AddScoped<ModelUpdaterService>();
     }
 }

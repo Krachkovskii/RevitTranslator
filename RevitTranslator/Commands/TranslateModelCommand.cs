@@ -9,13 +9,19 @@ namespace RevitTranslator.Commands;
 [Transaction(TransactionMode.Manual)]
 public class TranslateModelCommand : ExternalCommand
 {
-    public override void Execute()
+    public override async void Execute()
     {
-        var instances = Document.EnumerateInstances().ToArray();
-        if (instances.Length == 0) return;
+        try
+        {
+            var instances = Document.EnumerateInstances().ToArray();
+            if (instances.Length == 0) return;
         
-        var service = Host.ServiceProvider.GetRequiredService<BaseTranslationService>();
-        service.SelectedElements = instances;
-        service.Execute();
+            await Host.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(instances);
+        }
+        catch (Exception ex)
+        {
+            // todo: add logging
+            Console.WriteLine(ex);
+        }
     }
 }

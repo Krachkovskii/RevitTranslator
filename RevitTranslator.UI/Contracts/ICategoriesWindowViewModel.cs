@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using RevitTranslator.Common.Models;
 
@@ -9,12 +10,9 @@ public interface ICategoriesWindowViewModel
     public string SearchText { get; set; }
     public bool IsLoading { get; }
     
-    public ObservableCategoryType[] CategoryTypes { get; }
-    public List<ObservableCategoryType> FilteredCategoryTypes { get; set; }
-    public List<ObservableCategoryDescriptor> SelectedCategories { get; }
-
-    void OnCloseRequested();
+    public ObservableCollection<CategoryTypeViewModel> CategoryTypes { get; set; }
+    public List<CategoryViewModel> SelectedCategories { get; }
     
     IRelayCommand TranslateCommand { get; }
-    IRelayCommand<ObservableCategoryType> CategoryTypeCheckedCommand { get; } 
+    IRelayCommand LoadedCommand { get; }
 }

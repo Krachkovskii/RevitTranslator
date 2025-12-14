@@ -37,7 +37,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
     <!-- UI -->
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.*" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.*" />
     <!-- Data -->
     <PackageVersion Include="Bogus" Version="35.*" />
     <PackageVersion Include="System.Net.Http" Version="4.*" />
