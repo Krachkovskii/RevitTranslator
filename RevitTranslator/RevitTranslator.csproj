@@ -9,31 +9,10 @@
         <PublishAddinFiles>true</PublishAddinFiles>
         <RootNamespace>RevitTranslator</RootNamespace>
         <Nullable>enable</Nullable>
-        <Configurations>Debug R23;Debug R24;Debug R25</Configurations>
-        <Configurations>$(Configurations);Release R23;Release R24;Release R25</Configurations>
+        <Configurations>Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
+        <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
-    
-    <PropertyGroup Condition="$(Configuration.Contains('R21'))">
-        <RevitVersion>2021</RevitVersion>
-        <TargetFramework>net48</TargetFramework>
-    </PropertyGroup>
-    <PropertyGroup Condition="$(Configuration.Contains('R22'))">
-        <RevitVersion>2022</RevitVersion>
-        <TargetFramework>net48</TargetFramework>
-    </PropertyGroup>
-    <PropertyGroup Condition="$(Configuration.Contains('R23'))">
-        <RevitVersion>2023</RevitVersion>
-        <TargetFramework>net48</TargetFramework>
-    </PropertyGroup>
-    <PropertyGroup Condition="$(Configuration.Contains('R24'))">
-        <RevitVersion>2024</RevitVersion>
-        <TargetFramework>net48</TargetFramework>
-    </PropertyGroup>
-	<PropertyGroup Condition="$(Configuration.Contains('R25'))">
-		<RevitVersion>2025</RevitVersion>
-		<TargetFramework>net8.0-windows</TargetFramework>
-	</PropertyGroup>
 
     <PropertyGroup>
         <StartAction>Program</StartAction>

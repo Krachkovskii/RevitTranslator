@@ -9,7 +9,7 @@
     <PackageVersion Include="Microsoft.Build" Version="17.13.*" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.*" />
     <PackageVersion Include="WixSharp" Version="1.*" />
-    <PackageVersion Include="WixSharp.wix.bin" Version="3.*" />
+    <PackageVersion Include="WixSharp.wix.bin" Version="3.*" /> 
     <!-- Revit References -->
     <PackageVersion Include="Nice3point.Revit.Build.Tasks" Version="2.*" />
     <PackageVersion Include="Nice3point.Revit.Extensions" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />

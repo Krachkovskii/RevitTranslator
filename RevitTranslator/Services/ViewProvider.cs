@@ -44,9 +44,9 @@ public class ViewProvider : IRevitViewProvider
             .ToArray();
     }
 
-#if NET8_0_OR_GREATER
     public IReadOnlyCollection<ViewGroupDto> GetAllSheetCollections()
     {
+#if NET8_0_OR_GREATER
         var document = Context.ActiveDocument;
         if (document is null) return [];
 
@@ -66,6 +66,8 @@ public class ViewProvider : IRevitViewProvider
                     .ToArray()
             })
             .ToArray();
-    }
+#else
+        return [];
 #endif
+    }
 }
