@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Models;
+using RevitTranslator.Common.Models.Categories;
 
 namespace RevitTranslator.UI.FallbackValues;
 

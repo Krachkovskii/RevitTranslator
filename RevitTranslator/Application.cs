@@ -66,6 +66,16 @@ public class Application : ExternalApplication
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon16.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon32.png", UriKind.RelativeOrAbsolute))
         };
+        
+        var translateViewsButtonData = new PushButtonData("Views",
+            "Translate views",
+            assemblyPath,
+            "RevitTranslator.Commands.TranslateViewsCommand")
+        {
+            LongDescription = "Translate all elements of selected views",
+            Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon16.png", UriKind.RelativeOrAbsolute)),
+            LargeImage = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon32.png", UriKind.RelativeOrAbsolute))
+        };
 
         var pulldownButtonData = new PulldownButtonData("translator", "Revit Translator")
         {
@@ -77,6 +87,7 @@ public class Application : ExternalApplication
 
         pulldownButton.AddPushButton(translateModelButtonData);
         pulldownButton.AddPushButton(translateCategoriesButtonData);
+        pulldownButton.AddPushButton(translateViewsButtonData);
         pulldownButton.AddPushButton(translateSelectionButtonData);
         pulldownButton.AddSeparator();
         pulldownButton.AddPushButton(settingsButtonData);

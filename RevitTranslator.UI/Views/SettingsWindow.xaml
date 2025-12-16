@@ -81,7 +81,7 @@
                                 Source={x:Static languageModels:DeeplLanguageCodes.TargetLanguages}}"
                             DisplayMemberPath="VisibleName"
                             IsEnabled="{Binding SelectedSourceLanguage,
-                                Converter={converters:ObjectNotNullBoolConverter},
+                                Converter={x:Static converters:Converters.ObjectNotNullBoolConverter},
                                 Mode=TwoWay,
                                 UpdateSourceTrigger=PropertyChanged}"
                             SelectedItem="{Binding SelectedSourceLanguage,
@@ -111,7 +111,7 @@
                             Content="{markup:SymbolIcon ArrowUndo16}"
                             Command="{Binding SwitchLanguagesCommand}"
                             IsEnabled="{Binding IsAutoDetectChecked, 
-                            Converter={converters:InverseBoolConverter}}"
+                            Converter={x:Static converters:Converters.InverseBoolConverter}}"
                             ToolTip="Reverse language selection"
                             Cursor="Hand" />
                     </StackPanel>

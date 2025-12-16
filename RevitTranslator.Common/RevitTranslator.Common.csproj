@@ -3,7 +3,7 @@
     <PropertyGroup>
         <UseWpf>true</UseWpf>
         <LangVersion>latest</LangVersion>
-        <TargetFramework>net48</TargetFramework>
+        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
         <OutputType>Library</OutputType>
         <ImplicitUsings>true</ImplicitUsings>
         <Nullable>enable</Nullable>

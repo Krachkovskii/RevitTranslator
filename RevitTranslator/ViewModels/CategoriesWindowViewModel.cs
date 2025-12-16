@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Timers;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Models;
+using RevitTranslator.Common.Models.Categories;
 using RevitTranslator.Extensions;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.Utils;

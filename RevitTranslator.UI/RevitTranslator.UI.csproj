@@ -30,4 +30,12 @@
         <ProjectReference Include="..\RevitTranslator.Ui.Library\RevitTranslator.Ui.Library.csproj" />
         <ProjectReference Include="..\TranslationService\TranslationService.csproj"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="Views\ViewsWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
 </Project>

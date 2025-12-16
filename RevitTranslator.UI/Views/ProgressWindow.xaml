@@ -47,7 +47,7 @@
                 Command="{Binding CancelTranslationCommand}"
                 Style="{StaticResource LargeRectangularButton}"
                 IsEnabled="{Binding IsProgressBarIntermediate, 
-                    Converter={converters:InverseBoolConverter}}"
+                    Converter={x:Static converters:Converters.InverseBoolConverter}}"
                 Cursor="Hand" />
 
             <ProgressBar

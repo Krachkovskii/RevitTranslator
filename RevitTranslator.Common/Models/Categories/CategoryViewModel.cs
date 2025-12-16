@@ -1,18 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using JetBrains.Annotations;
 
-namespace RevitTranslator.Common.Models;
+namespace RevitTranslator.Common.Models.Categories;
 
 [UsedImplicitly]
-public partial class CategoryViewModel : ObservableObject
+public sealed partial class CategoryViewModel : ObservableObject
 {
     [ObservableProperty] private bool _isChecked;
     [ObservableProperty] private bool _isVisible = true;
-    
-    partial void OnIsVisibleChanged(bool value)
-    {
-        Console.WriteLine($"CAT {Name} is visible changed to: {value}");
-    }
 
     public long Id { get; init; }
     public int CategoryTypeEnum { get; init; }

@@ -2,12 +2,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace RevitTranslator.Common.Models;
+namespace RevitTranslator.Common.Models.Categories;
 
-public partial class CategoryTypeViewModel : ObservableObject
+public sealed partial class CategoryTypeViewModel : ObservableObject
 {
     private bool _isInternalCheckboxUpdate;
-    private int _selectedCategoriesCount;
+    private int _selectedSubElementsCount;
     
     [ObservableProperty] private bool? _isChecked = false;
     [ObservableProperty] private bool _isVisible = true;
@@ -17,11 +17,6 @@ public partial class CategoryTypeViewModel : ObservableObject
     
     public string Name { get; init; } = string.Empty;
 
-    partial void OnIsVisibleChanged(bool value)
-    {
-        Console.WriteLine($"TYPE {Name} is visible changed to: {value}");
-    }
-
     partial void OnIsCheckedChanged(bool? value)
     {
         if (_isInternalCheckboxUpdate) return;
@@ -29,53 +24,53 @@ public partial class CategoryTypeViewModel : ObservableObject
 
         _isInternalCheckboxUpdate = true;
         var isChecked = value is true;
-        foreach (var category in Categories)
+        foreach (var element in Categories)
         {
-            category.IsChecked = isChecked;
+            element.IsChecked = isChecked;
         }
         _isInternalCheckboxUpdate = false;
     }
     
     partial void OnCategoriesChanged(ObservableCollection<CategoryViewModel>? oldValue, ObservableCollection<CategoryViewModel> newValue)
     {
-        foreach (var category in newValue)
+        foreach (var element in newValue)
         {
-            category.PropertyChanged += CategoryOnPropertyChanged;
+            element.PropertyChanged += ElementOnPropertyChanged;
         }
         
-        _selectedCategoriesCount = 0;
+        _selectedSubElementsCount = 0;
         if (oldValue is null) return;
         
         foreach (var category in oldValue)
         {
-            category.PropertyChanged -= CategoryOnPropertyChanged;
+            category.PropertyChanged -= ElementOnPropertyChanged;
         }
     }
 
-    private void CategoryOnPropertyChanged(object sender, PropertyChangedEventArgs args)
+    private void ElementOnPropertyChanged(object sender, PropertyChangedEventArgs args)
     {
         if (sender is not CategoryViewModel category) return;
         if (args.PropertyName != nameof(CategoryViewModel.IsChecked)) return;
         
         if (category.IsChecked)
         {
-            _selectedCategoriesCount++;
+            _selectedSubElementsCount++;
             SelectedElementCount += category.ElementCount;
         }
         else
         {
-            _selectedCategoriesCount--;
+            _selectedSubElementsCount--;
             SelectedElementCount -= category.ElementCount;
         }
         
         if (_isInternalCheckboxUpdate) return;
         
         _isInternalCheckboxUpdate = true;
-        if (_selectedCategoriesCount == 0)
+        if (_selectedSubElementsCount == 0)
         {
             IsChecked = false;
         }
-        else if (_selectedCategoriesCount == Categories.Count)
+        else if (_selectedSubElementsCount == Categories.Count)
         {
             IsChecked = true;
         }
