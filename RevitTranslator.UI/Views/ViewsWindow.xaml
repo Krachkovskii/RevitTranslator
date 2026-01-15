@@ -82,9 +82,7 @@
                                     <ui:CardExpander.Header>
                                         <CheckBox
                                             IsChecked="{Binding IsChecked}"
-                                            Content="{Binding Type, 
-                                                Mode=OneTime,
-                                                Converter={x:Static converters:Converters.EnumDescriptionConverter}}"
+                                            Content="{Binding Name, Mode=OneTime}"
                                             VerticalContentAlignment="Center" />
                                     </ui:CardExpander.Header>
                                     <ui:CardExpander.Content>

@@ -6,6 +6,8 @@
         <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
         <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+        <Configurations>Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
+        <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26</Configurations>
         <ImplicitUsings>true</ImplicitUsings>
         <OutputPath>bin/$(Configuration)</OutputPath>
         <Platform>AnyCPU</Platform>

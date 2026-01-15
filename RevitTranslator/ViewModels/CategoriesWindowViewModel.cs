@@ -122,7 +122,11 @@ public partial class CategoriesWindowViewModel
 
             if (_searchCancellationTokenSource is not null)
             {
+#if NETFRAMEWORK
+                _searchCancellationTokenSource.Cancel();
+#else
                 await _searchCancellationTokenSource.CancelAsync();
+#endif
                 _searchCancellationTokenSource.Dispose();
             }
 
@@ -150,6 +154,9 @@ public partial class CategoriesWindowViewModel
             var typeHasMatches = false;
             foreach (var category in categoryType.Categories)
             {
+#if NETFRAMEWORK
+                
+#endif
                 category.IsVisible = category.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase);
                 if (!category.IsVisible) continue;
 

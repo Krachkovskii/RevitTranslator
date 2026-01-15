@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using RevitTranslator.Common.Contracts;
 using RevitTranslator.Common.Extensions;
+using RevitTranslator.UI.Extensions;
 using RevitTranslator.Common.Models.Views;
 
 namespace RevitTranslator.UI.ViewModels;
@@ -15,21 +16,38 @@ public sealed partial class ViewsViewModel : ObservableObject
     
     public ViewsViewModel(IRevitViewProvider viewProvider)
     {
-        ViewTypes = viewProvider
-            .GetAllIterableViews()
-            .Select(view => new ViewViewModel { Model = view })
-            .GroupBy(view => view.Model.ViewType)
-            .Select(group => new ViewGroupViewModel()
+        var sheets = viewProvider.GetAllSheets().ToArray();
+
+        var sheetGroup = new ViewGroupViewModel
+        {
+            Views = sheets
+                .OrderBy(view => view.Name)
+                .Select(view => new ViewViewModel { Model = view })
+                .ToObservableCollection(),
+            Name = "All Sheets",
+        };
+
+        var sheetCollections = viewProvider
+            .GetAllSheetCollections();
+
+        if (sheetCollections.Count == 0)
+        {
+            sheetGroup.IsExpanded = true;
+            ViewTypes = new ObservableCollection<ViewGroupViewModel>([sheetGroup]);
+            return;
+        }
+        
+        ViewTypes = sheetCollections
+            .Select(collection => new ViewGroupViewModel
             {
-                Views = group
+                Views = collection
+                    .Views
                     .OrderBy(view => view.Name)
+                    .Select(view => new ViewViewModel { Model = view })
                     .ToObservableCollection(),
-                Type = group
-                    .First()
-                    .Model
-                    .ViewType
+                Name = collection.Name
             })
-            .OrderBy(type => type.Type)
+            .Concat([sheetGroup])
             .ToObservableCollection();
     }
     

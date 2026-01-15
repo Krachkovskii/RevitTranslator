@@ -14,22 +14,22 @@ public class ViewSelectionService(ViewsWindow window, ViewsViewModel viewModel)
         var result = window.ShowDialog();
         if (result is false) return false;
 
-        IEnumerable<Element> test = new List<Element>();
+        IEnumerable<Element> elements = new List<Element>();
         var document = Context.ActiveDocument;
         if (document is null) return false;
 
-        var views = viewModel.ViewTypes
+        var sheets = viewModel.ViewTypes
             .SelectMany(viewType => viewType.Views)
             .Where(view => view.IsChecked)
             .Select(view => view.Model
                 .Id
                 .ToElementId()
                 .ToElement<View>(document))
-            .Cast<View>()
+            .OfType<ViewSheet>()
             .ToArray();
-        
-        if (views.Length == 0) return false;
-        
+
+        if (sheets.Length == 0) return false;
+
         var viewTypes = new List<Type>
         {
             typeof(ViewPlan),
@@ -39,35 +39,26 @@ public class ViewSelectionService(ViewsWindow window, ViewsViewModel viewModel)
             typeof(ViewSection)
         };
 
-        foreach (var view in views)
+        foreach (var sheet in sheets)
         {
-            if (view is ViewSheet sheet)
-            {
-                var sheetElements = new FilteredElementCollector(document, sheet.Id)
-                    .WherePasses(new ElementMulticlassFilter(viewTypes, true))
-                    .ToElements();
-                
-                var elements = sheet
-                    .GetAllPlacedViews()
-                    .ToElements<View>(document)
-                    .Select(v => document.EnumerateInstances(v.Id))
-                    .SelectMany(instance => instance)
-                    .Concat(sheetElements)
-                    .Concat([sheet]);
+            var sheetElements = new FilteredElementCollector(document, sheet.Id)
+                .WherePasses(new ElementMulticlassFilter(viewTypes, true))
+                .ToElements();
 
-                test = test.Concat(elements);
-            }
-            else
-            {
-                var elements = document
-                    .EnumerateInstances(view.Id)
-                    .Concat([view]);
-                
-                test = test.Concat(elements);
-            }
+            var sheetViewsElements = sheet
+                .GetAllPlacedViews()
+                .ToElements<View>(document)
+                .Select(v => document.EnumerateInstances(v.Id))
+                .SelectMany(instance => instance);
+
+            // TODO: Ignore some categories, e.g. detail line. Might be user-adjustable from settings
+            elements = elements
+                .Concat([sheet])
+                .Concat(sheetElements)
+                .Concat(sheetViewsElements);
         }
 
-        SelectedElements = test.Distinct().ToArray();
+        SelectedElements = elements.Distinct().ToArray();
         return true;
     }
 }

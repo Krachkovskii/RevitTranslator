@@ -58,7 +58,7 @@ public class ViewProvider : IRevitViewProvider
                            .SheetCollectionId
                            .ToElement<SheetCollection>(document)?
                            .Name
-                       ?? "<Unnamed sheet collection>",
+                       ?? "Ungrouped sheets",
                 Views = collection.Select(sheet => new ViewDto(
                         Id: sheet.Id.ToLong(),
                         ViewType: sheet.ViewType.ToInternal(),
