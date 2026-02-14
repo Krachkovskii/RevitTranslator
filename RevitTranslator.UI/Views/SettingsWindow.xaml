@@ -104,8 +104,8 @@
                         <ui:TextBlock
                             Style="{StaticResource Annotation}" />
                         <ui:Button
-                            Height="38"
-                            Width="38"
+                            Height="36"
+                            Width="36"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
                             Content="{markup:SymbolIcon ArrowUndo16}"

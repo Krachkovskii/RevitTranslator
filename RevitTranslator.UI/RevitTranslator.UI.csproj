@@ -1,17 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <UseWPF>true</UseWPF>
-        <OutputType>Library</OutputType>
-        <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-        <LangVersion>latest</LangVersion>
-        <PlatformTarget>x64</PlatformTarget>
-        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
-        <Configurations>Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
-        <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26</Configurations>
-        <ImplicitUsings>true</ImplicitUsings>
-        <OutputPath>bin/$(Configuration)</OutputPath>
-        <Platform>AnyCPU</Platform>
-        <Nullable>enable</Nullable>
+        <UseWpf>true</UseWpf>
+<!--        <OutputType>Library</OutputType>-->
+        <TargetFramework>net48</TargetFramework>
+        <LangVersion>preview</LangVersion>
+        <XamlDebuggingInformation>True</XamlDebuggingInformation>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,13 +25,5 @@
         <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj"/>
         <ProjectReference Include="..\RevitTranslator.Ui.Library\RevitTranslator.Ui.Library.csproj" />
         <ProjectReference Include="..\TranslationService\TranslationService.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Page Update="Views\ViewsWindow.xaml">
-        <Generator>MSBuild:Compile</Generator>
-        <XamlRuntime>Wpf</XamlRuntime>
-        <SubType>Designer</SubType>
-      </Page>
     </ItemGroup>
 </Project>

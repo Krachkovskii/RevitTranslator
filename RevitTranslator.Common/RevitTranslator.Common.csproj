@@ -1,14 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <UseWpf>true</UseWpf>
-        <LangVersion>latest</LangVersion>
         <TargetFramework>net48</TargetFramework>
         <OutputType>Library</OutputType>
-        <ImplicitUsings>true</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <PlatformTarget>x64</PlatformTarget>
-        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,13 +12,12 @@
         <PackageReference Include="Microsoft.Extensions.Options"/>
         <PackageReference Include="PolySharp"/>
         <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net48'"/>
     </ItemGroup>
 
     <ItemGroup>
         <Reference Include="PresentationFramework"/>
-        <Reference Include="System.Net.Http"/>
         <Reference Include="System.Windows"/>
-        <Reference Include="System.Net.Http"/>
     </ItemGroup>
 
 </Project>
