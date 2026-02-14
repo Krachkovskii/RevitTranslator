@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using TranslationService.Models;
+using TranslationService.Validation;
 
 namespace TranslationService.Utils;
 
@@ -70,18 +71,16 @@ public static class DeeplSettingsUtils
                     return false;
                 }
 
-                // Decrypt API key if encrypted, or migrate plain-text key to encrypted
                 if (descriptor.IsApiKeyEncrypted)
                 {
                     descriptor.DeeplApiKey = ApiKeyEncryption.Decrypt(descriptor.DeeplApiKey);
                 }
                 else if (!string.IsNullOrWhiteSpace(descriptor.DeeplApiKey))
                 {
-                    // Migration: encrypt existing plain-text API key
                     var plainTextKey = descriptor.DeeplApiKey;
                     descriptor.DeeplApiKey = plainTextKey;
                     descriptor.IsApiKeyEncrypted = true;
-                    descriptor.SaveToJson(); // Save with encryption
+                    descriptor.SaveToJson();
                 }
 
                 CurrentSettings = descriptor;
@@ -89,7 +88,6 @@ public static class DeeplSettingsUtils
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
             {
-                // Log error or handle gracefully
                 CurrentSettings = null;
                 return false;
             }
@@ -109,11 +107,12 @@ public static class DeeplSettingsUtils
                     Directory.CreateDirectory(JsonDirectoryPath);
                 }
 
-                // Create a copy for serialization with encrypted API key
+                var sanitizedApiKey = ApiKeyValidator.Sanitize(settingsDescriptor.DeeplApiKey);
+
                 var descriptorToSave = new DeeplSettingsDescriptor
                 {
                     IsPaidPlan = settingsDescriptor.IsPaidPlan,
-                    DeeplApiKey = ApiKeyEncryption.Encrypt(settingsDescriptor.DeeplApiKey),
+                    DeeplApiKey = ApiKeyEncryption.Encrypt(sanitizedApiKey),
                     IsApiKeyEncrypted = true,
                     SourceLanguage = settingsDescriptor.SourceLanguage,
                     TargetLanguage = settingsDescriptor.TargetLanguage
@@ -126,11 +125,11 @@ public static class DeeplSettingsUtils
                 var json = JsonSerializer.Serialize(descriptorToSave, options);
                 File.WriteAllText(JsonFilePath, json);
 
+                settingsDescriptor.DeeplApiKey = sanitizedApiKey;
                 CurrentSettings = settingsDescriptor;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Handle file write errors gracefully
                 throw new InvalidOperationException("Failed to save settings. Please check file permissions.", ex);
             }
         }

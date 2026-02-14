@@ -30,7 +30,6 @@ public static class ApiKeyEncryption
         }
         catch (CryptographicException)
         {
-            // If encryption fails, return empty string
             return string.Empty;
         }
     }
@@ -55,7 +54,6 @@ public static class ApiKeyEncryption
         }
         catch (Exception)
         {
-            // If decryption fails (corrupted data, wrong user, etc.), return empty string
             return string.Empty;
         }
     }
@@ -72,11 +70,9 @@ public static class ApiKeyEncryption
             return false;
         }
 
-        // DeepL API keys contain colons and hyphens, encrypted values are Base64
-        // This is a heuristic check
         if (value.Contains(':') || value.Length < 40)
         {
-            return false; // Likely a plain text API key
+            return false;
         }
 
         try

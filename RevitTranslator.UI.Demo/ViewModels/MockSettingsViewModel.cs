@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using RevitTranslator.UI.Contracts;
 using TranslationService.Models;
 using TranslationService.Utils;
+using TranslationService.Validation;
 
 namespace RevitTranslator.Demo.ViewModels;
 
@@ -60,17 +61,29 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
     [RelayCommand(CanExecute = nameof(CanExecuteSaveSettings))]
     private async Task SaveSettingsAsync()
     {
+        ButtonText = "Validating...";
+
+        if (!ApiKeyValidator.TryValidate(DeeplApiKey, out var sanitizedKey, out var validationError))
+        {
+            ButtonText = validationError ?? "Invalid API key";
+            await Task.Delay(3000);
+            ButtonText = "Save Settings";
+            return;
+        }
+
         ButtonText = "Saving settings...";
 
         var oldSettings = DeeplSettingsUtils.CurrentSettings;
         var newSettings = new DeeplSettingsDescriptor
         {
             IsPaidPlan = IsPaidPlan,
-            DeeplApiKey = DeeplApiKey,
+            DeeplApiKey = sanitizedKey,
             SourceLanguage = SelectedSourceLanguage,
             TargetLanguage = SelectedTargetLanguage
         };
         newSettings.Save();
+
+        DeeplApiKey = sanitizedKey;
 
         var test = await TranslationUtils.TryTestTranslateAsync();
         if (!test)
