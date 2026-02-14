@@ -29,7 +29,12 @@ public class TranslationManager(
 
         if (DeeplSettingsUtils.CurrentSettings is null)
         {
-            DeeplSettingsUtils.Load();
+            if (!DeeplSettingsUtils.Load())
+            {
+                MessageBox.Show("Failed to load settings. Please check file permissions and try again.",
+                    "Settings Error");
+                return;
+            }
         }
 
         var canTranslate = await TranslationUtils.TryTestTranslateAsync();

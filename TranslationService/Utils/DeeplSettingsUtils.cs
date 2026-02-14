@@ -9,7 +9,9 @@ namespace TranslationService.Utils;
 public static class DeeplSettingsUtils
 {
     private const string AddinName = "RevitTranslator";
-    
+    private static readonly object LockObject = new();
+    private static DeeplSettingsDescriptor? _currentSettings;
+
     private static string JsonDirectoryPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Autodesk",
@@ -19,14 +21,22 @@ public static class DeeplSettingsUtils
         JsonDirectoryPath,
         "settings.json");
 
-    private static DeeplSettingsDescriptor? _currentSettings;
-    public static DeeplSettingsDescriptor? CurrentSettings 
-    { 
-        get => _currentSettings;
-        private set 
+    public static DeeplSettingsDescriptor? CurrentSettings
+    {
+        get
         {
-            _currentSettings = value;
-            SetDeeplUrls(value); 
+            lock (LockObject)
+            {
+                return _currentSettings;
+            }
+        }
+        private set
+        {
+            lock (LockObject)
+            {
+                _currentSettings = value;
+                value?.SetDeeplUrls();
+            }
         }
     }
 
@@ -34,48 +44,109 @@ public static class DeeplSettingsUtils
     public static string UsageUrl { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Loads the settings from a JSON file. 
+    /// Loads the settings from a JSON file.
     /// If file is not created yet, it is created with default settings.
+    /// Automatically decrypts the API key if it's encrypted.
     /// </summary>
-    /// <returns>An instance of the Settings class with the loaded settings.</returns>
-    public static void Load()
+    /// <returns>True if settings were loaded successfully, false otherwise</returns>
+    public static bool Load()
     {
-        if (!File.Exists(JsonFilePath))
+        lock (LockObject)
         {
-            var descriptor = new DeeplSettingsDescriptor();
-            descriptor.SaveToJson();
-            return;
+            try
+            {
+                if (!File.Exists(JsonFilePath))
+                {
+                    var newDescriptor = new DeeplSettingsDescriptor();
+                    newDescriptor.SaveToJson();
+                    return true;
+                }
+
+                var json = File.ReadAllText(JsonFilePath);
+                var descriptor = JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json);
+
+                if (descriptor is null)
+                {
+                    return false;
+                }
+
+                // Decrypt API key if encrypted, or migrate plain-text key to encrypted
+                if (descriptor.IsApiKeyEncrypted)
+                {
+                    descriptor.DeeplApiKey = ApiKeyEncryption.Decrypt(descriptor.DeeplApiKey);
+                }
+                else if (!string.IsNullOrWhiteSpace(descriptor.DeeplApiKey))
+                {
+                    // Migration: encrypt existing plain-text API key
+                    var plainTextKey = descriptor.DeeplApiKey;
+                    descriptor.DeeplApiKey = plainTextKey;
+                    descriptor.IsApiKeyEncrypted = true;
+                    descriptor.SaveToJson(); // Save with encryption
+                }
+
+                CurrentSettings = descriptor;
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+            {
+                // Log error or handle gracefully
+                CurrentSettings = null;
+                return false;
+            }
         }
-        
-        var json = File.ReadAllText(JsonFilePath);
-        CurrentSettings = JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json)!;
     }
 
     public static void Save(this DeeplSettingsDescriptor descriptor) => descriptor.SaveToJson();
 
-    private static void SaveToJson(this DeeplSettingsDescriptor descriptor)
+    private static void SaveToJson(this DeeplSettingsDescriptor settingsDescriptor)
     {
-        var json = JsonSerializer.Serialize(descriptor);
-        if (!Directory.Exists(JsonDirectoryPath))
+        lock (LockObject)
         {
-            Directory.CreateDirectory(JsonDirectoryPath);
+            try
+            {
+                if (!Directory.Exists(JsonDirectoryPath))
+                {
+                    Directory.CreateDirectory(JsonDirectoryPath);
+                }
+
+                // Create a copy for serialization with encrypted API key
+                var descriptorToSave = new DeeplSettingsDescriptor
+                {
+                    IsPaidPlan = settingsDescriptor.IsPaidPlan,
+                    DeeplApiKey = ApiKeyEncryption.Encrypt(settingsDescriptor.DeeplApiKey),
+                    IsApiKeyEncrypted = true,
+                    SourceLanguage = settingsDescriptor.SourceLanguage,
+                    TargetLanguage = settingsDescriptor.TargetLanguage
+                };
+
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                };
+                var json = JsonSerializer.Serialize(descriptorToSave, options);
+                File.WriteAllText(JsonFilePath, json);
+
+                CurrentSettings = settingsDescriptor;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Handle file write errors gracefully
+                throw new InvalidOperationException("Failed to save settings. Please check file permissions.", ex);
+            }
         }
-        File.WriteAllText(JsonFilePath, json);
-        
-        CurrentSettings = descriptor;
     }
 
-    private static void SetDeeplUrls(DeeplSettingsDescriptor? descriptor)
+    private static void SetDeeplUrls(this DeeplSettingsDescriptor? descriptor)
     {
         if (descriptor is null) return;
-        
+
         var translationUrl = descriptor.IsPaidPlan
             ? "https://api.deepl.com/v2"
             : "https://api-free.deepl.com/v2";
         var usageUrl = descriptor.IsPaidPlan
             ? "https://api.deepl.com/v2"
             : "https://api-free.deepl.com/v2";
-        
+
         TranslationUrl = $"{translationUrl}/translate";
         UsageUrl = $"{usageUrl}/usage";
     }

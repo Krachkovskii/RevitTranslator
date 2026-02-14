@@ -28,7 +28,11 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
 
     public MockSettingsViewModel()
     {
-        DeeplSettingsUtils.Load();
+        if (!DeeplSettingsUtils.Load())
+        {
+            ButtonText = "Failed to load settings";
+            return;
+        }
         SetSettingsValues();
         ButtonText = "Save Settings";
     }

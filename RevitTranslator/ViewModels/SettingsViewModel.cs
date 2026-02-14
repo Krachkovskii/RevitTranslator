@@ -30,7 +30,11 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
 
     public SettingsViewModel()
     {
-        DeeplSettingsUtils.Load();
+        if (!DeeplSettingsUtils.Load())
+        {
+            ButtonText = "Failed to load settings";
+            return;
+        }
         SetSettingsValues();
         ButtonText = "Save Settings";
     }
