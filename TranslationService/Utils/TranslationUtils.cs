@@ -37,32 +37,46 @@ public static class TranslationUtils
     /// </returns>
     public static async Task<bool> TryTestTranslateAsync()
     {
-        if (string.IsNullOrWhiteSpace(DeeplSettingsUtils.CurrentSettings?.DeeplApiKey)) return false;
-        
-        var res = await ProcessTranslationRequestAsync("bonjour", new CancellationTokenSource().Token);
-        return res is not null;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(DeeplSettingsUtils.CurrentSettings?.DeeplApiKey)) return false;
+
+            var res = await ProcessTranslationRequestAsync("bonjour", new CancellationTokenSource().Token);
+            return res is not null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException)
+        {
+            return false;
+        }
     }
 
     public static async Task<bool> CheckUsageAsync()
     {
-        if (DeeplSettingsUtils.CurrentSettings is null) return false;
+        try
+        {
+            if (DeeplSettingsUtils.CurrentSettings is null) return false;
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, DeeplSettingsUtils.UsageUrl);
-        request.Headers.Authorization =
-            new AuthenticationHeaderValue("DeepL-Auth-Key", DeeplSettingsUtils.CurrentSettings.DeeplApiKey);
-        request.Headers.UserAgent.ParseAdd("RevitTranslator");
+            using var request = new HttpRequestMessage(HttpMethod.Get, DeeplSettingsUtils.UsageUrl);
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("DeepL-Auth-Key", DeeplSettingsUtils.CurrentSettings.DeeplApiKey);
+            request.Headers.UserAgent.ParseAdd("RevitTranslator");
 
-        var response = await HttpClient.SendAsync(request);
-        if (!response.IsSuccessStatusCode) return false;
+            var response = await HttpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return false;
 
-        var responseBody = await response.Content.ReadAsStringAsync();
-        var usage = JsonSerializer.Deserialize<DeeplUsage>(responseBody, JsonSettings.Options);
-        if (usage is null) return false;
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var usage = JsonSerializer.Deserialize<DeeplUsage>(responseBody, JsonSettings.Options);
+            if (usage is null) return false;
 
-        Usage = usage.CharacterCount;
-        Limit = usage.CharacterLimit;
+            Usage = usage.CharacterCount;
+            Limit = usage.CharacterLimit;
 
-        return true;
+            return true;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException or TimeoutException)
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -82,7 +96,7 @@ public static class TranslationUtils
             token.ThrowIfCancellationRequested();
             return await ProcessTranslationRequestAsync(text, token);
         }
-        catch
+        catch (Exception ex) when (ex is OperationCanceledException or HttpRequestException or JsonException or TaskCanceledException)
         {
             return null;
         }
@@ -114,7 +128,7 @@ public static class TranslationUtils
 
             return translationResult?.Translations[0].Text;
         }
-        catch (OperationCanceledException)
+        catch (Exception ex) when (ex is OperationCanceledException or JsonException or InvalidOperationException)
         {
             return null;
         }
@@ -178,6 +192,11 @@ public static class TranslationUtils
         catch (OperationCanceledException exception)
         {
             StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage(exception.Message));
+            return null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage("Network error occurred. Please check your connection."));
             return null;
         }
     }
