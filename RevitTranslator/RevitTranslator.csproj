@@ -16,6 +16,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="Nice3point.Revit.Build.Tasks"/>
         <PackageReference Include="CommunityToolkit.Mvvm" />

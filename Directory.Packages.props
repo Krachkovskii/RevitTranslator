@@ -8,8 +8,9 @@
     <!-- Build -->
     <PackageVersion Include="Microsoft.Build" Version="17.13.*" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.*" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageVersion Include="WixSharp" Version="1.*" />
-    <PackageVersion Include="WixSharp.wix.bin" Version="3.*" /> 
+    <PackageVersion Include="WixSharp.wix.bin" Version="3.*" />
     <!-- Revit References -->
     <PackageVersion Include="Nice3point.Revit.Build.Tasks" Version="2.*" />
     <PackageVersion Include="Nice3point.Revit.Extensions" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
@@ -40,12 +41,11 @@
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.*" />
     <!-- Data -->
     <PackageVersion Include="Bogus" Version="35.*" />
-    <PackageVersion Include="System.Net.Http" Version="4.*"  Condition="'$(TargetFramework)' == 'net48'" />
+    <PackageVersion Include="System.Net.Http" Version="4.*" Condition="'$(TargetFramework)' == 'net48'" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="8.*" />
     <PackageVersion Include="System.Text.Json" Version="8.*" />
     <PackageVersion Include="System.Buffers" Version="4.*" />
   </ItemGroup>
-  
   <ItemGroup Label="UI">
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="*" />
     <PackageVersion Include="PolySharp" Version="1.*">
