@@ -7,6 +7,7 @@
     xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
     xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance contracts:IProgressWindowViewModel}"
     ExtendsContentIntoTitleBar="True"
@@ -15,6 +16,12 @@
     ResizeMode="NoResize"
     Topmost="True"
     WindowStartupLocation="CenterScreen">
+    
+    <b:Interaction.Triggers>
+        <b:EventTrigger EventName="Loaded">
+            <b:InvokeCommandAction Command="{Binding LoadedCommand}" />
+        </b:EventTrigger>
+    </b:Interaction.Triggers>
 
     <ui:FluentWindow.Resources>
         <ResourceDictionary>
@@ -40,7 +47,7 @@
                 Command="{Binding CancelTranslationCommand}"
                 Style="{StaticResource LargeRectangularButton}"
                 IsEnabled="{Binding IsProgressBarIntermediate, 
-                    Converter={converters:InverseBoolConverter}}"
+                    Converter={x:Static converters:Converters.InverseBoolConverter}}"
                 Cursor="Hand" />
 
             <ProgressBar

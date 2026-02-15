@@ -8,10 +8,9 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:RevitTranslator.Ui.Library.Controls"
-    xmlns:listView="clr-namespace:RevitTranslator.Ui.Library.Controls.ListView">
+    xmlns:controls="clr-namespace:RevitTranslator.Ui.Library.Controls">
 
-    <ControlTemplate x:Key="NullViewItemTemplate" TargetType="{x:Type listView:ListViewItem}">
+    <ControlTemplate x:Key="NullViewItemTemplate" TargetType="{x:Type controls:ListViewItem}">
         <Border
             x:Name="Border"
             Margin="0"
@@ -51,7 +50,7 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <ControlTemplate x:Key="GridViewItemTemplate" TargetType="{x:Type listView:ListViewItem}">
+    <ControlTemplate x:Key="GridViewItemTemplate" TargetType="{x:Type controls:ListViewItem}">
         <Border
             x:Name="Border"
             Margin="0"
@@ -96,7 +95,7 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <Style x:Key="ListViewItemStyle" TargetType="{x:Type listView:ListViewItem}">
+    <Style x:Key="ListViewItemStyle" TargetType="{x:Type controls:ListViewItem}">
         <Setter Property="Foreground" Value="{DynamicResource ListViewItemForeground}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Border.CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -116,6 +115,6 @@
         </Style.Triggers>
     </Style>
 
-    <Style BasedOn="{StaticResource ListViewItemStyle}" TargetType="{x:Type listView:ListViewItem}" />
+    <Style BasedOn="{StaticResource ListViewItemStyle}" TargetType="{x:Type controls:ListViewItem}" />
 
 </ResourceDictionary>

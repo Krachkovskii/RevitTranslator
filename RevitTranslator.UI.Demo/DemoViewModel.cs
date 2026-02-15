@@ -22,7 +22,7 @@ public partial class DemoViewModel
         var vm = new MockSettingsViewModel();
         var view = new SettingsWindow(vm);
         
-        view.Show();
+        view.ShowDialog();
     }
     
     [RelayCommand]

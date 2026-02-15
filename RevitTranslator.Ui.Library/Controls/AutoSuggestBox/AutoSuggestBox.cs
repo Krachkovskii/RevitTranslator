@@ -30,7 +30,7 @@ namespace RevitTranslator.Ui.Library.Controls;
 /// </example>
 [TemplatePart(Name = ElementTextBox, Type = typeof(TextBox))]
 [TemplatePart(Name = ElementSuggestionsPopup, Type = typeof(Popup))]
-[TemplatePart(Name = ElementSuggestionsList, Type = typeof(ListView.ListView))]
+[TemplatePart(Name = ElementSuggestionsList, Type = typeof(ListView))]
 public class AutoSuggestBox : ItemsControl, IIconControl
 {
     protected const string ElementTextBox = "PART_TextBox";
@@ -247,7 +247,7 @@ public class AutoSuggestBox : ItemsControl, IIconControl
 
     protected Popup SuggestionsPopup { get; set; } = null!;
 
-    protected ListView.ListView? SuggestionsList { get; set; } = null!;
+    protected ListView? SuggestionsList { get; set; } = null!;
 
     private bool _changingTextAfterSuggestionChosen;
     private bool _isChangedTextOutSideOfTextBox;
@@ -279,7 +279,7 @@ public class AutoSuggestBox : ItemsControl, IIconControl
 
         TextBox = GetTemplateChild<TextBox>(ElementTextBox);
         SuggestionsPopup = GetTemplateChild<Popup>(ElementSuggestionsPopup);
-        SuggestionsList = GetTemplateChild<ListView.ListView>(ElementSuggestionsList);
+        SuggestionsList = GetTemplateChild<ListView>(ElementSuggestionsList);
         _isHwndHookSubscribed = false;
 
         AcquireTemplateResources();
@@ -447,7 +447,7 @@ public class AutoSuggestBox : ItemsControl, IIconControl
 
     private void TextBoxOnLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
-        if (e.NewFocus is ListView.ListView)
+        if (e.NewFocus is ListView)
         {
             return;
         }
@@ -483,7 +483,7 @@ public class AutoSuggestBox : ItemsControl, IIconControl
 
     private void SuggestionsListOnLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
-        if (e.NewFocus is ListView.ListViewItem)
+        if (e.NewFocus is ListViewItem)
         {
             return;
         }

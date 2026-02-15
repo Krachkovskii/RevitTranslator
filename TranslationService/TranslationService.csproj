@@ -1,22 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>TranslationService</RootNamespace>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Mvvm" />
-      <PackageReference Include="PolySharp" />
-      <PackageReference Include="System.Net.Http" />
-      <PackageReference Include="System.Text.Json" />
+        <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="PolySharp"/>
+        <PackageReference Include="System.Security.Cryptography.ProtectedData"/>
+        <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net48'"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj" />
+        <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj"/>
     </ItemGroup>
-
 </Project>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RevitTranslator.UI.ViewModels;
 using RevitTranslator.UI.Views;
 
 namespace RevitTranslator.UI.DI;
@@ -10,7 +11,9 @@ public static class DependencyInjectionExtensions
         serviceCollection
             .AddScoped<SettingsWindow>()
             .AddScoped<ProgressWindow>()
-            .AddScoped<CategoriesWindow>();
+            .AddScoped<CategoriesWindow>()
+            .AddScoped<ViewsViewModel>()
+            .AddScoped<ViewsWindow>();
         
         return serviceCollection;
     }

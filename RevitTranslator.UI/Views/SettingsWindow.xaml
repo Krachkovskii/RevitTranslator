@@ -53,6 +53,7 @@
                         Margin="0 10"
                         ToolTip="Insert your DeepL API key here" />
                     <CheckBox
+                        Padding="0"
                         Content="I'm using paid DeepL API plan"
                         IsChecked="{Binding IsPaidPlan,
                             Mode=TwoWay,
@@ -81,7 +82,7 @@
                                 Source={x:Static languageModels:DeeplLanguageCodes.TargetLanguages}}"
                             DisplayMemberPath="VisibleName"
                             IsEnabled="{Binding SelectedSourceLanguage,
-                                Converter={converters:ObjectNotNullBoolConverter},
+                                Converter={x:Static converters:Converters.ObjectNotNullBoolConverter},
                                 Mode=TwoWay,
                                 UpdateSourceTrigger=PropertyChanged}"
                             SelectedItem="{Binding SelectedSourceLanguage,
@@ -104,14 +105,14 @@
                         <ui:TextBlock
                             Style="{StaticResource Annotation}" />
                         <ui:Button
-                            Height="38"
-                            Width="38"
+                            Height="36"
+                            Width="36"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
-                            Content="{markup:SymbolIcon ArrowUndo16}"
+                            Content="{markup:SymbolIcon ArrowTurnRight20}"
                             Command="{Binding SwitchLanguagesCommand}"
                             IsEnabled="{Binding IsAutoDetectChecked, 
-                            Converter={converters:InverseBoolConverter}}"
+                            Converter={x:Static converters:Converters.InverseBoolConverter}}"
                             ToolTip="Reverse language selection"
                             Cursor="Hand" />
                     </StackPanel>

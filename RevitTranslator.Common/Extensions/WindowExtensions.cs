@@ -11,10 +11,10 @@ public static class WindowExtensions
         return source?.RootVisual as Window;
     }
 
-    public static void ShowDialog(this Window window, Window? parentWindow)
+    public static bool? ShowDialog(this Window window, Window? parentWindow)
     {
         window.Owner = parentWindow;
-        window.ShowDialog();
+        return window.ShowDialog();
     }
 
     public static void Show(this Window window, Window? parentWindow)

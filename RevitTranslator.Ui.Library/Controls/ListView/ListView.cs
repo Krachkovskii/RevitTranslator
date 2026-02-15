@@ -3,7 +3,7 @@
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
-namespace RevitTranslator.Ui.Library.Controls.ListView;
+namespace RevitTranslator.Ui.Library.Controls;
 
 /// <summary>
 /// Extends <see cref="System.Windows.Controls.ListView"/>, and adds customized support <see cref="ListViewViewState.GridView"/> or <see cref="ListViewViewState.Default"/>.

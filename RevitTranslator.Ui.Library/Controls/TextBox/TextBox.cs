@@ -147,7 +147,7 @@ public class TextBox : System.Windows.Controls.TextBox
     public bool ShowClearButton
     {
         get => (bool)GetValue(ShowClearButtonProperty);
-        protected set => SetValue(ShowClearButtonProperty, value);
+        set => SetValue(ShowClearButtonProperty, value);
     }
 
     /// <summary>

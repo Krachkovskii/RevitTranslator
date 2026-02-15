@@ -87,25 +87,34 @@ public static class VisualExtensions
 
     public static T? FindParent<T>(this DependencyObject? child) where T : DependencyObject
     {
-        if (child is null) return null;
-
-        var parentObject = VisualTreeHelper.GetParent(child);
-
-        if (parentObject is null && child is FrameworkElement currentParent)
-        {
-            parentObject = LogicalTreeHelper.GetParent(currentParent);
-        }
+        DependencyObject? parentObject = child;
 
         while (parentObject is not null)
         {
-            if (parentObject is T parent) return parent;
+            if (parentObject is T parent) 
+            {
+                return parent;
+            }
 
             parentObject = VisualTreeHelper.GetParent(parentObject);
+        }
 
-            if (parentObject is null && child is FrameworkElement parentElement)
+        return null;
+    }
+    
+    public static T? FindParent<T>(this DependencyObject? child, string elementName) where T : DependencyObject
+    {
+        DependencyObject? parentObject = child;
+
+        while (parentObject is not null)
+        {
+            if (parentObject is T parent and FrameworkElement fe && 
+                fe.Name == elementName)
             {
-                parentObject = LogicalTreeHelper.GetParent(parentElement);
+                return parent;
             }
+
+            parentObject = VisualTreeHelper.GetParent(parentObject);
         }
 
         return null;

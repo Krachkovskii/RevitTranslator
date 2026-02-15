@@ -21,7 +21,7 @@ namespace RevitTranslator.Ui.Library.Controls;
 /// <para>In order to work properly all items must have the same size.</para>
 /// <para>Based on <see href="https://github.com/sbaeumlisberger/VirtualizingWrapPanel"/>.</para>
 /// </summary>
-public class VirtualizingGridView : ListView.ListView
+public class VirtualizingGridView : ListView
 {
     /// <summary>Identifies the <see cref="Orientation"/> dependency property.</summary>
     public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(

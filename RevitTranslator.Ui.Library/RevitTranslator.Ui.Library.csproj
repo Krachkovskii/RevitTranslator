@@ -1,22 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <TargetFrameworks>net48;net481;net6.0-windows;net8.0-windows</TargetFrameworks>
         <UseWPF>true</UseWPF>
-        <EnableWindowsTargeting>true</EnableWindowsTargeting>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <Configurations>Debug;Release</Configurations>
-        <Platforms>AnyCPU</Platforms>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+        <NoWarn>CS8603;CS8618;CS8629;CS8600;CS0414;CS4014;CS8604;CS8765;CS8602;CS0168</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <Resource Include="Resources\Fonts\FluentSystemIcons-Filled.ttf"/>
         <Resource Include="Resources\Fonts\FluentSystemIcons-Regular.ttf"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-        <PackageReference Include="System.ValueTuple"/>
     </ItemGroup>
 
     <ItemGroup>

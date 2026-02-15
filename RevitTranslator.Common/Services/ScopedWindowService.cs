@@ -32,10 +32,10 @@ public sealed class ScopedWindowService(IServiceProvider rootProvider)
         window.Show();
     }
 
-    public void ShowDialog<T>(Window? parentWindow) where T : Window
+    public bool? ShowDialog<T>(Window? parentWindow) where T : Window
     {
         var window = InitializeWindow<T>(parentWindow);
-        window.ShowDialog(parentWindow);
+        return window.ShowDialog(parentWindow);
     }
 
     public void Show<T>(Window? parentWindow, Action<IServiceProvider>? afterShowAction) where T : Window

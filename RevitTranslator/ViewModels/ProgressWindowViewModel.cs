@@ -11,7 +11,8 @@ public partial class ProgressWindowViewModel : ObservableObject,
     IRecipient<EntityTranslatedMessage>,
     IRecipient<TranslationFinishedMessage>,
     IRecipient<ModelUpdatedMessage>,
-    IRecipient<TokenCancellationRequestedMessage>
+    IRecipient<TokenCancellationRequestedMessage>,
+    IDisposable
 {
     [ObservableProperty] private int _totalTranslationCount;
     [ObservableProperty] private int _finishedTranslationCount;
@@ -36,21 +37,22 @@ public partial class ProgressWindowViewModel : ObservableObject,
 
         IsProgressBarIntermediate = true;
         ButtonText = "Retrieving text from elements...";
+    }
 
-        Task.Run(async () =>
+    [RelayCommand]
+    private async Task OnLoadedAsync()
+    {
+        await TranslationUtils.CheckUsageAsync();
+
+        if (TranslationUtils.Usage == -1)
         {
-            await TranslationUtils.CheckUsageAsync();
-
-            if (TranslationUtils.Usage == -1)
-            {
-                CancelTranslation();
-                return;
-            }
+            CancelTranslation();
+            return;
+        }
             
-            _threadSafeMonthlyCharacterCount = TranslationUtils.Usage;
-            MonthlyCharacterCount = _threadSafeMonthlyCharacterCount;
-            MonthlyCharacterLimit = TranslationUtils.Limit;
-        }).GetAwaiter().GetResult();
+        _threadSafeMonthlyCharacterCount = TranslationUtils.Usage;
+        MonthlyCharacterCount = _threadSafeMonthlyCharacterCount;
+        MonthlyCharacterLimit = TranslationUtils.Limit;
     }
 
     [RelayCommand]
@@ -60,11 +62,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
         ButtonText = "Translation cancelled";
     }
 
-    public void CloseRequested()
-    {
-        StrongReferenceMessenger.Default.UnregisterAll(this);
-        CancelTranslation();
-    }
+    public void CloseRequested() => CancelTranslation();
 
     public void UpdateProgress(int translationLength)
     {
@@ -89,10 +87,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
         ButtonText = "Cancel translation";
     }
 
-    public void Receive(EntityTranslatedMessage message)
-    {
-        UpdateProgress(message.CharacterCount);
-    }
+    public void Receive(EntityTranslatedMessage message) => UpdateProgress(message.CharacterCount);
 
     public void Receive(TranslationFinishedMessage message)
     {
@@ -108,8 +103,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
             : "Model successfully updated";
     }
 
-    public void Receive(TokenCancellationRequestedMessage message)
-    {
-        _wasTranslationCanceled = true;
-    }
+    public void Receive(TokenCancellationRequestedMessage message) => _wasTranslationCanceled = true;
+
+    public void Dispose() => StrongReferenceMessenger.Default.UnregisterAll(this);
 }

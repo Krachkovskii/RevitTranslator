@@ -3,7 +3,7 @@
 // Copyright (C) Leszek Pomianowski and WPF UI Contributors.
 // All Rights Reserved.
 
-namespace RevitTranslator.Ui.Library.Controls.ListView;
+namespace RevitTranslator.Ui.Library.Controls;
 
 public class ListViewItem : System.Windows.Controls.ListViewItem
 {

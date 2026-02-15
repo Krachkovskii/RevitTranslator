@@ -2,6 +2,7 @@
 using RevitTranslator.UI.Contracts;
 using TranslationService.Models;
 using TranslationService.Utils;
+using TranslationService.Validation;
 
 namespace RevitTranslator.ViewModels;
 
@@ -30,7 +31,11 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
 
     public SettingsViewModel()
     {
-        DeeplSettingsUtils.Load();
+        if (!DeeplSettingsUtils.Load())
+        {
+            ButtonText = "Failed to load settings";
+            return;
+        }
         SetSettingsValues();
         ButtonText = "Save Settings";
     }
@@ -58,17 +63,36 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
     [RelayCommand(CanExecute = nameof(CanExecuteSaveSettings))]
     private async Task SaveSettingsAsync()
     {
+        ButtonText = "Validating...";
+
+        if (!ApiKeyValidator.TryValidate(DeeplApiKey, out var sanitizedKey, out var validationError))
+        {
+            ButtonText = validationError ?? "Invalid API key";
+            await Task.Delay(3000);
+            ButtonText = "Save Settings";
+            return;
+        }
+
+        var detectedFreePlan = ApiKeyValidator.IsFreePlan(sanitizedKey);
+        if (detectedFreePlan && IsPaidPlan)
+        {
+            ButtonText = "Warning: API key appears to be free plan";
+            await Task.Delay(2000);
+        }
+
         ButtonText = "Saving settings...";
-        
+
         var oldSettings = DeeplSettingsUtils.CurrentSettings;
         var newSettings = new DeeplSettingsDescriptor
         {
             IsPaidPlan = IsPaidPlan,
-            DeeplApiKey = DeeplApiKey,
+            DeeplApiKey = sanitizedKey,
             SourceLanguage = SelectedSourceLanguage,
             TargetLanguage = SelectedTargetLanguage
         };
         newSettings.Save();
+
+        DeeplApiKey = sanitizedKey;
 
         var test = await TranslationUtils.TryTestTranslateAsync();
         if (test)
@@ -79,10 +103,10 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
 
         ButtonText = "Invalid credentials";
         if (oldSettings is null) return;
-        
+
         oldSettings.Save();
         SetSettingsValues();
-        
+
         await Task.Delay(3000);
         ButtonText = "Settings were restored";
     }

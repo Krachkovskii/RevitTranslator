@@ -10,16 +10,19 @@ namespace RevitTranslator.Commands;
 [Transaction(TransactionMode.Manual)]
 public class TranslateSelectionCommand : ExternalCommand
 {
-    public override void Execute()
+    public override async void Execute()
     {
-        var selection = Context.ActiveUiDocument!
-            .GetSelectedElements()
-            .ToArray();
+        try
+        {
+            var selection = UiDocument.GetSelectedElements().ToArray();
+            if (selection.Length == 0) return;
         
-        if (selection.Length == 0) return;
-        
-        var service = Host.ServiceProvider.GetRequiredService<BaseTranslationService>();
-        service.SelectedElements = selection;
-        service.Execute();
+            await Host.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(selection);
+        }
+        catch (Exception ex)
+        {
+            // todo: add logging
+            Console.WriteLine(ex);
+        }
     }
 }
