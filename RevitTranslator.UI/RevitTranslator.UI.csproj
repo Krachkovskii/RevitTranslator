@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <UseWpf>true</UseWpf>
-<!--        <OutputType>Library</OutputType>-->
+        <OutputType>Library</OutputType>
         <TargetFramework>net48</TargetFramework>
-        <LangVersion>preview</LangVersion>
+        <LangVersion>latest</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <XamlDebuggingInformation>True</XamlDebuggingInformation>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>

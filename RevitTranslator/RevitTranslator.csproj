@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <UseWPF>true</UseWPF>
-		<OutputType>Library</OutputType>
+        <OutputType>Library</OutputType>
         <PublishAddinFiles>true</PublishAddinFiles>
         <Configurations>Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
         <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26</Configurations>
@@ -18,9 +18,9 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="Nice3point.Revit.Build.Tasks"/>
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="Nice3point.Revit.Build.Tasks"/>
 		<PackageReference Include="Nice3point.Revit.Toolkit" />
 		<PackageReference Include="Nice3point.Revit.Extensions"  />
 		<PackageReference Include="Nice3point.Revit.Api.RevitAPI"  />
