@@ -36,7 +36,14 @@ public partial class CategoriesWindow
 
     private void OnCloseClicked(TitleBar sender, RoutedEventArgs args)
     {
-        DialogResult = false;
+        try
+        {
+            DialogResult = false;
+        }
+        catch
+        {
+            // do nothing
+        }
     }
 
     private void OnItemBorderLeftMouseUp(object sender, MouseButtonEventArgs args)
