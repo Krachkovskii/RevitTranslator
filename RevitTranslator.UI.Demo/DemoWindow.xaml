@@ -49,6 +49,11 @@
                     Icon="{ui:SymbolIcon Settings24}"
                     Content="Settings Window"
                     Command="{Binding ShowSettingsWindowCommand}" />
+                <ui:CardAction
+                    Margin="0 5"
+                    Icon="{ui:SymbolIcon Eye24}"
+                    Content="Views Window"
+                    Command="{Binding ShowViewsWindowCommand}" />
             </StackPanel>
         </DockPanel>
     </Grid>
