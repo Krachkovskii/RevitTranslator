@@ -2,10 +2,12 @@
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Xaml.Behaviors;
 using Nice3point.Revit.Toolkit.External;
 using Nice3point.Revit.Toolkit.External.Handlers;
 using RevitTranslator.Commands;
+using RevitTranslator.Services;
 using RevitTranslator.Utils;
 using TriggerBase = Microsoft.Xaml.Behaviors.TriggerBase;
 
@@ -21,6 +23,12 @@ public class Application : ExternalApplication
         _ = new Host();
         CreateRibbonPanel();
         FixBehaviors();
+        Host.ServiceProvider.GetRequiredService<UpdaterService>().StartCheckLoop();
+    }
+
+    public override void OnShutdown()
+    {
+        Host.ServiceProvider.GetRequiredService<UpdaterService>().TriggerDelayedInstall();
     }
 
     private void CreateRibbonPanel()

@@ -26,6 +26,7 @@ public static class DependencyInjectionExtensions
             .AddScoped<SheetSelectionService>()
             .AddSingleton<IRevitViewProvider, ViewProvider>()
             .AddSingleton<EventHandlers>()
-            .AddScoped<ModelUpdaterService>();
+            .AddScoped<ModelUpdaterService>()
+            .AddSingleton<UpdaterService>();
     }
 }
