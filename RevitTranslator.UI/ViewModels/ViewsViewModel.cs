@@ -1,19 +1,28 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Contracts;
 using RevitTranslator.Common.Extensions;
-using RevitTranslator.UI.Extensions;
+using RevitTranslator.Common.Messages;
 using RevitTranslator.Common.Models.Views;
+using RevitTranslator.UI.Extensions;
 
 namespace RevitTranslator.UI.ViewModels;
 
-public sealed partial class ViewsViewModel : ObservableObject
+public sealed partial class ViewsViewModel : ObservableObject, IDisposable
 {
     [ObservableProperty] private string _searchText = "";
-    [ObservableProperty] private ObservableCollection<ViewGroupViewModel> _viewTypes = [];
+    [ObservableProperty] private string _mainButtonText = "";
+    [ObservableProperty] private ObservableCollection<ViewGroupViewModel> _viewGroups = [];
+
+    [NotifyCanExecuteChangedFor(nameof(TranslateCommand))]
+    [ObservableProperty]
+    private int _elementCount;
 
     private CancellationTokenSource? _searchCancellationTokenSource;
-    
+
     public ViewsViewModel(IRevitViewProvider viewProvider)
     {
         var sheets = viewProvider.GetAllSheets().ToArray();
@@ -27,30 +36,66 @@ public sealed partial class ViewsViewModel : ObservableObject
             Name = "All Sheets",
         };
 
-        var sheetCollections = viewProvider
-            .GetAllSheetCollections();
+        var sheetCollections = viewProvider.GetAllSheetCollections();
 
         if (sheetCollections.Count == 0)
         {
             sheetGroup.IsExpanded = true;
-            ViewTypes = new ObservableCollection<ViewGroupViewModel>([sheetGroup]);
-            return;
+            ViewGroups = new ObservableCollection<ViewGroupViewModel>([sheetGroup]);
         }
-        
-        ViewTypes = sheetCollections
-            .Select(collection => new ViewGroupViewModel
-            {
-                Views = collection
-                    .Views
-                    .OrderBy(view => view.Name)
-                    .Select(view => new ViewViewModel { Model = view })
-                    .ToObservableCollection(),
-                Name = collection.Name
-            })
-            .Concat([sheetGroup])
-            .ToObservableCollection();
+        else
+        {
+            ViewGroups = sheetCollections
+                .Select(collection => new ViewGroupViewModel
+                {
+                    Views = collection
+                        .Views
+                        .OrderBy(view => view.Name)
+                        .Select(view => new ViewViewModel { Model = view })
+                        .ToObservableCollection(),
+                    Name = collection.Name
+                })
+                .Concat([sheetGroup])
+                .ToObservableCollection();
+        }
+
+        foreach (var group in ViewGroups)
+        {
+            group.PropertyChanged += OnViewGroupChanged;
+        }
+
+        OnElementCountChanged(0);
     }
-    
+
+    private void OnViewGroupChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName != nameof(ViewGroupViewModel.SelectedElementCount)) return;
+
+        ElementCount = ViewGroups.Sum(group => group.SelectedElementCount);
+    }
+
+    partial void OnElementCountChanged(int value)
+    {
+        var suffix = value != 1 ? "s" : "";
+        MainButtonText = value > 0
+            ? $"Translate {value} element{suffix}"
+            : "Select views to translate";
+    }
+
+    [RelayCommand(CanExecute = nameof(CanTranslate))]
+    private void Translate()
+    {
+        var selectedViews = ViewGroups
+            .SelectMany(group => group.Views)
+            .Where(view => view.IsChecked)
+            .Select(view => view.Model)
+            .ToArray();
+
+        WeakReferenceMessenger.Default.Send(new ViewsSelectedMessage(selectedViews));
+    }
+
+    private bool CanTranslate() => ElementCount > 0;
+
     async partial void OnSearchTextChanged(string value)
     {
         try
@@ -78,42 +123,50 @@ public sealed partial class ViewsViewModel : ObservableObject
         {
             // The user typed again before 300ms passed; do nothing.
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // do nothing for now
         }
     }
-    
+
     private void FilterCategories(string text)
     {
-        foreach (var categoryType in ViewTypes)
+        foreach (var viewType in ViewGroups)
         {
             var typeHasMatches = false;
-            foreach (var category in categoryType.Views)
+            foreach (var view in viewType.Views)
             {
-                category.IsVisible = category.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase);
-                if (!category.IsVisible) continue;
+                view.IsVisible = view.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase);
+                if (!view.IsVisible) continue;
 
                 typeHasMatches = true;
             }
 
-            categoryType.IsVisible = typeHasMatches;
+            viewType.IsVisible = typeHasMatches;
             if (!typeHasMatches) continue;
 
-            categoryType.IsExpanded = true;
+            viewType.IsExpanded = true;
         }
     }
 
     private void ResetCategoriesVisibility()
     {
-        foreach (var categoryType in ViewTypes)
+        foreach (var viewType in ViewGroups)
         {
-            categoryType.IsVisible = true;
-            categoryType.IsExpanded = false;
-            foreach (var category in categoryType.Views)
+            viewType.IsVisible = true;
+            viewType.IsExpanded = false;
+            foreach (var view in viewType.Views)
             {
-                category.IsVisible = true;
+                view.IsVisible = true;
             }
+        }
+    }
+
+    public void Dispose()
+    {
+        foreach (var group in ViewGroups)
+        {
+            group.PropertyChanged -= OnViewGroupChanged;
         }
     }
 }

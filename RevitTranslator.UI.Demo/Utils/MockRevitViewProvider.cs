@@ -39,7 +39,8 @@ public class MockRevitViewProvider : IRevitViewProvider
             .Select(i => new ViewDto(
                 faker.Random.Long(1, 999_999),
                 ViewTypeInternal.Sheet,
-                $"A{i:D3} - {faker.Commerce.ProductName()}"))
+                $"A{i:D3} - {faker.Commerce.ProductName()}",
+                faker.Random.Int(5, 200)))
             .ToList();
 
     private static List<ViewGroupDto> GenerateSheetCollections(Faker faker) =>
@@ -57,6 +58,7 @@ public class MockRevitViewProvider : IRevitViewProvider
                 .Select(_ => new ViewDto(
                     faker.Random.Long(1, 999_999),
                     type,
-                    faker.Commerce.ProductName())))
+                    faker.Commerce.ProductName(),
+                    faker.Random.Int(5, 200))))
             .ToList();
 }
