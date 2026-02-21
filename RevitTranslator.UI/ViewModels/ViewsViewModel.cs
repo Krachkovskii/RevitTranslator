@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using RevitTranslator.Common.Contracts;
 using RevitTranslator.Common.Extensions;
-// using RevitTranslator.UI.Extensions;
+using RevitTranslator.UI.Extensions;
 using RevitTranslator.Common.Models.Views;
 
 namespace RevitTranslator.UI.ViewModels;
