@@ -12,14 +12,14 @@ namespace RevitTranslator.UI.Views;
 /// <summary>
 /// Interaction logic for SelectCategoriesWindow.xaml
 /// </summary>
-public partial class ViewsWindow
+public partial class SheetsWindow
 {
-    private readonly ViewsViewModel _viewModel;
+    private readonly SheetsViewModel _sheetModel;
     
-    public ViewsWindow(ViewsViewModel viewModel)
+    public SheetsWindow(SheetsViewModel sheetModel)
     {
-        DataContext = viewModel;
-        _viewModel = viewModel;
+        DataContext = sheetModel;
+        _sheetModel = sheetModel;
         
         InitializeComponent();
         

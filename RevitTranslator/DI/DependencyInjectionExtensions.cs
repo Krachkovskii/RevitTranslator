@@ -23,7 +23,7 @@ public static class DependencyInjectionExtensions
             .AddScoped<TranslationManager>()
             .AddScoped<ConcurrentTranslationService>()
             .AddScoped<CategorySelectionService>()
-            .AddScoped<ViewSelectionService>()
+            .AddScoped<SheetSelectionService>()
             .AddSingleton<IRevitViewProvider, ViewProvider>()
             .AddSingleton<EventHandlers>()
             .AddScoped<ModelUpdaterService>();

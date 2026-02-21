@@ -38,8 +38,8 @@ public partial class DemoViewModel
     [RelayCommand]
     private void ShowViewsWindow()
     {
-        var vm = new ViewsViewModel(new MockRevitViewProvider());
-        var view = new ViewsWindow(vm);
+        var vm = new SheetsViewModel(new MockRevitViewProvider());
+        var view = new SheetsWindow(vm);
 
         view.ShowDialog();
     }

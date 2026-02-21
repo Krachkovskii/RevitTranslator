@@ -11,7 +11,7 @@ using RevitTranslator.UI.Extensions;
 
 namespace RevitTranslator.UI.ViewModels;
 
-public sealed partial class ViewsViewModel : ObservableObject, IDisposable
+public sealed partial class SheetsViewModel : ObservableObject, IDisposable
 {
     [ObservableProperty] private string _searchText = "";
     [ObservableProperty] private string _mainButtonText = "";
@@ -23,7 +23,7 @@ public sealed partial class ViewsViewModel : ObservableObject, IDisposable
 
     private CancellationTokenSource? _searchCancellationTokenSource;
 
-    public ViewsViewModel(IRevitViewProvider viewProvider)
+    public SheetsViewModel(IRevitViewProvider viewProvider)
     {
         var sheets = viewProvider.GetAllSheets().ToArray();
 
