@@ -24,9 +24,11 @@ public class ViewProvider : IRevitViewProvider
             .ToElements()
             .Cast<View>()
             .Where(view => !view.IsTemplate)
-            .Select(view => new ViewDto(view.Id.ToLong(),
+            .Select(view => new ViewDto(
+                view.Id.ToLong(),
                 view.ViewType.ToInternal(),
-                view is ViewSheet sheet ? $"{sheet.SheetNumber} - {sheet.Name}" : view.Name))
+                view is ViewSheet sheet ? $"{sheet.SheetNumber} - {sheet.Name}" : view.Name,
+                new FilteredElementCollector(document, view.Id).GetElementCount()))
             .Where(view => view.ViewType != ViewTypeInternal.Undefined)
             .ToArray();
     }
@@ -40,7 +42,8 @@ public class ViewProvider : IRevitViewProvider
             .Select(sheet => new ViewDto(
                 Id: sheet.Id.ToLong(),
                 ViewType: sheet.ViewType.ToInternal(),
-                Name: $"{sheet.SheetNumber} - {sheet.Name}"))
+                Name: $"{sheet.SheetNumber} - {sheet.Name}",
+                ElementCount: new FilteredElementCollector(document, sheet.Id).GetElementCount()))
             .ToArray();
     }
 
@@ -62,7 +65,8 @@ public class ViewProvider : IRevitViewProvider
                 Views = collection.Select(sheet => new ViewDto(
                         Id: sheet.Id.ToLong(),
                         ViewType: sheet.ViewType.ToInternal(),
-                        Name: $"{sheet.SheetNumber} - {sheet.Name}"))
+                        Name: $"{sheet.SheetNumber} - {sheet.Name}",
+                        ElementCount: new FilteredElementCollector(document, sheet.Id).GetElementCount()))
                     .ToArray()
             })
             .ToArray();

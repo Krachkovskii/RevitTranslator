@@ -1,4 +1,5 @@
-﻿using Autodesk.Revit.Attributes;
+﻿using System.Diagnostics;
+using Autodesk.Revit.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslator.Extensions;
@@ -14,15 +15,16 @@ public class TranslateSelectionCommand : ExternalCommand
     {
         try
         {
+            using var scope = Host.ServiceProvider.CreateScope();
             var selection = UiDocument.GetSelectedElements().ToArray();
             if (selection.Length == 0) return;
         
-            await Host.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(selection);
+            await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(selection);
         }
         catch (Exception ex)
         {
             // todo: add logging
-            Console.WriteLine(ex);
+            Debug.WriteLine(ex);
         }
     }
 }

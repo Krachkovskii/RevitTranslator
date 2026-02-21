@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
 using TranslationService.Utils;
 
-namespace RevitTranslator.Demo.Utils;
+namespace RevitTranslator.UI.Demo.Utils;
 
 public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequestedMessage>
 {

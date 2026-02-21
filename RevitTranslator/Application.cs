@@ -5,6 +5,7 @@ using Autodesk.Revit.UI;
 using Microsoft.Xaml.Behaviors;
 using Nice3point.Revit.Toolkit.External;
 using Nice3point.Revit.Toolkit.External.Handlers;
+using RevitTranslator.Commands;
 using RevitTranslator.Utils;
 using TriggerBase = Microsoft.Xaml.Behaviors.TriggerBase;
 
@@ -30,7 +31,7 @@ public class Application : ExternalApplication
         var settingsButtonData = new PushButtonData("Settings",
             "Translation settings",
             assemblyPath,
-            "RevitTranslator.Commands.SettingsCommand")
+            typeof(SettingsCommand).FullName)
         {
             LongDescription = "Set API key, languages to translate to and from, and list of parameters to ignore.",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/SettingsIcon32.png", UriKind.RelativeOrAbsolute)),
@@ -40,7 +41,7 @@ public class Application : ExternalApplication
         var translateSelectionButtonData = new PushButtonData("Selection",
             "Translate selection",
             assemblyPath,
-            "RevitTranslator.Commands.TranslateSelectionCommand")
+            typeof(TranslateSelectionCommand).FullName)
         {
             LongDescription = "Translate all selected elements, including their family type, if applicable.",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/SelectionIcon16.png", UriKind.RelativeOrAbsolute)),
@@ -50,7 +51,7 @@ public class Application : ExternalApplication
         var translateModelButtonData = new PushButtonData("Model",
             "Translate model",
             assemblyPath,
-            "RevitTranslator.Commands.TranslateModelCommand")
+            typeof(TranslateModelCommand).FullName)
         {
             LongDescription = "Translate all model elements",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/AllIcon16.png", UriKind.RelativeOrAbsolute)),
@@ -60,19 +61,19 @@ public class Application : ExternalApplication
         var translateCategoriesButtonData = new PushButtonData("Categories",
             "Translate categories",
             assemblyPath,
-            "RevitTranslator.Commands.TranslateCategoriesCommand")
+            typeof(TranslateCategoriesCommand).FullName)
         {
             LongDescription = "Translate all elements of selected categories",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon16.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon32.png", UriKind.RelativeOrAbsolute))
         };
         
-        var translateViewsButtonData = new PushButtonData("Views",
-            "Translate views",
+        var translateViewsButtonData = new PushButtonData("Sheets",
+            "Translate sheets",
             assemblyPath,
-            "RevitTranslator.Commands.TranslateViewsCommand")
+            typeof(TranslateSheetsCommand).FullName)
         {
-            LongDescription = "Translate all elements of selected views",
+            LongDescription = "Translate all elements of selected sheets",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon16.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon32.png", UriKind.RelativeOrAbsolute))
         };

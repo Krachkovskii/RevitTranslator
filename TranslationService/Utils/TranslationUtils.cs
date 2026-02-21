@@ -17,7 +17,6 @@ public static class TranslationUtils
     private static readonly HttpClient HttpClient = new();
     private static readonly SemaphoreSlim Semaphore = new(5, 10);
 
-    // TODO: Move these properties to a Settings Descriptor
     /// <summary>
     /// Translation limits for current DeepL plan
     /// </summary>

@@ -13,10 +13,11 @@ public class TranslateModelCommand : ExternalCommand
     {
         try
         {
+            using var scope = Host.ServiceProvider.CreateScope();
             var instances = Document.EnumerateInstances().ToArray();
             if (instances.Length == 0) return;
         
-            await Host.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(instances);
+            await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(instances);
         }
         catch (Exception ex)
         {

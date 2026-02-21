@@ -3,11 +3,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
-using RevitTranslator.Demo.Utils;
 using RevitTranslator.UI.Contracts;
+using RevitTranslator.UI.Demo.Utils;
 using TranslationService.Utils;
 
-namespace RevitTranslator.Demo.ViewModels;
+namespace RevitTranslator.UI.Demo.ViewModels;
 
 public partial class MockProgressWindowViewModel : ObservableObject, 
         IProgressWindowViewModel, 
@@ -33,7 +33,7 @@ public partial class MockProgressWindowViewModel : ObservableObject,
     {
         StrongReferenceMessenger.Default.RegisterAll(this);
         
-        Task.Run(async () =>
+        Task.Run((Func<Task?>)(async () =>
         {
             var faker = new Faker();
             IsProgressBarIntermediate = true;
@@ -50,7 +50,7 @@ public partial class MockProgressWindowViewModel : ObservableObject,
 
             await new MockConcurrentTranslationHandler()
                 .TranslateAsync(translations.ToArray(), true);
-        });
+        }));
     }
 
     public MockProgressWindowViewModel(bool useTranslationService)
@@ -60,7 +60,7 @@ public partial class MockProgressWindowViewModel : ObservableObject,
         IsProgressBarIntermediate = true;
         ButtonText = "Collecting text from elements";
         
-        Task.Run(async () =>
+        Task.Run((Func<Task?>)(async () =>
         {
             await TranslationUtils.CheckUsageAsync();
 
@@ -73,7 +73,7 @@ public partial class MockProgressWindowViewModel : ObservableObject,
             _threadSafeMonthlyCharacterCount = TranslationUtils.Usage;
             MonthlyCharacterCount = _threadSafeMonthlyCharacterCount;
             MonthlyCharacterLimit = TranslationUtils.Limit;
-        }).GetAwaiter().GetResult();
+        })).GetAwaiter().GetResult();
     }
 
     [RelayCommand]

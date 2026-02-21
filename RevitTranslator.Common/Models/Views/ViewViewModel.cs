@@ -9,4 +9,5 @@ public sealed partial class ViewViewModel : ObservableObject
     
     public required ViewDto Model { get; init; }
     public string Name => Model.Name;
+    public int ElementCount => Model.ElementCount;
 }

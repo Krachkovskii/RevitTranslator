@@ -6,7 +6,7 @@ using TranslationService.Models;
 using TranslationService.Utils;
 using TranslationService.Validation;
 
-namespace RevitTranslator.Demo.ViewModels;
+namespace RevitTranslator.UI.Demo.ViewModels;
 
 public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewModel
 {

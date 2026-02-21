@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using RevitTranslator.Common.Models.Categories;
 
 namespace RevitTranslator.Common.Models.Views;
 
@@ -11,7 +10,7 @@ public sealed partial class ViewGroupViewModel : ObservableObject
     private int _selectedSubElementsCount;
     
     [ObservableProperty] private bool _isVisible = true;
-    [ObservableProperty] private bool? _isChecked;
+    [ObservableProperty] private bool? _isChecked = false;
     [ObservableProperty] private bool _isExpanded;
     [ObservableProperty] private int _selectedElementCount;
     [ObservableProperty] private ObservableCollection<ViewViewModel> _views = [];
@@ -52,22 +51,22 @@ public sealed partial class ViewGroupViewModel : ObservableObject
 
     private void CategoryOnPropertyChanged(object sender, PropertyChangedEventArgs args)
     {
-        if (sender is not CategoryViewModel category) return;
-        if (args.PropertyName != nameof(CategoryViewModel.IsChecked)) return;
-        
-        if (category.IsChecked)
+        if (sender is not ViewViewModel view) return;
+        if (args.PropertyName != nameof(ViewViewModel.IsChecked)) return;
+
+        if (view.IsChecked)
         {
             _selectedSubElementsCount++;
-            SelectedElementCount += category.ElementCount;
+            SelectedElementCount += view.ElementCount;
         }
         else
         {
             _selectedSubElementsCount--;
-            SelectedElementCount -= category.ElementCount;
+            SelectedElementCount -= view.ElementCount;
         }
-        
+
         if (_isInternalCheckboxUpdate) return;
-        
+
         _isInternalCheckboxUpdate = true;
         if (_selectedSubElementsCount == 0)
         {

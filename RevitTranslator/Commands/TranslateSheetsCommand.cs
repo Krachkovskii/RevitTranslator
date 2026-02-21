@@ -11,14 +11,14 @@ namespace RevitTranslator.Commands;
 
 [UsedImplicitly]
 [Transaction(TransactionMode.Manual)]
-public class TranslateViewsCommand : ExternalCommand
+public class TranslateSheetsCommand : ExternalCommand
 {
     public override async void Execute()
     {
         try
         {
             using var scope = Host.ServiceProvider.CreateScope();
-            var categoryService = scope.ServiceProvider.GetRequiredService<ViewSelectionService>();
+            var categoryService = scope.ServiceProvider.GetRequiredService<SheetSelectionService>();
             var result = categoryService.Initialize();
             if (result is not true) return;
             

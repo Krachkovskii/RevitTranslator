@@ -27,6 +27,7 @@ public class ConcurrentTranslationService
         finally
         {
             await Task.WhenAll(_translationTasks);
+            _translationTasks.Clear();
         }
     }
     

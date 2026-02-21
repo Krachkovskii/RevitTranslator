@@ -1,10 +1,10 @@
 <ui:FluentWindow
-    x:Class="RevitTranslator.Demo.DemoWindow"
+    x:Class="RevitTranslator.UI.Demo.DemoWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:RevitTranslator.Demo"
+    xmlns:local="clr-namespace:RevitTranslator.UI.Demo"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d"
     ExtendsContentIntoTitleBar="True"
@@ -49,6 +49,11 @@
                     Icon="{ui:SymbolIcon Settings24}"
                     Content="Settings Window"
                     Command="{Binding ShowSettingsWindowCommand}" />
+                <ui:CardAction
+                    Margin="0 5"
+                    Icon="{ui:SymbolIcon Eye24}"
+                    Content="Views Window"
+                    Command="{Binding ShowViewsWindowCommand}" />
             </StackPanel>
         </DockPanel>
     </Grid>

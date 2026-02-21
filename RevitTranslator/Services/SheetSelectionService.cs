@@ -5,7 +5,7 @@ using RevitTranslator.UI.Views;
 
 namespace RevitTranslator.Services;
 
-public class ViewSelectionService(ViewsWindow window, ViewsViewModel viewModel)
+public class SheetSelectionService(SheetsWindow window, SheetsViewModel sheetModel)
 {
     public Element[] SelectedElements { get; private set; } = [];
 
@@ -18,7 +18,7 @@ public class ViewSelectionService(ViewsWindow window, ViewsViewModel viewModel)
         var document = Context.ActiveDocument;
         if (document is null) return false;
 
-        var sheets = viewModel.ViewTypes
+        var sheets = sheetModel.ViewGroups
             .SelectMany(viewType => viewType.Views)
             .Where(view => view.IsChecked)
             .Select(view => view.Model

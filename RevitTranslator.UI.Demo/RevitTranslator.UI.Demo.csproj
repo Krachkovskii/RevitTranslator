@@ -4,11 +4,9 @@
         <UseWPF>true</UseWPF>
         <OutputType>WinExe</OutputType>
         <LangVersion>latest</LangVersion>
-        <PlatformTarget>x64</PlatformTarget>
         <ImplicitUsings>true</ImplicitUsings>
         <TargetFramework>net8.0-windows</TargetFramework>
-        <Platforms>AnyCPU</Platforms>
-        <RootNamespace>RevitTranslator.Demo</RootNamespace>
+<!--        <Platforms>AnyCPU</Platforms>-->
     </PropertyGroup>
 
     <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

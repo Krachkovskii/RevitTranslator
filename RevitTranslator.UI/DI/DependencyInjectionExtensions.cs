@@ -12,8 +12,8 @@ public static class DependencyInjectionExtensions
             .AddScoped<SettingsWindow>()
             .AddScoped<ProgressWindow>()
             .AddScoped<CategoriesWindow>()
-            .AddScoped<ViewsViewModel>()
-            .AddScoped<ViewsWindow>();
+            .AddScoped<SheetsViewModel>()
+            .AddScoped<SheetsWindow>();
         
         return serviceCollection;
     }
