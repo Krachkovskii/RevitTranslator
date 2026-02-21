@@ -1,11 +1,11 @@
 using Bogus;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
-using RevitTranslator.Demo.ViewModels;
+using RevitTranslator.UI.Demo.ViewModels;
 using RevitTranslator.UI.Views;
 using TranslationService.Utils;
 
-namespace RevitTranslator.Demo.Utils;
+namespace RevitTranslator.UI.Demo.Utils;
 
 public class MockTranslationPipeline
 {

@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using RevitTranslator.Demo.ViewModels;
 using RevitTranslator.UI.Contracts;
-using RevitTranslator.UI.Views;
+using RevitTranslator.UI.Demo.ViewModels;
 
-namespace RevitTranslator.Demo.DI;
+namespace RevitTranslator.UI.Demo.DI;
 
 public static class DependencyInjectionExtensions
 {

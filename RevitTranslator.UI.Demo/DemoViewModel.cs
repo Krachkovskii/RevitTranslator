@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.Input;
-using RevitTranslator.Demo.Utils;
-using RevitTranslator.Demo.ViewModels;
+using RevitTranslator.UI.Demo.Utils;
+using RevitTranslator.UI.Demo.ViewModels;
 using RevitTranslator.UI.Views;
 
-namespace RevitTranslator.Demo;
+namespace RevitTranslator.UI.Demo;
 
 public partial class DemoViewModel
 {

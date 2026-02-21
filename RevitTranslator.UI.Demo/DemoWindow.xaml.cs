@@ -1,4 +1,4 @@
-namespace RevitTranslator.Demo;
+namespace RevitTranslator.UI.Demo;
 
 public partial class DemoWindow
 {

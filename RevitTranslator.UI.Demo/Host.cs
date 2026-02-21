@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RevitTranslator.Common.DI;
-using RevitTranslator.Demo.DI;
+using RevitTranslator.UI.Demo.DI;
 using RevitTranslator.UI.DI;
 
-namespace RevitTranslator.Demo;
+namespace RevitTranslator.UI.Demo;
 
 public class Host
 {

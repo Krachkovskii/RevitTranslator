@@ -8,7 +8,6 @@
         <ImplicitUsings>true</ImplicitUsings>
         <TargetFramework>net8.0-windows</TargetFramework>
         <Platforms>AnyCPU</Platforms>
-        <RootNamespace>RevitTranslator.Demo</RootNamespace>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

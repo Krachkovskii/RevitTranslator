@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RevitTranslator.Demo;
+namespace RevitTranslator.UI.Demo;
 
 public partial class App
 {

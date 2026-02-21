@@ -6,11 +6,10 @@ using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RevitTranslator.Common.Extensions;
-using RevitTranslator.Common.Models;
 using RevitTranslator.Common.Models.Categories;
 using RevitTranslator.UI.Contracts;
 
-namespace RevitTranslator.Demo.ViewModels;
+namespace RevitTranslator.UI.Demo.ViewModels;
 
 public partial class MockCategoriesWindowViewModel : ObservableValidator, ICategoriesWindowViewModel
 {
@@ -59,8 +58,8 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
                 }
             }
 
-            ElementCount = SelectedCategories.Sum(category => _elementCountDict[category]);
-            FilteredCategoryTypes = CategoryTypes.ToList();
+            ElementCount = Enumerable.Sum<CategoryViewModel>(SelectedCategories, category => _elementCountDict[category]);
+            FilteredCategoryTypes = Enumerable.ToList<CategoryTypeViewModel>(CategoryTypes);
             IsLoading = false;
         }).GetAwaiter().GetResult();
     }
