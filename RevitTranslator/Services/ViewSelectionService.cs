@@ -18,7 +18,7 @@ public class ViewSelectionService(ViewsWindow window, ViewsViewModel viewModel)
         var document = Context.ActiveDocument;
         if (document is null) return false;
 
-        var sheets = viewModel.ViewTypes
+        var sheets = viewModel.ViewGroups
             .SelectMany(viewType => viewType.Views)
             .Where(view => view.IsChecked)
             .Select(view => view.Model

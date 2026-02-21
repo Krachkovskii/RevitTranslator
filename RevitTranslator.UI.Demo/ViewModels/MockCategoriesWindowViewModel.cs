@@ -58,8 +58,8 @@ public partial class MockCategoriesWindowViewModel : ObservableValidator, ICateg
                 }
             }
 
-            ElementCount = Enumerable.Sum<CategoryViewModel>(SelectedCategories, category => _elementCountDict[category]);
-            FilteredCategoryTypes = Enumerable.ToList<CategoryTypeViewModel>(CategoryTypes);
+            ElementCount = SelectedCategories.Sum(category => _elementCountDict[category]);
+            FilteredCategoryTypes = CategoryTypes.ToList();
             IsLoading = false;
         }).GetAwaiter().GetResult();
     }
