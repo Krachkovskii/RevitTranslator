@@ -31,9 +31,12 @@ public partial class ProgressWindowViewModel : ObservableObject,
     private int _threadSafeMonthlyCharacterCount;
     private bool _wasTranslationCanceled;
     private readonly DispatcherTimer _uiUpdateTimer;
+    private readonly DeeplTranslationClient _translationClient;
 
-    public ProgressWindowViewModel()
+    public ProgressWindowViewModel(DeeplTranslationClient translationClient)
     {
+        _translationClient = translationClient;
+
         StrongReferenceMessenger.Default.Register<TextRetrievedMessage>(this);
         StrongReferenceMessenger.Default.Register<EntityTranslatedMessage>(this);
         StrongReferenceMessenger.Default.Register<TranslationFinishedMessage>(this);
@@ -53,17 +56,17 @@ public partial class ProgressWindowViewModel : ObservableObject,
     [RelayCommand]
     private async Task OnLoadedAsync()
     {
-        await TranslationUtils.CheckUsageAsync();
+        await _translationClient.CheckUsageAsync();
 
-        if (TranslationUtils.Usage == -1)
+        if (_translationClient.Usage == -1)
         {
             CancelTranslation();
             return;
         }
-            
-        _threadSafeMonthlyCharacterCount = TranslationUtils.Usage;
+
+        _threadSafeMonthlyCharacterCount = _translationClient.Usage;
         MonthlyCharacterCount = _threadSafeMonthlyCharacterCount;
-        MonthlyCharacterLimit = TranslationUtils.Limit;
+        MonthlyCharacterLimit = _translationClient.Limit;
     }
 
     [RelayCommand]

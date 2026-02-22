@@ -17,7 +17,8 @@ public class TranslationManager(
     ConcurrentTranslationService service,
     ModelUpdaterService modelUpdaterService,
     EventHandlers handlers,
-    Func<ScopedWindowService> scopedServiceFactory) : IRecipient<TokenCancellationRequestedMessage>
+    Func<ScopedWindowService> scopedServiceFactory,
+    DeeplTranslationClient translationClient) : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly CancellationTokenSource _cts = new();
     private List<DocumentTranslationEntityGroup>? _documentEntities;
@@ -37,13 +38,13 @@ public class TranslationManager(
             }
         }
 
-        var canTranslate = await TranslationUtils.TryTestTranslateAsync();
+        var canTranslate = await translationClient.TryTestTranslateAsync();
         if (!canTranslate)
         {
             var parentWindow = Context.UiApplication.MainWindowHandle.ToWindow();
             scopedServiceFactory().ShowDialog<SettingsWindow>(parentWindow);
-            
-            if (!await TranslationUtils.TryTestTranslateAsync())
+
+            if (!await translationClient.TryTestTranslateAsync())
             {
                 MessageBox
                     .Show("Settings are not valid. Elements will not be translated.",

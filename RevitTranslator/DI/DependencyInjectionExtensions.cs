@@ -4,6 +4,8 @@ using RevitTranslator.Services;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.Utils;
 using RevitTranslator.ViewModels;
+using System.Net.Http;
+using TranslationService.Utils;
 
 namespace RevitTranslator.DI;
 
@@ -27,6 +29,8 @@ public static class DependencyInjectionExtensions
             .AddSingleton<IRevitViewProvider, ViewProvider>()
             .AddSingleton<EventHandlers>()
             .AddScoped<ModelUpdaterService>()
-            .AddSingleton<UpdaterService>();
+            .AddSingleton<UpdaterService>()
+            .AddSingleton(_ => new HttpClient())
+            .AddSingleton<DeeplTranslationClient>();
     }
 }
