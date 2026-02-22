@@ -4,24 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
+    xmlns:viewModels="clr-namespace:RevitTranslator.UI.ViewModels"
     xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
     mc:Ignorable="d"
-    d:DataContext="{d:DesignInstance contracts:IProgressWindowViewModel}"
+    d:DataContext="{d:DesignInstance viewModels:ProgressWindowViewModel}"
     ExtendsContentIntoTitleBar="True"
     Width="600"
     SizeToContent="Height"
     ResizeMode="NoResize"
     Topmost="True"
     WindowStartupLocation="CenterScreen">
-    
-    <b:Interaction.Triggers>
-        <b:EventTrigger EventName="Loaded">
-            <b:InvokeCommandAction Command="{Binding LoadedCommand}" />
-        </b:EventTrigger>
-    </b:Interaction.Triggers>
 
     <ui:FluentWindow.Resources>
         <ResourceDictionary>

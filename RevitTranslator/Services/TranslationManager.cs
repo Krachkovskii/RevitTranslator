@@ -7,7 +7,6 @@ using RevitTranslator.ElementTextRetrievers;
 using RevitTranslator.Models;
 using RevitTranslator.UI.Views;
 using RevitTranslator.Utils;
-using RevitTranslator.ViewModels;
 using TranslationService.Utils;
 
 namespace RevitTranslator.Services;
@@ -55,6 +54,7 @@ public class TranslationManager(
 
         StrongReferenceMessenger.Default.Register(this);
 
+        progressWindow.Owner = Context.UiApplication.MainWindowHandle.ToWindow();
         progressWindow.Show();
 
         _documentEntities = GetTextFromElements();

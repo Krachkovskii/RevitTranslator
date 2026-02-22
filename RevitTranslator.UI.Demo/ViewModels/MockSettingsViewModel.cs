@@ -10,6 +10,7 @@ namespace RevitTranslator.UI.Demo.ViewModels;
 
 public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewModel
 {
+    private readonly DeeplTranslationClient _deeplClient;
     [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private string _deeplApiKey = string.Empty;
 
@@ -27,8 +28,9 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
 
     private LanguageDescriptor? _previousLanguage;
 
-    public MockSettingsViewModel()
+    public MockSettingsViewModel(DeeplTranslationClient deeplClient)
     {
+        _deeplClient = deeplClient;
         if (!DeeplSettingsUtils.Load())
         {
             ButtonText = "Failed to load settings";
@@ -85,7 +87,7 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
 
         DeeplApiKey = sanitizedKey;
 
-        var test = await TranslationUtils.TryTestTranslateAsync();
+        var test = await _deeplClient.TryTestTranslateAsync();
         if (!test)
         {
             oldSettings?.Save();

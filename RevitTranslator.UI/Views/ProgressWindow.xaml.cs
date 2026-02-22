@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using RevitTranslator.Ui.Library.Controls;
-using RevitTranslator.UI.Contracts;
+using RevitTranslator.UI.ViewModels;
 using RevitTranslator.Ui.Library.Appearance;
 
 namespace RevitTranslator.UI.Views;
@@ -10,9 +10,9 @@ namespace RevitTranslator.UI.Views;
 /// </summary>
 public partial class ProgressWindow
 {
-    private readonly IProgressWindowViewModel _viewModel;
-    
-    public ProgressWindow(IProgressWindowViewModel viewModel)
+    private readonly ProgressWindowViewModel _viewModel;
+
+    public ProgressWindow(ProgressWindowViewModel viewModel)
     {
         _viewModel = viewModel;
         DataContext = _viewModel;

@@ -3,7 +3,6 @@ using RevitTranslator.Common.Contracts;
 using RevitTranslator.Services;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.Utils;
-using RevitTranslator.ViewModels;
 using System.Net.Http;
 using TranslationService.Utils;
 
@@ -15,7 +14,6 @@ public static class DependencyInjectionExtensions
     {
         return serviceCollection
             .AddScoped<ICategoriesWindowViewModel, CategoriesWindowViewModel>()
-            .AddScoped<IProgressWindowViewModel, ProgressWindowViewModel>()
             .AddScoped<ISettingsViewModel, SettingsViewModel>();
     }
 

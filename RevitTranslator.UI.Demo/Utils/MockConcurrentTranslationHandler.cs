@@ -4,7 +4,7 @@ using TranslationService.Utils;
 
 namespace RevitTranslator.UI.Demo.Utils;
 
-public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequestedMessage>
+public class MockConcurrentTranslationHandler(DeeplTranslationClient client) : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly List<Task> _tasks = [];
     private readonly CancellationTokenSource _cts = new();
@@ -48,7 +48,7 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
             }
             else
             {
-                await TranslationUtils.TranslateTextAsync(text, _cancellationToken);
+                await client.TranslateTextAsync(text, _cancellationToken);
             }
             
             StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));
