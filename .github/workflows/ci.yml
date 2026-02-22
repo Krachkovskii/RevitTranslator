@@ -24,16 +24,16 @@ jobs:
         run: dotnet restore
 
       - name: Build Release R23
-        run: dotnet build -c "Release R23" --no-restore
+        run: dotnet build -c "Release R23" --no-restore --no-incremental
 
       - name: Build Release R24
-        run: dotnet build -c "Release R24" --no-restore
+        run: dotnet build -c "Release R24" --no-restore --no-incremental
 
       - name: Build Release R25
-        run: dotnet build -c "Release R25" --no-restore
+        run: dotnet build -c "Release R25" --no-restore --no-incremental
 
       - name: Build Release R26
-        run: dotnet build -c "Release R26" --no-restore
+        run: dotnet build -c "Release R26" --no-restore --no-incremental
 
       - name: Run tests
         run: dotnet test RevitTranslator.Tests/RevitTranslator.Tests.csproj --no-restore
