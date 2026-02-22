@@ -37,6 +37,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
+    <!-- Updater -->
+    <PackageVersion Include="NetSparkleUpdater.SparkleUpdater" Version="2.*" />
     <!-- UI -->
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.*" />
     <!-- Data -->

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [develop]
+    paths-ignore:
+      - '**.md'
+      - 'appcast*.xml'
+  pull_request:
+    branches: [develop]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        revit_version: [ R23, R24, R25, R26 ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore -p:Configuration="Release ${{ matrix.revit_version }}"
+
+      - name: Build Release
+        run: dotnet build -c "Release ${{ matrix.revit_version }}" --no-restore
+
+      - name: Run tests
+        run: dotnet test RevitTranslator.Tests/RevitTranslator.Tests.csproj --no-restore

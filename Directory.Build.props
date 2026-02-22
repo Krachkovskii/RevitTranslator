@@ -4,6 +4,7 @@
         <LangVersion>latest</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
         <ImplicitUsings>true</ImplicitUsings>
+        <Version>1.0.3</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(Configuration.Contains('R21'))">
