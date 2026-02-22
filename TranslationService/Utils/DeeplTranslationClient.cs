@@ -1,44 +1,63 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
 using TranslationService.JsonProperties;
+using TranslationService.Models;
 // ReSharper disable once RedundantUsingDirective
 using System.Net.Http;
 
 namespace TranslationService.Utils;
 
-/// <summary>
-/// DeepL-related utils
-/// </summary>
-public static class TranslationUtils
+public sealed class DeeplTranslationClient
 {
-    private static readonly HttpClient HttpClient = new();
-    private static readonly SemaphoreSlim Semaphore = new(5, 10);
+    private readonly HttpClient _httpClient;
+    private readonly SemaphoreSlim _semaphore = new(5, 10);
+    private readonly TimeSpan _baseRetryDelay;
+    private readonly DeeplSettingsDescriptor? _settingsOverride;
+    private readonly string? _translationUrlOverride;
+    private readonly string? _usageUrlOverride;
+
+    private DeeplSettingsDescriptor? Settings => _settingsOverride ?? DeeplSettingsUtils.CurrentSettings;
+    private string TranslationUrl => _translationUrlOverride ?? DeeplSettingsUtils.TranslationUrl;
+    private string UsageUrl => _usageUrlOverride ?? DeeplSettingsUtils.UsageUrl;
+
+    public int Limit { get; private set; } = -1;
+    public int Usage { get; private set; } = -1;
+
+    public DeeplTranslationClient(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+        _baseRetryDelay = TimeSpan.FromMilliseconds(200);
+    }
+
+    internal DeeplTranslationClient(
+        HttpClient httpClient,
+        DeeplSettingsDescriptor settings,
+        string translationUrl,
+        string usageUrl,
+        TimeSpan baseRetryDelay)
+    {
+        _httpClient = httpClient;
+        _settingsOverride = settings;
+        _translationUrlOverride = translationUrl;
+        _usageUrlOverride = usageUrl;
+        _baseRetryDelay = baseRetryDelay;
+    }
 
     /// <summary>
-    /// Translation limits for current DeepL plan
-    /// </summary>
-    public static int Limit { get; private set; } = -1;
-
-    /// <summary>
-    /// Counter for translated symbols for current billing period
-    /// </summary>
-    public static int Usage { get; private set; } = -1;
-
-    /// <summary>
-    /// Checks if translation can be performed based on the provided settingsUtils. 
+    /// Checks if translation can be performed based on the provided settings.
     /// This method attempts to translate a single word.
     /// </summary>
     /// <returns>
     /// True if translation can be performed, false otherwise.
     /// </returns>
-    public static async Task<bool> TryTestTranslateAsync()
+    public async Task<bool> TryTestTranslateAsync()
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(DeeplSettingsUtils.CurrentSettings?.DeeplApiKey)) return false;
+            if (string.IsNullOrWhiteSpace(Settings?.DeeplApiKey)) return false;
 
             var res = await ProcessTranslationRequestAsync("bonjour", new CancellationTokenSource().Token);
             return res is not null;
@@ -49,18 +68,18 @@ public static class TranslationUtils
         }
     }
 
-    public static async Task<bool> CheckUsageAsync()
+    public async Task<bool> CheckUsageAsync()
     {
         try
         {
-            if (DeeplSettingsUtils.CurrentSettings is null) return false;
+            if (Settings is null) return false;
 
-            using var request = new HttpRequestMessage(HttpMethod.Get, DeeplSettingsUtils.UsageUrl);
+            using var request = new HttpRequestMessage(HttpMethod.Get, UsageUrl);
             request.Headers.Authorization =
-                new AuthenticationHeaderValue("DeepL-Auth-Key", DeeplSettingsUtils.CurrentSettings.DeeplApiKey);
+                new AuthenticationHeaderValue("DeepL-Auth-Key", Settings.DeeplApiKey);
             request.Headers.UserAgent.ParseAdd("RevitTranslator");
 
-            var response = await HttpClient.SendAsync(request);
+            var response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode) return false;
 
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -85,13 +104,15 @@ public static class TranslationUtils
     /// <param name="token">Cancellation token.</param>
     /// <returns>Translated text; null if there has been a translation error.
     /// If server response does not allow further translation (e.g. quota exceeded,
-    /// or request configuration is invalid), <c>OperationCanceledException</c> will be thrown, 
+    /// or request configuration is invalid), <c>OperationCanceledException</c> will be thrown,
     /// and token cancellation will be requested.</returns>
-    public static async Task<string?> TranslateTextAsync(string text, CancellationToken token)
+    public async Task<string?> TranslateTextAsync(string text, CancellationToken token)
     {
-        await Semaphore.WaitAsync(token);
+        var acquired = false;
         try
         {
+            await _semaphore.WaitAsync(token);
+            acquired = true;
             token.ThrowIfCancellationRequested();
             return await ProcessTranslationRequestAsync(text, token);
         }
@@ -101,18 +122,18 @@ public static class TranslationUtils
         }
         finally
         {
-            Semaphore.Release();
+            if (acquired) _semaphore.Release();
         }
     }
 
-    private static async Task<string?> ProcessTranslationRequestAsync(string text, CancellationToken token)
+    private async Task<string?> ProcessTranslationRequestAsync(string text, CancellationToken token)
     {
         var content = new FormUrlEncodedContent(
         [
             new KeyValuePair<string, string>("text", text),
             new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"),
-            new KeyValuePair<string, string>("target_lang", DeeplSettingsUtils.CurrentSettings!.TargetLanguage.TargetLanguageCode),
-            new KeyValuePair<string, string?>("source_lang", DeeplSettingsUtils.CurrentSettings.SourceLanguage?.SourceLanguageCode)
+            new KeyValuePair<string, string>("target_lang", Settings!.TargetLanguage.TargetLanguageCode),
+            new KeyValuePair<string, string?>("source_lang", Settings.SourceLanguage?.SourceLanguageCode)
         ]);
 
         try
@@ -133,7 +154,7 @@ public static class TranslationUtils
         }
     }
 
-    private static async Task<HttpResponseMessage?> SendTranslationRequestWithRateLimitAsync(FormUrlEncodedContent content, CancellationToken token)
+    private async Task<HttpResponseMessage?> SendTranslationRequestWithRateLimitAsync(FormUrlEncodedContent content, CancellationToken token)
     {
         try
         {
@@ -145,33 +166,33 @@ public static class TranslationUtils
             {
                 if (retryCount > retryLimit) return null;
 
-                using var request = new HttpRequestMessage(HttpMethod.Post, DeeplSettingsUtils.TranslationUrl)
+                using var request = new HttpRequestMessage(HttpMethod.Post, TranslationUrl)
                 {
                     Content = content
                 };
                 request.Headers.Authorization =
-                    new AuthenticationHeaderValue("DeepL-Auth-Key", DeeplSettingsUtils.CurrentSettings!.DeeplApiKey);
+                    new AuthenticationHeaderValue("DeepL-Auth-Key", Settings!.DeeplApiKey);
                 request.Headers.UserAgent.ParseAdd("RevitTranslator");
 
-                var response = await HttpClient.SendAsync(request, token);
+                var response = await _httpClient.SendAsync(request, token);
                 switch (response.StatusCode)
                 {
                     case (HttpStatusCode) 429:
                         // too many requests; try again after a delay
                         retryCount++;
-                        await Task.Delay(TimeSpan.FromMilliseconds(retryCount * 200), token);
+                        await Task.Delay(TimeSpan.FromMilliseconds(retryCount * _baseRetryDelay.TotalMilliseconds), token);
                         continue;
-                    
+
                     case (HttpStatusCode) 400 // bad request (wrong parameters)
                         or (HttpStatusCode) 404: // URL is wrong
                         // cannot proceed after these codes
                         throw new OperationCanceledException(
                             "Unknown internal exception. Please contact developer via e-mail or LinkedIn.");
-                    
+
                     case (HttpStatusCode) 403: // authorization error
                         throw new OperationCanceledException(
                             "Authorisation failed. Please check your API key and \"Pro\" plan checkbox.");
-                    
+
                     case (HttpStatusCode) 456: // quota exceeded
                         throw new OperationCanceledException(
                             "Quota exceeded. Please try again later.");

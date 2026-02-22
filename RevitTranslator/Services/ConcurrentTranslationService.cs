@@ -5,10 +5,10 @@ using TranslationService.Utils;
 
 namespace RevitTranslator.Services;
 
-public class ConcurrentTranslationService
+public class ConcurrentTranslationService(DeeplTranslationClient translationClient)
 {
     private readonly List<Task> _translationTasks = [];
-    
+
     public async Task TranslateEntitiesAsync(TranslationEntity[] entities, CancellationToken token)
     {
         try
@@ -30,14 +30,14 @@ public class ConcurrentTranslationService
             _translationTasks.Clear();
         }
     }
-    
-    private static async Task TranslateEntityAsync(TranslationEntity entity, CancellationToken token)
+
+    private async Task TranslateEntityAsync(TranslationEntity entity, CancellationToken token)
     {
         try
         {
             token.ThrowIfCancellationRequested();
-            
-            var translated = await TranslationUtils.TranslateTextAsync(entity.OriginalText, token);
+
+            var translated = await translationClient.TranslateTextAsync(entity.OriginalText, token);
             switch (translated)
             {
                 case null:

@@ -28,9 +28,12 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
     [ObservableProperty] private bool _isAutoDetectChecked;
     
     private LanguageDescriptor? _previousLanguage;
+    private readonly DeeplTranslationClient _translationClient;
 
-    public SettingsViewModel()
+    public SettingsViewModel(DeeplTranslationClient translationClient)
     {
+        _translationClient = translationClient;
+
         if (!DeeplSettingsUtils.Load())
         {
             ButtonText = "Failed to load settings";
@@ -94,7 +97,7 @@ public partial class SettingsViewModel : ObservableValidator, ISettingsViewModel
 
         DeeplApiKey = sanitizedKey;
 
-        var test = await TranslationUtils.TryTestTranslateAsync();
+        var test = await _translationClient.TryTestTranslateAsync();
         if (test)
         {
             ButtonText = "Settings saved";

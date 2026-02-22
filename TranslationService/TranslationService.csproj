@@ -14,4 +14,8 @@
     <ItemGroup>
         <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="RevitTranslator.Tests" />
+    </ItemGroup>
 </Project>
