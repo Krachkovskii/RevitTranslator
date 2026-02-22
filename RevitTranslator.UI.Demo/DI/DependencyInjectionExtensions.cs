@@ -4,6 +4,7 @@ using RevitTranslator.Common.Contracts;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.UI.Demo.Utils;
 using RevitTranslator.UI.Demo.ViewModels;
+using RevitTranslator.UI.ViewModels;
 using TranslationService.Utils;
 
 namespace RevitTranslator.UI.Demo.DI;
@@ -14,7 +15,7 @@ public static class DependencyInjectionExtensions
     {
         serviceCollection
             .AddScoped<ICategoriesWindowViewModel, MockCategoriesWindowViewModel>()
-            .AddScoped<ISettingsViewModel, MockSettingsViewModel>()
+            .AddScoped<SettingsViewModel>()
             .AddScoped<IRevitViewProvider, MockRevitViewProvider>()
             .AddScoped<DemoWindow>()
             .AddScoped<DemoViewModel>()

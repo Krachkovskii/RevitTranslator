@@ -1,36 +1,42 @@
+using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using RevitTranslator.UI.Contracts;
 using TranslationService.Models;
 using TranslationService.Utils;
 using TranslationService.Validation;
 
-namespace RevitTranslator.UI.Demo.ViewModels;
+namespace RevitTranslator.UI.ViewModels;
 
-public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewModel
+public partial class SettingsViewModel : ObservableValidator
 {
-    private readonly DeeplTranslationClient _deeplClient;
-    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private string _deeplApiKey = string.Empty;
 
-    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private bool _isPaidPlan;
 
-    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private LanguageDescriptor? _selectedSourceLanguage = DeeplLanguageCodes.TargetLanguages[0];
 
-    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.TargetLanguages[1];
 
+    [ObservableProperty] private string _buttonText = string.Empty;
     [ObservableProperty] private bool _isAutoDetectChecked;
-    [ObservableProperty] private string _buttonText;
 
     private LanguageDescriptor? _previousLanguage;
+    private readonly DeeplTranslationClient _translationClient;
 
-    public MockSettingsViewModel(DeeplTranslationClient deeplClient)
+    public SettingsViewModel(DeeplTranslationClient translationClient)
     {
-        _deeplClient = deeplClient;
+        _translationClient = translationClient;
+
         if (!DeeplSettingsUtils.Load())
         {
             ButtonText = "Failed to load settings";
@@ -73,6 +79,13 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
             return;
         }
 
+        var detectedFreePlan = ApiKeyValidator.IsFreePlan(sanitizedKey);
+        if (detectedFreePlan && IsPaidPlan)
+        {
+            ButtonText = "Warning: API key appears to be free plan";
+            await Task.Delay(2000);
+        }
+
         ButtonText = "Saving settings...";
 
         var oldSettings = DeeplSettingsUtils.CurrentSettings;
@@ -87,33 +100,35 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
 
         DeeplApiKey = sanitizedKey;
 
-        var test = await _deeplClient.TryTestTranslateAsync();
-        if (!test)
+        var test = await _translationClient.TryTestTranslateAsync();
+        if (test)
         {
-            oldSettings?.Save();
-            SetSettingsValues();
-            ButtonText = "Invalid credentials. Settings were restored.";
-
-            await Task.Delay(3000);
             ButtonText = "Settings saved";
-
             return;
         }
 
-        ButtonText = "Settings saved";
+        ButtonText = "Invalid credentials";
+        if (oldSettings is null) return;
+
+        oldSettings.Save();
+        SetSettingsValues();
+
+        await Task.Delay(3000);
+        ButtonText = "Settings were restored";
     }
 
     private void SetSettingsValues()
     {
+        if (DeeplSettingsUtils.CurrentSettings is null) return;
+
         IsPaidPlan = DeeplSettingsUtils.CurrentSettings.IsPaidPlan;
         DeeplApiKey = DeeplSettingsUtils.CurrentSettings.DeeplApiKey;
         SelectedSourceLanguage = DeeplSettingsUtils.CurrentSettings.SourceLanguage;
         SelectedTargetLanguage = DeeplSettingsUtils.CurrentSettings.TargetLanguage;
 
-        if (SelectedSourceLanguage is null)
-        {
-            IsAutoDetectChecked = true;
-        }
+        if (SelectedSourceLanguage is not null) return;
+
+        IsAutoDetectChecked = true;
     }
 
     partial void OnIsAutoDetectCheckedChanged(bool value)
@@ -132,6 +147,8 @@ public partial class MockSettingsViewModel : ObservableValidator, ISettingsViewM
     private bool CanExecuteSaveSettings()
     {
         var savedSettings = DeeplSettingsUtils.CurrentSettings;
+        if (savedSettings is null) return true;
+
         var hasChanges = savedSettings.IsPaidPlan != IsPaidPlan ||
                          savedSettings.DeeplApiKey != DeeplApiKey ||
                          savedSettings.SourceLanguage != SelectedSourceLanguage ||

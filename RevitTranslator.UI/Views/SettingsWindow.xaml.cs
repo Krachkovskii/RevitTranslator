@@ -1,5 +1,5 @@
 ﻿using System.Windows.Media;
-using RevitTranslator.UI.Contracts;
+using RevitTranslator.UI.ViewModels;
 using RevitTranslator.Ui.Library.Appearance;
 using RevitTranslator.Ui.Library.Controls;
 
@@ -10,7 +10,7 @@ namespace RevitTranslator.UI.Views;
 /// </summary>
 public partial class SettingsWindow
 {
-    public SettingsWindow(ISettingsViewModel viewModel)
+    public SettingsWindow(SettingsViewModel viewModel)
     {
         InitializeComponent();
         DataContext = viewModel;
