@@ -13,7 +13,10 @@ public partial class SettingsViewModel : ObservableValidator
 {
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
+    [NotifyPropertyChangedFor(nameof(IsApiKeyValid))]
     private string _deeplApiKey = string.Empty;
+
+    public bool IsApiKeyValid => ApiKeyValidator.TryValidate(DeeplApiKey, out _, out _);
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]

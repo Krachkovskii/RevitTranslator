@@ -11,6 +11,7 @@
     d:DataContext="{d:DesignInstance viewModels:ProgressWindowViewModel}"
     ExtendsContentIntoTitleBar="True"
     Width="600"
+    MinHeight="150"
     SizeToContent="Height"
     ResizeMode="NoResize"
     Topmost="True"
@@ -26,102 +27,146 @@
     </ui:FluentWindow.Resources>
 
     <Grid>
-        <DockPanel>
-            <ui:TitleBar
-                DockPanel.Dock="Top"
-                Title="Revit Translator | Progress"
-                Height="32"
-                ShowMinimize="True"
-                ShowMaximize="False"
-                CloseClicked="OnCloseClicked" />
-            <Button
-                DockPanel.Dock="Bottom"
-                Content="{Binding ButtonText, FallbackValue=Cancel Translation}"
-                Command="{Binding CancelTranslationCommand}"
-                Style="{StaticResource LargeRectangularButton}"
-                IsEnabled="{Binding IsProgressBarIntermediate, 
-                    Converter={x:Static converters:Converters.InverseBoolConverter}}"
-                Cursor="Hand" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar
+            Grid.Row="0"
+            Title="Revit Translator | Progress"
+            ShowMinimize="True"
+            ShowMaximize="False"
+            CloseClicked="OnCloseClicked" />
+
+        <Grid
+            Grid.Row="1"
+            Margin="20 30 20 40">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Rectangle
+                Grid.Column="0"
+                Width="1"
+                HorizontalAlignment="Right"
+                Fill="LightGray" />
+            <Rectangle
+                Grid.Column="1"
+                Width="1"
+                HorizontalAlignment="Right"
+                Fill="LightGray" />
+
+            <StackPanel
+                Grid.Column="0"
+                Orientation="Vertical"
+                VerticalAlignment="Top">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Text="Translations completed"
+                    Style="{StaticResource Annotation}" />
+                <TextBlock
+                    FontSize="25"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+                    <Run Text="{Binding FinishedTranslationCount, FallbackValue=999}" />
+                    <Run Text="/" />
+                    <Run Text="{Binding TotalTranslationCount, FallbackValue=9999}" />
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Vertical"
+                VerticalAlignment="Top">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Text="Characters translated"
+                    Style="{StaticResource Annotation}" />
+                <TextBlock
+                    FontSize="25"
+                    Text="{Binding SessionCharacterCount, FallbackValue=9999999}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <Grid
+                Grid.Column="2"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Right">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ui:TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    TextAlignment="Right"
+                    Style="{StaticResource Annotation}"
+                    Text="{Binding MonthlyCharacterCount}" />
+                <ui:TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    TextAlignment="Right"
+                    Style="{StaticResource Annotation}"
+                    Text="{Binding MonthlyCharacterLimit}" />
+                <ui:TextBlock
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Style="{StaticResource Annotation}"
+                    Text=" ch used this month" />
+                <ui:TextBlock
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Style="{StaticResource Annotation}"
+                    Text=" ch monthly limit" />
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
             <ProgressBar
-                DockPanel.Dock="Top"
-                Height="20"
-                Margin="20 20 20 0"
+                Grid.Row="0"
+                Height="8"
+                Margin="0 0 0 2"
                 Value="{Binding FinishedTranslationCount, FallbackValue=50}"
                 Maximum="{Binding TotalTranslationCount, FallbackValue=100}"
                 IsIndeterminate="{Binding IsProgressBarIntermediate,
                     Mode=OneWay,
                     UpdateSourceTrigger=PropertyChanged}" />
 
-            <Grid
-                Margin="20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Rectangle
-                    Grid.Column="0"
-                    Width="1"
-                    HorizontalAlignment="Right"
-                    Fill="LightGray" />
-                <Rectangle
-                    Grid.Column="1"
-                    Width="1"
-                    HorizontalAlignment="Right"
-                    Fill="LightGray" />
-
-                <StackPanel
-                    Grid.Column="0"
-                    Orientation="Vertical"
-                    VerticalAlignment="Center">
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Text="Translations completed"
-                        Style="{StaticResource Annotation}" />
-                    <TextBlock
-                        FontSize="25"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center">
-                        <Run Text="{Binding FinishedTranslationCount, FallbackValue=999}" />
-                        <Run Text="/" />
-                        <Run Text="{Binding TotalTranslationCount, FallbackValue=9999}" />
-                    </TextBlock>
+            <Button
+                Grid.Row="1"
+                Command="{Binding HandleButtonClickCommand}"
+                Style="{StaticResource LargeButton}"
+                IsEnabled="{Binding IsMainButtonEnabled}"
+                Cursor="Hand">
+                <StackPanel>
+                    <ui:TextBlock
+                        FontTypography="Subtitle"
+                        TextAlignment="Center"
+                        Text="{Binding ButtonText}" />
+                    <ui:TextBlock
+                        TextAlignment="Center"
+                        FontTypography="Caption"
+                        Visibility="{Binding ButtonSubtext,
+                            Converter={x:Static converters:Converters.StringToVisibilityConverter}}"
+                        Text="{Binding ButtonSubtext, FallbackValue='subtext'}" />
                 </StackPanel>
-
-                <StackPanel
-                    Orientation="Vertical"
-                    VerticalAlignment="Center"
-                    Grid.Column="1">
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Text="Characters translated"
-                        Style="{StaticResource Annotation}" />
-                    <TextBlock
-                        FontSize="25"
-                        Text="{Binding SessionCharacterCount, FallbackValue=9999999}"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center" />
-                </StackPanel>
-
-                <TextBlock
-                    Grid.Column="2"
-                    TextAlignment="Right"
-                    VerticalAlignment="Center"
-                    Style="{StaticResource Annotation}"
-                    LineHeight="1.5">
-                    <Run Text="Monthly usage:" />
-                    <Run Text="{Binding MonthlyCharacterCount, FallbackValue=9999999}" />
-                    <Run Text="ch" />
-                    <LineBreak />
-                    <Run Text="Limit:" />
-                    <Run Text="{Binding MonthlyCharacterLimit, FallbackValue=9999999}" />
-                    <Run Text="ch/mo" />
-                </TextBlock>
-            </Grid>
-        </DockPanel>
+            </Button>
+        </Grid>
     </Grid>
 </ui:FluentWindow>

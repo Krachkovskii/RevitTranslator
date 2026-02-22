@@ -17,11 +17,29 @@ public partial class ProgressWindow
         _viewModel = viewModel;
         DataContext = _viewModel;
         InitializeComponent();
-        
+
+        Loaded += OnLoaded;
+
         ApplicationThemeManager.Apply(this);
         if (Environment.OSVersion.Version >= new Version(10, 0, 22000))
         {
             WindowBackdropType = WindowBackdropType.Acrylic;
+        }
+    }
+
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _viewModel.LoadedCommand.ExecuteAsync(null);
+        }
+        catch
+        {
+            // do nothing
+        }
+        finally
+        {
+            Loaded -= OnLoaded;
         }
     }
 

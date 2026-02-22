@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Windows.Controls;
+using System.Windows.Media;
 using RevitTranslator.Ui.Library.Input;
 
 // ReSharper disable once CheckNamespace
@@ -87,6 +88,24 @@ public class TextBox : System.Windows.Controls.TextBox
         new PropertyMetadata(null)
     );
 
+    /// <summary>Identifies the <see cref="IconForeground"/> dependency property.</summary>
+    public static readonly DependencyProperty IconForegroundProperty = DependencyProperty.Register(
+        nameof(IconForeground),
+        typeof(Brush),
+        typeof(TextBox),
+        new PropertyMetadata(null)
+    );
+
+    private static readonly DependencyPropertyKey EffectiveIconForegroundPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(EffectiveIconForeground),
+        typeof(Brush),
+        typeof(TextBox),
+        new PropertyMetadata(null)
+    );
+
+    /// <summary>Identifies the <see cref="EffectiveIconForeground"/> dependency property.</summary>
+    public static readonly DependencyProperty EffectiveIconForegroundProperty = EffectiveIconForegroundPropertyKey.DependencyProperty;
+
     /// <summary>
     /// Gets or sets displayed <see cref="IconElement"/>.
     /// </summary>
@@ -165,12 +184,31 @@ public class TextBox : System.Windows.Controls.TextBox
     public IRelayCommand TemplateButtonCommand => (IRelayCommand)GetValue(TemplateButtonCommandProperty);
 
     /// <summary>
+    /// Gets or sets the foreground brush for the icon. When <see langword="null"/>, falls back to <see cref="System.Windows.Controls.Control.Foreground"/>.
+    /// </summary>
+    public Brush? IconForeground
+    {
+        get => (Brush?)GetValue(IconForegroundProperty);
+        set => SetValue(IconForegroundProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the effective foreground brush applied to the icon. Equals <see cref="IconForeground"/> when set, otherwise <see cref="System.Windows.Controls.Control.Foreground"/>.
+    /// </summary>
+    public Brush? EffectiveIconForeground
+    {
+        get => (Brush?)GetValue(EffectiveIconForegroundProperty);
+        private set => SetValue(EffectiveIconForegroundPropertyKey, value);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="TextBox"/> class.
     /// </summary>
     public TextBox()
     {
         SetValue(TemplateButtonCommandProperty, new RelayCommand<string>(OnTemplateButtonClick));
         CurrentPlaceholderEnabled = PlaceholderEnabled;
+        UpdateEffectiveIconForeground();
     }
 
     /// <inheritdoc />
@@ -262,6 +300,22 @@ public class TextBox : System.Windows.Controls.TextBox
         Debug.WriteLine($"INFO: {typeof(TextBox)} button clicked", "Wpf.Ui.TextBox");
 
         OnClearButtonClick();
+    }
+
+    /// <inheritdoc />
+    protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (e.Property == ForegroundProperty || e.Property == IconForegroundProperty)
+        {
+            UpdateEffectiveIconForeground();
+        }
+    }
+
+    private void UpdateEffectiveIconForeground()
+    {
+        EffectiveIconForeground = IconForeground ?? Foreground;
     }
 
     private static void OnPlaceholderEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

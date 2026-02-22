@@ -11,8 +11,8 @@
     xmlns:markup="clr-namespace:RevitTranslator.Ui.Library.Markup;assembly=RevitTranslator.Ui.Library"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d"
-    Width="500"
-    Height="400"
+    Width="550"
+    SizeToContent="Height"
     ResizeMode="NoResize"
     ExtendsContentIntoTitleBar="True">
 
@@ -37,7 +37,7 @@
                 DockPanel.Dock="Bottom"
                 Content="{Binding ButtonText}"
                 Command="{Binding SaveSettingsCommand}"
-                Style="{StaticResource LargeRectangularButton}" />
+                Style="{StaticResource LargeButton}" />
             <DockPanel
                 Margin="20">
 
@@ -47,11 +47,14 @@
                         Text="DeepL API key:"
                         FontTypography="Body" />
                     <ui:TextBox
-                        Text="{Binding DeeplApiKey, 
+                        FontSize="18"
+                        Text="{Binding DeeplApiKey,
                             UpdateSourceTrigger=PropertyChanged}"
                         Height="40"
                         Margin="0 10"
-                        ToolTip="Insert your DeepL API key here" />
+                        Style="{StaticResource ApiTextBoxStyle}"
+                        PlaceholderEnabled="True"
+                        PlaceholderText="Insert your DeepL API key here"/>
                     <CheckBox
                         Padding="0"
                         Content="I'm using paid DeepL API plan"
@@ -107,13 +110,15 @@
                         <ui:Button
                             Height="36"
                             Width="36"
+                            Padding="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
-                            Content="{markup:SymbolIcon ArrowTurnRight20}"
+                            TextElement.FontSize="18"
+                            Content="{markup:SymbolIcon ArrowSwap24}"
                             Command="{Binding SwitchLanguagesCommand}"
                             IsEnabled="{Binding IsAutoDetectChecked, 
                             Converter={x:Static converters:Converters.InverseBoolConverter}}"
-                            ToolTip="Reverse language selection"
+                            ToolTip="Swap languages"
                             Cursor="Hand" />
                     </StackPanel>
                     <StackPanel
@@ -130,17 +135,29 @@
                             SelectedItem="{Binding SelectedTargetLanguage}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         <TextBlock
-                            DockPanel.Dock="Bottom"
                             HorizontalAlignment="Right"
                             TextAlignment="Right"
                             Margin="0 15 0 0"
                             VerticalAlignment="Top"
-                            Style="{StaticResource Annotation}">
+                            Style="{StaticResource Annotation}"
+                            ToolTip="This link will open my LinkedIn page. Feel free to connect!">
                             <Run Text="Developed by" />
                             <Hyperlink
                                 Command="{Binding OpenLinkedinCommand}"
                                 CommandParameter="https://www.linkedin.com/in/ilia-krachkovskii/">
                                 <Run Text="Ilia Krachokvskii" />
+                            </Hyperlink>
+                        </TextBlock>
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            TextAlignment="Right"
+                            VerticalAlignment="Top"
+                            Style="{StaticResource Annotation}"
+                            ToolTip="This link will open GitHub Issues page - you can create an Issue so others could see its status too. Alternatively, you can send me a text over LinkedIn.">
+                            <Hyperlink
+                                Command="{Binding OpenLinkedinCommand}"
+                                CommandParameter="https://github.com/Krachkovskii/RevitTranslator/issues">
+                                <Run Text="Having an issue?" />
                             </Hyperlink>
                         </TextBlock>
                     </StackPanel>
