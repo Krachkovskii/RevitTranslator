@@ -12,6 +12,9 @@ on:
 jobs:
   build-and-test:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        revit_version: [ R23, R24, R25, R26 ]
 
     steps:
       - uses: actions/checkout@v4
@@ -23,17 +26,8 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      - name: Build Release R23
-        run: dotnet build -c "Release R23" --no-restore --no-incremental
-
-      - name: Build Release R24
-        run: dotnet build -c "Release R24" --no-restore --no-incremental
-
-      - name: Build Release R25
-        run: dotnet build -c "Release R25" --no-restore --no-incremental
-
-      - name: Build Release R26
-        run: dotnet build -c "Release R26" --no-restore --no-incremental
+      - name: Build Release
+        run: dotnet build -c "Release ${{ matrix.revit_version }}" --no-restore
 
       - name: Run tests
         run: dotnet test RevitTranslator.Tests/RevitTranslator.Tests.csproj --no-restore
