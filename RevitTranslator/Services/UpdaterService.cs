@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -10,7 +11,15 @@ namespace RevitTranslator.Services;
 
 public sealed class UpdaterService : IDisposable
 {
-    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast.xml";
+#if REVIT2023
+    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R23.xml";
+#elif REVIT2024
+    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R24.xml";
+#elif REVIT2025
+    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R25.xml";
+#else
+    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R26.xml";
+#endif
     private const string MsiExtension = ".msi";
 
     private readonly SparkleUpdater _sparkle;

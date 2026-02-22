@@ -83,6 +83,7 @@ public static class Installer
     /// <returns></returns>
     private static bool AreBinariesFresh(string configDir)
     {
+        if (Environment.GetEnvironmentVariable("CI") == "true") return true;
         var publishTime = File.GetLastWriteTime(Path.Combine(configDir, "RevitTranslator.dll"));
         return publishTime > DateTime.Now.AddMinutes(-30);
     }

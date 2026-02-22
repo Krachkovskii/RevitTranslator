@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [develop]
+    paths-ignore:
+      - '**.md'
+      - 'appcast*.xml'
+  pull_request:
+    branches: [develop]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build Release R23
+        run: dotnet build -c "Release R23" --no-restore
+
+      - name: Build Release R24
+        run: dotnet build -c "Release R24" --no-restore
+
+      - name: Build Release R25
+        run: dotnet build -c "Release R25" --no-restore
+
+      - name: Build Release R26
+        run: dotnet build -c "Release R26" --no-restore
+
+      - name: Run tests
+        run: dotnet test RevitTranslator.Tests/RevitTranslator.Tests.csproj --no-restore
