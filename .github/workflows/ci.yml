@@ -1,11 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [develop]
-    paths-ignore:
-      - '**.md'
-      - 'appcast*.xml'
   pull_request:
     branches: [develop]
 
