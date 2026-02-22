@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
+using TranslationService.Utils;
 
 namespace RevitTranslator.UI.ViewModels;
 
@@ -11,27 +12,34 @@ public partial class ProgressWindowViewModel : ObservableObject,
     IRecipient<EntityTranslatedMessage>,
     IRecipient<TranslationFinishedMessage>,
     IRecipient<ModelUpdatedMessage>,
-    IRecipient<TokenCancellationRequestedMessage>,
     IDisposable
 {
+    private readonly DeeplTranslationClient _deeplClient;
     [ObservableProperty] private int _totalTranslationCount;
     [ObservableProperty] private int _finishedTranslationCount;
     [ObservableProperty] private int _monthlyCharacterLimit;
     [ObservableProperty] private int _monthlyCharacterCount;
     [ObservableProperty] private int _sessionCharacterCount;
     [ObservableProperty] private bool _isProgressBarIntermediate;
-    [ObservableProperty] private bool _modelUpdateFinished;
+    [ObservableProperty] private bool _isMainButtonEnabled;
     [ObservableProperty] private string _buttonText = "";
+    [ObservableProperty] private string _buttonSubtext = "";
 
     private int _threadSafeTranslationCount;
     private int _threadSafeSessionCharacterCount;
     private int _threadSafeMonthlyCharacterCount;
     private bool _wasTranslationCanceled;
-    private bool _canCancelTranslation;
+    private bool _isTranslationActive;
+    private bool _isAwaitingConfirmation;
+    private bool _isModelUpdateActive;
     private readonly DispatcherTimer _uiUpdateTimer;
 
-    public ProgressWindowViewModel()
+    public bool IsAwaitingConfirmation => _isAwaitingConfirmation;
+
+    public ProgressWindowViewModel(DeeplTranslationClient deeplClient)
     {
+        _deeplClient = deeplClient;
+        
         StrongReferenceMessenger.Default.Register<TextRetrievedMessage>(this);
         StrongReferenceMessenger.Default.Register<EntityTranslatedMessage>(this);
         StrongReferenceMessenger.Default.Register<TranslationFinishedMessage>(this);
@@ -49,17 +57,59 @@ public partial class ProgressWindowViewModel : ObservableObject,
         // TODO: Check monthly limit and usage
     }
 
-    [RelayCommand(CanExecute = nameof(CanCancelTranslation))]
+    [RelayCommand]
+    private async Task OnLoadedAsync()
+    {
+        await _deeplClient.CheckUsageAsync();
+        _threadSafeMonthlyCharacterCount = MonthlyCharacterCount = _deeplClient.Limit;
+        MonthlyCharacterCount = _deeplClient.Limit;
+    }
+
+    [RelayCommand]
+    private void HandleButtonClick()
+    {
+        if (_isAwaitingConfirmation)
+            ConfirmModelUpdate();
+        else
+            CancelTranslation();
+    }
+
     private void CancelTranslation()
     {
         StrongReferenceMessenger.Default.Send(
             new TokenCancellationRequestedMessage("Translation was cancelled by user"));
-        ButtonText = "Translation cancelled";
+        _uiUpdateTimer.Stop();
+        _wasTranslationCanceled = true;
+        _isTranslationActive = false;
+        IsMainButtonEnabled = false;
+        ButtonText = "Cancelling...";
     }
 
-    private bool CanCancelTranslation() => _canCancelTranslation;
+    private void ConfirmModelUpdate()
+    {
+        _isAwaitingConfirmation = false;
+        _isModelUpdateActive = true;
+        IsMainButtonEnabled = false;
+        IsProgressBarIntermediate = true;
+        ButtonText = "Updating model...";
+        ButtonSubtext = "";
+        StrongReferenceMessenger.Default.Send(new ModelUpdateDecisionMessage(true));
+    }
 
-    public void CloseRequested() => CancelTranslation();
+    public bool CloseRequested()
+    {
+        if (_isTranslationActive)
+        {
+            CancelTranslation();
+            return false;
+        }
+        if (_isModelUpdateActive) return false;
+        if (!_isAwaitingConfirmation) return true;
+        
+        _isAwaitingConfirmation = false;
+        StrongReferenceMessenger.Default.Send(new ModelUpdateDecisionMessage(false));
+        return true;
+    }
 
     private void UpdateProgress(int translationLength)
     {
@@ -88,8 +138,8 @@ public partial class ProgressWindowViewModel : ObservableObject,
     {
         System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
-            _canCancelTranslation = true;
-            CancelTranslationCommand.NotifyCanExecuteChanged();
+            _isTranslationActive = true;
+            IsMainButtonEnabled = true;
 
             IsProgressBarIntermediate = false;
             TotalTranslationCount = message.EntityCount;
@@ -105,14 +155,24 @@ public partial class ProgressWindowViewModel : ObservableObject,
     {
         System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
-            _canCancelTranslation = false;
-            CancelTranslationCommand.NotifyCanExecuteChanged();
-
+            _isTranslationActive = false;
             _uiUpdateTimer.Stop();
             OnUiUpdateTimerTick(null, EventArgs.Empty);
 
-            IsProgressBarIntermediate = true;
-            ButtonText = "Updating model...";
+            if (message.CancelRequested)
+            {
+                _isAwaitingConfirmation = true;
+                IsMainButtonEnabled = true;
+                ButtonText = "Proceed with model update?";
+                ButtonSubtext = "Close this window to leave the model unchanged";
+            }
+            else
+            {
+                _isModelUpdateActive = true;
+                IsMainButtonEnabled = false;
+                IsProgressBarIntermediate = true;
+                ButtonText = "Updating model...";
+            }
         });
     }
 
@@ -120,14 +180,15 @@ public partial class ProgressWindowViewModel : ObservableObject,
     {
         System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
+            _isModelUpdateActive = false;
             IsProgressBarIntermediate = false;
-            ButtonText = _wasTranslationCanceled
-                ? "Model successfully updated. Translation was canceled"
-                : "Model successfully updated";
+
+            ButtonText = "Model successfully updated";
+            ButtonSubtext = _wasTranslationCanceled
+                ? "Translation was canceled. Window can be closed now."
+                : "Window can be closed now.";
         });
     }
-
-    public void Receive(TokenCancellationRequestedMessage message) => _wasTranslationCanceled = true;
 
     public void Dispose()
     {

@@ -1,3 +1,4 @@
+using System.Windows;
 using Bogus;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
@@ -20,6 +21,7 @@ public class MockTranslationPipeline(ProgressWindow progressWindow, DeeplTransla
             return;
         }
 
+        progressWindow.Owner = Application.Current.MainWindow;
         progressWindow.Show();
 
         await Task.Delay(2000);

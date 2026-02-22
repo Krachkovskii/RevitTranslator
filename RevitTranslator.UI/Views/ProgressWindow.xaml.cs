@@ -27,6 +27,7 @@ public partial class ProgressWindow
 
     private void OnCloseClicked(TitleBar sender, RoutedEventArgs args)
     {
-        _viewModel.CloseRequested();
+        var shouldClose = _viewModel.CloseRequested();
+        if (shouldClose) Close();
     }
 }
