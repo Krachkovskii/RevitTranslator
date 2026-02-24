@@ -1,6 +1,6 @@
 ﻿using RevitTranslator.Enums;
 using RevitTranslator.Models;
-using RevitTranslator.Utils.App;
+using RevitTranslator.Utils;
 
 namespace RevitTranslator.ElementTextRetrievers;
 

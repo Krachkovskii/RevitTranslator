@@ -1,9 +1,15 @@
 ﻿using System.Reflection;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Xaml.Behaviors;
 using Nice3point.Revit.Toolkit.External;
 using Nice3point.Revit.Toolkit.External.Handlers;
-using RevitTranslator.Handlers;
+using RevitTranslator.Commands;
+using RevitTranslator.Services;
+using RevitTranslator.Utils;
+using TriggerBase = Microsoft.Xaml.Behaviors.TriggerBase;
 
 namespace RevitTranslator;
 /// <summary>
@@ -14,8 +20,15 @@ public class Application : ExternalApplication
 {
     public override void OnStartup()
     {
+        _ = new Host();
         CreateRibbonPanel();
-        EventHandlers.ActionHandler = new ActionEventHandler();
+        FixBehaviors();
+        Host.ServiceProvider.GetRequiredService<UpdaterService>().StartCheckLoop();
+    }
+
+    public override void OnShutdown()
+    {
+        Host.ServiceProvider.GetRequiredService<UpdaterService>().TriggerDelayedInstall();
     }
 
     private void CreateRibbonPanel()
@@ -26,7 +39,7 @@ public class Application : ExternalApplication
         var settingsButtonData = new PushButtonData("Settings",
             "Translation settings",
             assemblyPath,
-            "RevitTranslator.Commands.SettingsCommand")
+            typeof(SettingsCommand).FullName)
         {
             LongDescription = "Set API key, languages to translate to and from, and list of parameters to ignore.",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/SettingsIcon32.png", UriKind.RelativeOrAbsolute)),
@@ -36,7 +49,7 @@ public class Application : ExternalApplication
         var translateSelectionButtonData = new PushButtonData("Selection",
             "Translate selection",
             assemblyPath,
-            "RevitTranslator.Commands.TranslateSelectionCommand")
+            typeof(TranslateSelectionCommand).FullName)
         {
             LongDescription = "Translate all selected elements, including their family type, if applicable.",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/SelectionIcon16.png", UriKind.RelativeOrAbsolute)),
@@ -46,7 +59,7 @@ public class Application : ExternalApplication
         var translateModelButtonData = new PushButtonData("Model",
             "Translate model",
             assemblyPath,
-            "RevitTranslator.Commands.TranslateModelCommand")
+            typeof(TranslateModelCommand).FullName)
         {
             LongDescription = "Translate all model elements",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/AllIcon16.png", UriKind.RelativeOrAbsolute)),
@@ -56,9 +69,19 @@ public class Application : ExternalApplication
         var translateCategoriesButtonData = new PushButtonData("Categories",
             "Translate categories",
             assemblyPath,
-            "RevitTranslator.Commands.TranslateCategoriesCommand")
+            typeof(TranslateCategoriesCommand).FullName)
         {
             LongDescription = "Translate all elements of selected categories",
+            Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon16.png", UriKind.RelativeOrAbsolute)),
+            LargeImage = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon32.png", UriKind.RelativeOrAbsolute))
+        };
+        
+        var translateViewsButtonData = new PushButtonData("Sheets",
+            "Translate sheets",
+            assemblyPath,
+            typeof(TranslateSheetsCommand).FullName)
+        {
+            LongDescription = "Translate all elements of selected sheets",
             Image = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon16.png", UriKind.RelativeOrAbsolute)),
             LargeImage = new BitmapImage(new Uri("/RevitTranslator;component/Resources/Icons/CategoryIcon32.png", UriKind.RelativeOrAbsolute))
         };
@@ -73,8 +96,15 @@ public class Application : ExternalApplication
 
         pulldownButton.AddPushButton(translateModelButtonData);
         pulldownButton.AddPushButton(translateCategoriesButtonData);
+        pulldownButton.AddPushButton(translateViewsButtonData);
         pulldownButton.AddPushButton(translateSelectionButtonData);
         pulldownButton.AddSeparator();
         pulldownButton.AddPushButton(settingsButtonData);
+    }
+    
+    private static void FixBehaviors()
+    {
+        //https://github.com/microsoft/XamlBehaviorsWpf/issues/86
+        _ = new DefaultTriggerAttribute(typeof(Trigger), typeof(TriggerBase), null);
     }
 }

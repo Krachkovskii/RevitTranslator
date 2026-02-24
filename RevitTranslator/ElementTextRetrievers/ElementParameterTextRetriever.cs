@@ -1,7 +1,6 @@
 ﻿using RevitTranslator.Models;
-using RevitTranslator.Utils.App;
-using RevitTranslator.Utils.Revit;
-using ParameterUtils = RevitTranslator.Utils.Revit.ParameterUtils;
+using RevitTranslator.Utils;
+using ParameterUtils = RevitTranslator.Utils.ParameterUtils;
 
 namespace RevitTranslator.ElementTextRetrievers;
 

@@ -1,0 +1,110 @@
+using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
+using RevitTranslator.Common.Extensions;
+using RevitTranslator.Common.Messages;
+using RevitTranslator.Common.Services;
+using RevitTranslator.ElementTextRetrievers;
+using RevitTranslator.Models;
+using RevitTranslator.UI.Views;
+using RevitTranslator.Utils;
+using TranslationService.Utils;
+
+namespace RevitTranslator.Services;
+
+public class TranslationManager(
+    ProgressWindow progressWindow,
+    ConcurrentTranslationService service,
+    ModelUpdaterService modelUpdaterService,
+    EventHandlers handlers,
+    Func<ScopedWindowService> scopedServiceFactory,
+    DeeplTranslationClient translationClient) : IRecipient<TokenCancellationRequestedMessage>
+{
+    private readonly CancellationTokenSource _cts = new();
+    private List<DocumentTranslationEntityGroup>? _documentEntities;
+    private Element[] _targetElements = [];
+    private TaskCompletionSource<bool>? _userDecisionTcs;
+
+    public async Task ExecuteAsync(Element[] elements)
+    {
+        _targetElements = elements;
+
+        if (DeeplSettingsUtils.CurrentSettings is null)
+        {
+            if (!DeeplSettingsUtils.Load())
+            {
+                MessageBox.Show("Failed to load settings. Please check file permissions and try again.",
+                    "Settings Error");
+                return;
+            }
+        }
+
+        var canTranslate = await translationClient.CanTranslateAsync();
+        if (!canTranslate)
+        {
+            var parentWindow = Context.UiApplication.MainWindowHandle.ToWindow();
+            scopedServiceFactory().ShowDialog<SettingsWindow>(parentWindow);
+
+            if (!await translationClient.CanTranslateAsync())
+            {
+                MessageBox
+                    .Show("Settings are not valid. Elements will not be translated.",
+                        "Translation Service Error");
+                return;
+            }
+        }
+
+        StrongReferenceMessenger.Default.Register(this);
+
+        progressWindow.Show();
+        progressWindow.Owner = Context.UiApplication.MainWindowHandle.ToWindow();
+
+        _documentEntities = GetTextFromElements();
+        await TranslateDocumentsAsync(_documentEntities);
+        if (await ShouldUpdateModelAsync())
+            await UpdateRevitModelAsync();
+
+        StrongReferenceMessenger.Default.UnregisterAll(this);
+    }
+
+    private List<DocumentTranslationEntityGroup> GetTextFromElements()
+    {
+        var entities = new MultiElementTextRetriever()
+            .CreateEntities(_targetElements, false, out var unitCount);
+        StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(unitCount));
+
+        return entities;
+    }
+
+    private async Task TranslateDocumentsAsync(List<DocumentTranslationEntityGroup> documents)
+    {
+        try
+        {
+            _cts.Token.ThrowIfCancellationRequested();
+            await service.TranslateEntitiesAsync(documents.SelectMany(entity => entity.TranslationEntities).ToArray(),
+                _cts.Token);
+
+            StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(false));
+        }
+        catch (OperationCanceledException)
+        {
+            StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(true));
+        }
+    }
+
+    private async Task<bool> ShouldUpdateModelAsync()
+    {
+        if (!_cts.IsCancellationRequested) return true;
+
+        _userDecisionTcs = new TaskCompletionSource<bool>();
+
+        StrongReferenceMessenger.Default.Register<TranslationManager, ModelUpdateDecisionMessage>(
+            this, static (r, msg) => r._userDecisionTcs?.TrySetResult(msg.ShouldUpdate));
+
+        return await _userDecisionTcs.Task;
+    }
+
+    private Task UpdateRevitModelAsync() =>
+        handlers.AsyncHandler.RaiseAsync(_ => modelUpdaterService.Update(_documentEntities!));
+
+    public void Receive(TokenCancellationRequestedMessage message) => _cts.Cancel();
+}

@@ -4,11 +4,9 @@
         <UseWPF>true</UseWPF>
         <OutputType>WinExe</OutputType>
         <LangVersion>latest</LangVersion>
-        <PlatformTarget>x64</PlatformTarget>
         <ImplicitUsings>true</ImplicitUsings>
         <TargetFramework>net8.0-windows</TargetFramework>
-        <Platforms>AnyCPU</Platforms>
-        <RootNamespace>RevitTranslator.Demo</RootNamespace>
+<!--        <Platforms>AnyCPU</Platforms>-->
     </PropertyGroup>
 
     <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
@@ -23,12 +21,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Bogus" Version="35.*" />
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
-      <PackageReference Include="WPF-UI" Version="4.0.0-rc.3" />
+      <PackageReference Include="Bogus"  />
+      <PackageReference Include="CommunityToolkit.Mvvm"  />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\RevitTranslator.Ui.Library\RevitTranslator.Ui.Library.csproj" />
       <ProjectReference Include="..\RevitTranslator.UI\RevitTranslator.UI.csproj" />
     </ItemGroup>
 

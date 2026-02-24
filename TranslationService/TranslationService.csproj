@@ -1,25 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>TranslationService</RootNamespace>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
-      <PackageReference Include="PolySharp" Version="1.*">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-      <PackageReference Include="System.Net.Http" Version="4.*" />
-      <PackageReference Include="System.Text.Json" Version="9.*" />
+        <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="PolySharp"/>
+        <PackageReference Include="System.Security.Cryptography.ProtectedData"/>
+        <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net48'"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj" />
+        <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="RevitTranslator.Tests" />
+    </ItemGroup>
 </Project>

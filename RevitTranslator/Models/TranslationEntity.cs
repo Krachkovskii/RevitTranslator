@@ -5,7 +5,7 @@ namespace RevitTranslator.Models;
 /// This class describes a Revit-related unit of translation, 
 /// which includes reference to the element, original text, translation etc.
 /// </summary>
-public class TranslationEntity
+public sealed class TranslationEntity
 {
     /// <summary>
     /// Document that hosts the Element or ParentElement.

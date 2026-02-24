@@ -5,7 +5,7 @@ namespace Installer;
 
 public static class Installer
 {
-    private static readonly int[] VersionList = [23, 24, 25];
+    private static readonly int[] VersionList = [23, 24, 25, 26];
     private static readonly string MainDirectoryPath = GetMainDirectory();
 
     public static void Main()
@@ -26,8 +26,13 @@ public static class Installer
                 Platform = Platform.x64,
                 InstallScope = InstallScope.perMachine,
                 UI = WUI.WixUI_ProgressOnly,
-                MajorUpgrade = MajorUpgrade.Default,
-                GUID = new Guid($"46A798D3-104B-2E3A-8126-CE3A212C97{version}"),
+                MajorUpgrade = new MajorUpgrade
+                {
+                    AllowSameVersionUpgrades = true,
+                    DowngradeErrorMessage = $"A newer version of Revit Translator for Revit 20{version} is already installed. Please uninstall it before installing an older version.",
+                    Schedule = UpgradeSchedule.afterInstallInitialize
+                },
+                UpgradeCode = new Guid($"46A798D3-104B-2E3A-8126-CE3A212C98{version}"),
                 Version = new Version(Constants.Version),
                 ControlPanelInfo =
                 {
@@ -35,7 +40,7 @@ public static class Installer
                 },
                 Dirs =
                 [
-                    new Dir(@$"%AppData%\Autodesk\Revit\Addins\20{version}\", 
+                    new Dir(@$"%AppData%\Autodesk\Revit\Addins\20{version}\",
                         new Dir($@"{Constants.ProjectName}\", assemblies),
                         manifest
                         )
@@ -76,8 +81,9 @@ public static class Installer
     /// </summary>
     /// <param name="configDir"></param>
     /// <returns></returns>
-    public static bool AreBinariesFresh(string configDir)
+    private static bool AreBinariesFresh(string configDir)
     {
+        if (Environment.GetEnvironmentVariable("CI") == "true") return true;
         var publishTime = File.GetLastWriteTime(Path.Combine(configDir, "RevitTranslator.dll"));
         return publishTime > DateTime.Now.AddMinutes(-30);
     }

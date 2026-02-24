@@ -1,5 +1,5 @@
 ﻿using RevitTranslator.Models;
-using RevitTranslator.Utils.Revit;
+using RevitTranslator.Utils;
 
 namespace RevitTranslator.ElementTextRetrievers;
 

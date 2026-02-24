@@ -1,30 +1,33 @@
+using System.Collections.ObjectModel;
+using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Models;
+using RevitTranslator.Common.Models.Categories;
 
 namespace RevitTranslator.UI.FallbackValues;
 
 public static class CategoryTypeFallbackDescriptor
 {
-    public static ObservableCategoryType[] FilteredCategoryTypes { get; } = new ObservableCategoryType[6];
+    public static ObservableCollection<CategoryTypeViewModel> FilteredCategoryTypes { get; } = new CategoryTypeViewModel[6].ToObservableCollection();
 
     static CategoryTypeFallbackDescriptor()
     {
         for (var i = 0; i < 6; i++)
         {
-            FilteredCategoryTypes[i] = new ObservableCategoryType
+            FilteredCategoryTypes[i] = new CategoryTypeViewModel
             {
                 IsChecked = i % 2 == 0,
                 Name = $"Category Type {i + 1}",
-                FilteredCategories = CreateCategories()
+                Categories = CreateCategories()
             };
         }
     }
 
-    private static List<ObservableCategoryDescriptor> CreateCategories()
+    private static ObservableCollection<CategoryViewModel> CreateCategories()
     {
-        var categories = new List<ObservableCategoryDescriptor>();
+        var categories = new ObservableCollection<CategoryViewModel>();
         for (var i = 0; i < 6; i++)
         {
-            var category = new ObservableCategoryDescriptor
+            var category = new CategoryViewModel
             {
                 IsChecked = i % 2 == 0,
                 Name = $"Category {i + 1}"

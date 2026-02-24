@@ -1,3 +1,3 @@
 namespace RevitTranslator.Common.Messages;
 
-public record TokenCancellationRequestedMessage;
+public record TokenCancellationRequestedMessage(string Message);

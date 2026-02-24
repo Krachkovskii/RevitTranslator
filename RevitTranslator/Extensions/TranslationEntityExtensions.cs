@@ -1,6 +1,6 @@
 using RevitTranslator.Enums;
 using RevitTranslator.Models;
-using RevitTranslator.Utils.App;
+using RevitTranslator.Utils;
 
 namespace RevitTranslator.Extensions;
 
@@ -15,7 +15,7 @@ public static class TranslationEntityExtensions
     {
         return !string.IsNullOrWhiteSpace(entity.TranslatedText) && entity.TranslatedText != entity.OriginalText;
     }
-    
+
     public static bool NameHasIllegalCharacters(this TranslationEntity entity)
     {
         if (entity.Element is not Parameter && entity.TranslationDetails != TranslationDetails.ElementName)

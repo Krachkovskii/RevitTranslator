@@ -1,7 +1,10 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using RevitTranslator.Ui.Library.Controls;
 using RevitTranslator.UI.Contracts;
-using Wpf.Ui.Appearance;
-using Wpf.Ui.Controls;
+using RevitTranslator.Ui.Library.Appearance;
+using RevitTranslator.Ui.Library.Extensions;
 
 namespace RevitTranslator.UI.Views;
 
@@ -16,9 +19,8 @@ public partial class CategoriesWindow
     {
         DataContext = viewModel;
         _viewModel = viewModel;
+        
         InitializeComponent();
-
-        Closed += OnWindowClosing;
         
         ApplicationThemeManager.Apply(this);
         if (Environment.OSVersion.Version >= new Version(10, 0, 22000))
@@ -29,11 +31,30 @@ public partial class CategoriesWindow
     
     private void OnTranslateButtonClicked(object sender, RoutedEventArgs e)
     {
-        Close();
+        DialogResult = true;
     }
 
-    private void OnWindowClosing(object? sender, EventArgs e)
+    private void OnCloseClicked(TitleBar sender, RoutedEventArgs args)
     {
-        _viewModel.OnCloseRequested();
+        try
+        {
+            DialogResult = false;
+        }
+        catch
+        {
+            // do nothing
+        }
+    }
+
+    private void OnItemBorderLeftMouseUp(object sender, MouseButtonEventArgs args)
+    {
+        var source = args.OriginalSource as DependencyObject;
+        if (source.FindParent<CheckBox>() is not null) return;
+        
+        var border = source.FindParent<Border>("ItemBorder");
+        var checkBox = border?.FindVisualChild<CheckBox>();
+        if (checkBox is null) return;
+        
+        checkBox.IsChecked = !checkBox.IsChecked;
     }
 }

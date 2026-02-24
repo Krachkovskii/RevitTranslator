@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
 using RevitTranslator.Services;
 
@@ -8,13 +9,20 @@ namespace RevitTranslator.Commands;
 [Transaction(TransactionMode.Manual)]
 public class TranslateModelCommand : ExternalCommand
 {
-    public override void Execute()
+    public override async void Execute()
     {
-        var instances = Document.EnumerateInstances().ToArray();
-        if (instances.Length == 0) return;
+        try
+        {
+            using var scope = Host.ServiceProvider.CreateScope();
+            var instances = Document.EnumerateInstances().ToArray();
+            if (instances.Length == 0) return;
         
-        var service = new BaseTranslationService();
-        service.SelectedElements = instances;
-        service.Execute();
+            await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(instances);
+        }
+        catch (Exception ex)
+        {
+            // todo: add logging
+            Console.WriteLine(ex);
+        }
     }
 }
