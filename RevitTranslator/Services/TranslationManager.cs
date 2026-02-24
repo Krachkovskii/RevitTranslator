@@ -55,8 +55,8 @@ public class TranslationManager(
 
         StrongReferenceMessenger.Default.Register(this);
 
-        progressWindow.Owner = Context.UiApplication.MainWindowHandle.ToWindow();
         progressWindow.Show();
+        progressWindow.Owner = Context.UiApplication.MainWindowHandle.ToWindow();
 
         _documentEntities = GetTextFromElements();
         await TranslateDocumentsAsync(_documentEntities);
