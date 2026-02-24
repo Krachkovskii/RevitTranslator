@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,13 +15,11 @@ public partial class SettingsViewModel : ObservableValidator
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     [NotifyPropertyChangedFor(nameof(IsApiKeyValid))]
+    [NotifyPropertyChangedFor(nameof(IsPaidPlan))]
     private string _deeplApiKey = string.Empty;
 
     public bool IsApiKeyValid => ApiKeyValidator.TryValidate(DeeplApiKey, out _, out _);
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
-    private bool _isPaidPlan;
+    public bool? IsPaidPlan => IsApiKeyValid ? !ApiKeyValidator.IsFreePlan(DeeplApiKey) : null;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
@@ -48,6 +47,12 @@ public partial class SettingsViewModel : ObservableValidator
         SetSettingsValues();
         ButtonText = "Save Settings";
     }
+    
+    public int Usage => _translationClient.Usage;
+    public int Limit => _translationClient.Limit;
+
+    [RelayCommand]
+    private Task OnLoadedAsync() => UpdateUsageAsync();
 
     [RelayCommand]
     private void SwitchLanguages()
@@ -82,19 +87,12 @@ public partial class SettingsViewModel : ObservableValidator
             return;
         }
 
-        var detectedFreePlan = ApiKeyValidator.IsFreePlan(sanitizedKey);
-        if (detectedFreePlan && IsPaidPlan)
-        {
-            ButtonText = "Warning: API key appears to be free plan";
-            await Task.Delay(2000);
-        }
-
         ButtonText = "Saving settings...";
 
         var oldSettings = DeeplSettingsUtils.CurrentSettings;
         var newSettings = new DeeplSettingsDescriptor
         {
-            IsPaidPlan = IsPaidPlan,
+            IsPaidPlan = IsPaidPlan is true,
             DeeplApiKey = sanitizedKey,
             SourceLanguage = SelectedSourceLanguage,
             TargetLanguage = SelectedTargetLanguage
@@ -118,13 +116,14 @@ public partial class SettingsViewModel : ObservableValidator
 
         await Task.Delay(3000);
         ButtonText = "Settings were restored";
+
+        await UpdateUsageAsync();
     }
 
     private void SetSettingsValues()
     {
         if (DeeplSettingsUtils.CurrentSettings is null) return;
 
-        IsPaidPlan = DeeplSettingsUtils.CurrentSettings.IsPaidPlan;
         DeeplApiKey = DeeplSettingsUtils.CurrentSettings.DeeplApiKey;
         SelectedSourceLanguage = DeeplSettingsUtils.CurrentSettings.SourceLanguage;
         SelectedTargetLanguage = DeeplSettingsUtils.CurrentSettings.TargetLanguage;
@@ -149,6 +148,8 @@ public partial class SettingsViewModel : ObservableValidator
 
     private bool CanExecuteSaveSettings()
     {
+        if (!IsApiKeyValid) return false;
+        
         var savedSettings = DeeplSettingsUtils.CurrentSettings;
         if (savedSettings is null) return true;
 
@@ -160,5 +161,12 @@ public partial class SettingsViewModel : ObservableValidator
         ButtonText = hasChanges ? "Save Settings" : "Settings saved";
 
         return hasChanges;
+    }
+    
+    private async Task UpdateUsageAsync()
+    {
+        await _translationClient.CheckUsageAsync();
+        OnPropertyChanged(nameof(Usage));
+        OnPropertyChanged(nameof(Limit));
     }
 }

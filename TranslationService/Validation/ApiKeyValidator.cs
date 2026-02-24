@@ -66,12 +66,8 @@ public static partial class ApiKeyValidator
     /// <returns>True if free plan, false if pro plan or invalid</returns>
     public static bool IsFreePlan(string? apiKey)
     {
-        if (string.IsNullOrWhiteSpace(apiKey))
-        {
-            return false;
-        }
-
-        return apiKey.Trim().EndsWith(":fx", StringComparison.OrdinalIgnoreCase);
+        return !string.IsNullOrWhiteSpace(apiKey) 
+               && apiKey!.Trim().EndsWith(":fx", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
