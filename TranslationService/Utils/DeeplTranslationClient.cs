@@ -14,7 +14,7 @@ namespace TranslationService.Utils;
 public sealed class DeeplTranslationClient
 {
     private readonly HttpClient _httpClient;
-    private readonly SemaphoreSlim _semaphore = new(5, 10);
+    private readonly SemaphoreSlim _semaphore = new(1, 5);
     private readonly TimeSpan _baseRetryDelay;
     private readonly DeeplSettingsDescriptor? _settingsOverride;
     private readonly string? _translationUrlOverride;
@@ -177,7 +177,7 @@ public sealed class DeeplTranslationClient
             token.ThrowIfCancellationRequested();
 
             var retryCount = 0;
-            var retryLimit = 5;
+            var retryLimit = 20;
             while (true)
             {
                 if (retryCount > retryLimit) return null;
