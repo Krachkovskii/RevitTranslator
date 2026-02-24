@@ -5,6 +5,7 @@
 	
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="/RevitTranslator.Ui.Library;component/Resources/Theme/Light.xaml"/>
+		<ResourceDictionary Source="/RevitTranslator.Ui.Library;component/Controls/TextBox/TextBox.xaml"/>
 	</ResourceDictionary.MergedDictionaries>
 
 	<!-- Colors -->

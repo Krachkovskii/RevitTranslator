@@ -35,9 +35,14 @@
                 ShowMinimize="False" />
             <Button
                 DockPanel.Dock="Bottom"
-                Content="{Binding ButtonText}"
                 Command="{Binding SaveSettingsCommand}"
-                Style="{StaticResource LargeButton}" />
+                Style="{StaticResource LargeButton}">
+                <ui:TextBlock
+                    Margin="0 -2 0 0"
+                    VerticalAlignment="Center"
+                    FontTypography="Subtitle"
+                    Text="{Binding ButtonText, FallbackValue='Text'}"/>
+            </Button>
             <DockPanel
                 Margin="20">
 
@@ -55,12 +60,37 @@
                         Style="{StaticResource ApiTextBoxStyle}"
                         PlaceholderEnabled="True"
                         PlaceholderText="Insert your DeepL API key here"/>
-                    <CheckBox
-                        Padding="0"
-                        Content="I'm using paid DeepL API plan"
-                        IsChecked="{Binding IsPaidPlan,
-                            Mode=TwoWay,
-                            UpdateSourceTrigger=PropertyChanged}" />
+                    <Grid>
+                        <Grid
+                            HorizontalAlignment="Left">
+                            <ui:TextBlock
+                                Visibility="{Binding IsPaidPlan, 
+                                    Converter={x:Static converters:Converters.InverseBoolVisibilityConverter}}"
+                                Style="{StaticResource Annotation}"
+                                Text="Free API plan"/>
+                            <ui:TextBlock
+                                Visibility="{Binding IsPaidPlan, 
+                                    Converter={x:Static converters:Converters.BoolVisibilityConverter}}"
+                                Style="{StaticResource Annotation}"
+                                Text="Paid API plan" /></Grid>
+                        <StackPanel
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                            <ui:TextBlock
+                                Style="{StaticResource Annotation}"
+                                Text="{Binding Usage, 
+                                    StringFormat={}Usage: {0} ch/month,
+                                    FallbackValue='Test monthly usage'}"/>
+                            <ui:TextBlock
+                                Margin="24 0 0 0"
+                                Style="{StaticResource Annotation}"
+                                Visibility="{Binding IsPaidPlan,
+                                    Converter={x:Static converters:Converters.InverseBoolVisibilityConverter}}"
+                                Text="{Binding Limit, 
+                                    StringFormat={}Limit: {0} ch/month,
+                                    FallbackValue='Test monthly limit'}"/>
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
                 <Rectangle
                     DockPanel.Dock="Top"
@@ -164,7 +194,5 @@
                 </Grid>
             </DockPanel>
         </DockPanel>
-
     </Grid>
-
 </ui:FluentWindow>

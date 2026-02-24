@@ -15,7 +15,7 @@ public class MockTranslationPipeline(ProgressWindow progressWindow, DeeplTransla
         var wordCount = faker.Random.Int(1, 50);
         var words = faker.Lorem.Words(wordCount);
 
-        if (!useMockTranslations && !DeeplSettingsUtils.Load())
+        if (!DeeplSettingsUtils.Load())
         {
             Console.WriteLine("Failed to load settings");
             return;

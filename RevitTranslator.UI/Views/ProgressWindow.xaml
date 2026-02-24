@@ -141,7 +141,7 @@
             <ProgressBar
                 Grid.Row="0"
                 Height="8"
-                Margin="0 0 0 2"
+                Margin="0 0 0 5"
                 Value="{Binding FinishedTranslationCount, FallbackValue=50}"
                 Maximum="{Binding TotalTranslationCount, FallbackValue=100}"
                 IsIndeterminate="{Binding IsProgressBarIntermediate,
@@ -158,13 +158,13 @@
                     <ui:TextBlock
                         FontTypography="Subtitle"
                         TextAlignment="Center"
-                        Text="{Binding ButtonText}" />
+                        Text="{Binding ButtonText, FallbackValue='Main text'}" />
                     <ui:TextBlock
                         TextAlignment="Center"
                         FontTypography="Caption"
                         Visibility="{Binding ButtonSubtext,
                             Converter={x:Static converters:Converters.StringToVisibilityConverter}}"
-                        Text="{Binding ButtonSubtext, FallbackValue='subtext'}" />
+                        Text="{Binding ButtonSubtext, FallbackValue='Subtext'}" />
                 </StackPanel>
             </Button>
         </Grid>

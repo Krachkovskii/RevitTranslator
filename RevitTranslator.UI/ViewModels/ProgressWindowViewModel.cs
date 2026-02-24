@@ -53,16 +53,14 @@ public partial class ProgressWindowViewModel : ObservableObject,
             Interval = TimeSpan.FromMilliseconds(100)
         };
         _uiUpdateTimer.Tick += OnUiUpdateTimerTick;
-
-        // TODO: Check monthly limit and usage
     }
 
     [RelayCommand]
     private async Task OnLoadedAsync()
     {
         await _deeplClient.CheckUsageAsync();
-        _threadSafeMonthlyCharacterCount = MonthlyCharacterCount = _deeplClient.Limit;
-        MonthlyCharacterCount = _deeplClient.Limit;
+        _threadSafeMonthlyCharacterCount = MonthlyCharacterCount = _deeplClient.Usage;
+        MonthlyCharacterLimit = _deeplClient.Limit;
     }
 
     [RelayCommand]
