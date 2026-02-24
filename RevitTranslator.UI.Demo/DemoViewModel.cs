@@ -1,29 +1,31 @@
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
+using RevitTranslator.UI.Contracts;
 using RevitTranslator.UI.Demo.Utils;
 using RevitTranslator.UI.Demo.ViewModels;
 using RevitTranslator.UI.ViewModels;
 using RevitTranslator.UI.Views;
+using TranslationService.Utils;
 
 namespace RevitTranslator.UI.Demo;
 
-public partial class DemoViewModel
+public partial class DemoViewModel(
+    DeeplTranslationClient client)
 {
     [RelayCommand]
-    private void ShowProgressWindow()
+    private async Task ShowProgressWindowAsync()
     {
-        var vm = new MockProgressWindowViewModel();
-        var view = new ProgressWindow(vm);
-
-        view.Show();
+        using var scope = Host.ServiceProvider.CreateScope();
+        var progressWindow = scope.ServiceProvider.GetRequiredService<ProgressWindow>();
+        await new MockTranslationPipeline(progressWindow, client).ExecuteAsync(useMockTranslations: true);
     }
 
     [RelayCommand]
     private void ShowSettingsWindow()
     {
-        var vm = new MockSettingsViewModel();
-        var view = new SettingsWindow(vm);
-
-        view.ShowDialog();
+        using var scope = Host.ServiceProvider.CreateScope();
+        var settingsWindow = scope.ServiceProvider.GetRequiredService<SettingsWindow>();
+       settingsWindow.ShowDialog();
     }
 
     [RelayCommand]
@@ -45,8 +47,10 @@ public partial class DemoViewModel
     }
 
     [RelayCommand]
-    private void TestTranslation()
+    private async Task TestTranslationAsync()
     {
-        new MockTranslationPipeline().Execute();
+        using var scope = Host.ServiceProvider.CreateScope();
+        var progressWindow = scope.ServiceProvider.GetRequiredService<ProgressWindow>();
+        await new MockTranslationPipeline(progressWindow, client).ExecuteAsync();
     }
 }

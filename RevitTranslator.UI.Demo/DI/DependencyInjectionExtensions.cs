@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 using RevitTranslator.Common.Contracts;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.UI.Demo.Utils;
 using RevitTranslator.UI.Demo.ViewModels;
+using RevitTranslator.UI.ViewModels;
+using TranslationService.Utils;
 
 namespace RevitTranslator.UI.Demo.DI;
 
@@ -12,11 +15,12 @@ public static class DependencyInjectionExtensions
     {
         serviceCollection
             .AddScoped<ICategoriesWindowViewModel, MockCategoriesWindowViewModel>()
-            .AddScoped<IProgressWindowViewModel, MockProgressWindowViewModel>()
-            .AddScoped<ISettingsViewModel, MockSettingsViewModel>()
+            .AddScoped<SettingsViewModel>()
             .AddScoped<IRevitViewProvider, MockRevitViewProvider>()
             .AddScoped<DemoWindow>()
-            .AddScoped<DemoViewModel>();
+            .AddScoped<DemoViewModel>()
+            .AddSingleton(_ => new HttpClient())
+            .AddSingleton<DeeplTranslationClient>();
 
         return serviceCollection;
     }

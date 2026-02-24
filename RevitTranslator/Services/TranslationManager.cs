@@ -7,7 +7,6 @@ using RevitTranslator.ElementTextRetrievers;
 using RevitTranslator.Models;
 using RevitTranslator.UI.Views;
 using RevitTranslator.Utils;
-using RevitTranslator.ViewModels;
 using TranslationService.Utils;
 
 namespace RevitTranslator.Services;
@@ -23,6 +22,7 @@ public class TranslationManager(
     private readonly CancellationTokenSource _cts = new();
     private List<DocumentTranslationEntityGroup>? _documentEntities;
     private Element[] _targetElements = [];
+    private TaskCompletionSource<bool>? _userDecisionTcs;
 
     public async Task ExecuteAsync(Element[] elements)
     {
@@ -55,11 +55,13 @@ public class TranslationManager(
 
         StrongReferenceMessenger.Default.Register(this);
 
+        progressWindow.Owner = Context.UiApplication.MainWindowHandle.ToWindow();
         progressWindow.Show();
 
         _documentEntities = GetTextFromElements();
         await TranslateDocumentsAsync(_documentEntities);
-        await UpdateRevitModelAsync();
+        if (await ShouldUpdateModelAsync())
+            await UpdateRevitModelAsync();
 
         StrongReferenceMessenger.Default.UnregisterAll(this);
     }
@@ -87,6 +89,18 @@ public class TranslationManager(
         {
             StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(true));
         }
+    }
+
+    private async Task<bool> ShouldUpdateModelAsync()
+    {
+        if (!_cts.IsCancellationRequested) return true;
+
+        _userDecisionTcs = new TaskCompletionSource<bool>();
+
+        StrongReferenceMessenger.Default.Register<TranslationManager, ModelUpdateDecisionMessage>(
+            this, static (r, msg) => r._userDecisionTcs?.TrySetResult(msg.ShouldUpdate));
+
+        return await _userDecisionTcs.Task;
     }
 
     private Task UpdateRevitModelAsync() =>

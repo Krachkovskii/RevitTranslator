@@ -4,19 +4,20 @@ using TranslationService.Utils;
 
 namespace RevitTranslator.UI.Demo.Utils;
 
-public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequestedMessage>
+public class MockConcurrentTranslationHandler(DeeplTranslationClient client) : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly List<Task> _tasks = [];
     private readonly CancellationTokenSource _cts = new();
     private CancellationToken _cancellationToken;
     private bool _useMockTranslations;
+    private TaskCompletionSource<bool>? _decisionTcs;
     private static readonly SemaphoreSlim Semaphore = new(5, 10);
 
     public async Task TranslateAsync(string[] texts, bool useMockTranslations)
     {
         _cancellationToken = _cts.Token;
         _useMockTranslations = useMockTranslations;
-        
+
         StrongReferenceMessenger.Default.Register(this);
         try
         {
@@ -26,15 +27,38 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
                 AddTranslationTask(text);
             }
 
-            await Task.WhenAll(_tasks)
-                .ContinueWith(_ =>
-                        StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(false)),
-                    _cancellationToken);
+            await Task.WhenAll(_tasks);
+
+            if (_cts.IsCancellationRequested)
+                throw new OperationCanceledException(_cancellationToken);
+
+            StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(false));
+            await SimulateModelUpdateAsync();
         }
         catch (OperationCanceledException)
         {
             StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(true));
+            if (await WaitForUserDecisionAsync())
+                await SimulateModelUpdateAsync();
         }
+        finally
+        {
+            StrongReferenceMessenger.Default.UnregisterAll(this);
+        }
+    }
+
+    private async Task<bool> WaitForUserDecisionAsync()
+    {
+        _decisionTcs = new TaskCompletionSource<bool>();
+        StrongReferenceMessenger.Default.Register<MockConcurrentTranslationHandler, ModelUpdateDecisionMessage>(
+            this, static (r, msg) => r._decisionTcs?.TrySetResult(msg.ShouldUpdate));
+        return await _decisionTcs.Task;
+    }
+
+    private async Task SimulateModelUpdateAsync()
+    {
+        await Task.Delay(1500);
+        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
     }
 
     private void AddTranslationTask(string text)
@@ -48,9 +72,9 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
             }
             else
             {
-                await TranslationUtils.TranslateTextAsync(text, _cancellationToken);
+                await client.TranslateTextAsync(text, _cancellationToken);
             }
-            
+
             StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));
         }, _cancellationToken));
     }
@@ -72,11 +96,11 @@ public class MockConcurrentTranslationHandler : IRecipient<TokenCancellationRequ
             Semaphore.Release();
         }
     }
-    
+
     public void Receive(TokenCancellationRequestedMessage message)
     {
         if (_cts.IsCancellationRequested) return;
-        
+
         _cts.Cancel();
     }
 }

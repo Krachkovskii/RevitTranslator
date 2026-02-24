@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RevitTranslator.Common.Contracts;
 using RevitTranslator.Services;
-using RevitTranslator.UI.Contracts;
+using RevitTranslator.UI.ViewModels;
 using RevitTranslator.Utils;
-using RevitTranslator.ViewModels;
 using System.Net.Http;
+using RevitTranslator.UI.Contracts;
+using RevitTranslator.ViewModels;
 using TranslationService.Utils;
 
 namespace RevitTranslator.DI;
@@ -15,8 +16,7 @@ public static class DependencyInjectionExtensions
     {
         return serviceCollection
             .AddScoped<ICategoriesWindowViewModel, CategoriesWindowViewModel>()
-            .AddScoped<IProgressWindowViewModel, ProgressWindowViewModel>()
-            .AddScoped<ISettingsViewModel, SettingsViewModel>();
+            .AddScoped<SettingsViewModel>();
     }
 
     public static IServiceCollection AddRevitServices(this IServiceCollection serviceCollection)

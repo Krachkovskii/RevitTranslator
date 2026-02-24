@@ -4,15 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    d:DataContext="{d:DesignInstance contracts:ISettingsViewModel}"
-    xmlns:contracts="clr-namespace:RevitTranslator.UI.Contracts"
+    d:DataContext="{d:DesignInstance viewModels:SettingsViewModel}"
+    xmlns:viewModels="clr-namespace:RevitTranslator.UI.ViewModels"
     xmlns:converters="clr-namespace:RevitTranslator.UI.Views.Converters"
     xmlns:languageModels="clr-namespace:TranslationService.Models;assembly=TranslationService"
     xmlns:markup="clr-namespace:RevitTranslator.Ui.Library.Markup;assembly=RevitTranslator.Ui.Library"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d"
-    Width="500"
-    Height="400"
+    Width="550"
+    SizeToContent="Height"
     ResizeMode="NoResize"
     ExtendsContentIntoTitleBar="True">
 
@@ -35,9 +35,14 @@
                 ShowMinimize="False" />
             <Button
                 DockPanel.Dock="Bottom"
-                Content="{Binding ButtonText}"
                 Command="{Binding SaveSettingsCommand}"
-                Style="{StaticResource LargeRectangularButton}" />
+                Style="{StaticResource LargeButton}">
+                <ui:TextBlock
+                    Margin="0 -2 0 0"
+                    VerticalAlignment="Center"
+                    FontTypography="Subtitle"
+                    Text="{Binding ButtonText, FallbackValue='Text'}"/>
+            </Button>
             <DockPanel
                 Margin="20">
 
@@ -47,17 +52,45 @@
                         Text="DeepL API key:"
                         FontTypography="Body" />
                     <ui:TextBox
-                        Text="{Binding DeeplApiKey, 
+                        FontSize="18"
+                        Text="{Binding DeeplApiKey,
                             UpdateSourceTrigger=PropertyChanged}"
                         Height="40"
                         Margin="0 10"
-                        ToolTip="Insert your DeepL API key here" />
-                    <CheckBox
-                        Padding="0"
-                        Content="I'm using paid DeepL API plan"
-                        IsChecked="{Binding IsPaidPlan,
-                            Mode=TwoWay,
-                            UpdateSourceTrigger=PropertyChanged}" />
+                        Style="{StaticResource ApiTextBoxStyle}"
+                        PlaceholderEnabled="True"
+                        PlaceholderText="Insert your DeepL API key here"/>
+                    <Grid>
+                        <Grid
+                            HorizontalAlignment="Left">
+                            <ui:TextBlock
+                                Visibility="{Binding IsPaidPlan, 
+                                    Converter={x:Static converters:Converters.InverseBoolVisibilityConverter}}"
+                                Style="{StaticResource Annotation}"
+                                Text="Free API plan"/>
+                            <ui:TextBlock
+                                Visibility="{Binding IsPaidPlan, 
+                                    Converter={x:Static converters:Converters.BoolVisibilityConverter}}"
+                                Style="{StaticResource Annotation}"
+                                Text="Paid API plan" /></Grid>
+                        <StackPanel
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                            <ui:TextBlock
+                                Style="{StaticResource Annotation}"
+                                Text="{Binding Usage, 
+                                    StringFormat={}Usage: {0} ch/month,
+                                    FallbackValue='Test monthly usage'}"/>
+                            <ui:TextBlock
+                                Margin="24 0 0 0"
+                                Style="{StaticResource Annotation}"
+                                Visibility="{Binding IsPaidPlan,
+                                    Converter={x:Static converters:Converters.InverseBoolVisibilityConverter}}"
+                                Text="{Binding Limit, 
+                                    StringFormat={}Limit: {0} ch/month,
+                                    FallbackValue='Test monthly limit'}"/>
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
                 <Rectangle
                     DockPanel.Dock="Top"
@@ -107,13 +140,15 @@
                         <ui:Button
                             Height="36"
                             Width="36"
+                            Padding="0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Top"
-                            Content="{markup:SymbolIcon ArrowTurnRight20}"
+                            TextElement.FontSize="18"
+                            Content="{markup:SymbolIcon ArrowSwap24}"
                             Command="{Binding SwitchLanguagesCommand}"
                             IsEnabled="{Binding IsAutoDetectChecked, 
                             Converter={x:Static converters:Converters.InverseBoolConverter}}"
-                            ToolTip="Reverse language selection"
+                            ToolTip="Swap languages"
                             Cursor="Hand" />
                     </StackPanel>
                     <StackPanel
@@ -130,12 +165,12 @@
                             SelectedItem="{Binding SelectedTargetLanguage}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         <TextBlock
-                            DockPanel.Dock="Bottom"
                             HorizontalAlignment="Right"
                             TextAlignment="Right"
                             Margin="0 15 0 0"
                             VerticalAlignment="Top"
-                            Style="{StaticResource Annotation}">
+                            Style="{StaticResource Annotation}"
+                            ToolTip="This link will open my LinkedIn page. Feel free to connect!">
                             <Run Text="Developed by" />
                             <Hyperlink
                                 Command="{Binding OpenLinkedinCommand}"
@@ -143,11 +178,21 @@
                                 <Run Text="Ilia Krachokvskii" />
                             </Hyperlink>
                         </TextBlock>
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            TextAlignment="Right"
+                            VerticalAlignment="Top"
+                            Style="{StaticResource Annotation}"
+                            ToolTip="This link will open GitHub Issues page - you can create an Issue so others could see its status too. Alternatively, you can send me a text over LinkedIn.">
+                            <Hyperlink
+                                Command="{Binding OpenLinkedinCommand}"
+                                CommandParameter="https://github.com/Krachkovskii/RevitTranslator/issues">
+                                <Run Text="Having an issue?" />
+                            </Hyperlink>
+                        </TextBlock>
                     </StackPanel>
                 </Grid>
             </DockPanel>
         </DockPanel>
-
     </Grid>
-
 </ui:FluentWindow>

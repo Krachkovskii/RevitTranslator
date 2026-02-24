@@ -10,11 +10,14 @@ public static class DependencyInjectionExtensions
     {
         serviceCollection
             .AddScoped<SettingsWindow>()
+            .AddTransient<Func<SettingsWindow>>(sp => sp.GetRequiredService<SettingsWindow>)
+            .AddScoped<ProgressWindowViewModel>()
             .AddScoped<ProgressWindow>()
+            .AddTransient<Func<ProgressWindow>>(sp => sp.GetRequiredService<ProgressWindow>)
             .AddScoped<CategoriesWindow>()
             .AddScoped<SheetsViewModel>()
             .AddScoped<SheetsWindow>();
-        
+
         return serviceCollection;
     }
 }

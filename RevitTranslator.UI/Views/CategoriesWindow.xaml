@@ -45,7 +45,7 @@
                 Content="{Binding MainButtonText}"
                 Command="{Binding TranslateCommand}"
                 Click="OnTranslateButtonClicked"
-                Style="{StaticResource LargeRectangularButton}" />
+                Style="{StaticResource LargeButton}" />
             <Grid
                 DockPanel.Dock="Top">
                 <ScrollViewer

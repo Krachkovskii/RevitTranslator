@@ -1,20 +1,19 @@
+using System.Windows;
 using Bogus;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
-using RevitTranslator.UI.Demo.ViewModels;
 using RevitTranslator.UI.Views;
 using TranslationService.Utils;
 
 namespace RevitTranslator.UI.Demo.Utils;
 
-public class MockTranslationPipeline
+public class MockTranslationPipeline(ProgressWindow progressWindow, DeeplTranslationClient client)
 {
-    public void Execute()
+    public async Task ExecuteAsync(bool useMockTranslations = false)
     {
         var faker = new Faker();
         var wordCount = faker.Random.Int(1, 50);
         var words = faker.Lorem.Words(wordCount);
-        Console.WriteLine($"Generated {wordCount} words");
 
         if (!DeeplSettingsUtils.Load())
         {
@@ -22,19 +21,15 @@ public class MockTranslationPipeline
             return;
         }
 
-        var viewModel = new MockProgressWindowViewModel(true);
-        var view = new ProgressWindow(viewModel);
-        view.Show();
+        progressWindow.Owner = Application.Current.MainWindow;
+        progressWindow.Show();
 
-        Task.Run(async () =>
-        {
-            await Task.Delay(2000);
-            StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(wordCount));
+        await Task.Delay(2000);
+        StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(wordCount));
 
-            await new MockConcurrentTranslationHandler().TranslateAsync(words, false);
-            
-            await Task.Delay(2000);
-            StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
-        });
+        await new MockConcurrentTranslationHandler(client).TranslateAsync(words, useMockTranslations);
+
+        await Task.Delay(2000);
+        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
     }
 }
