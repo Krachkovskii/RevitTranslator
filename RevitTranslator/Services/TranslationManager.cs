@@ -38,13 +38,13 @@ public class TranslationManager(
             }
         }
 
-        var canTranslate = await translationClient.TryTestTranslateAsync();
+        var canTranslate = await translationClient.CanTranslateAsync();
         if (!canTranslate)
         {
             var parentWindow = Context.UiApplication.MainWindowHandle.ToWindow();
             scopedServiceFactory().ShowDialog<SettingsWindow>(parentWindow);
 
-            if (!await translationClient.TryTestTranslateAsync())
+            if (!await translationClient.CanTranslateAsync())
             {
                 MessageBox
                     .Show("Settings are not valid. Elements will not be translated.",

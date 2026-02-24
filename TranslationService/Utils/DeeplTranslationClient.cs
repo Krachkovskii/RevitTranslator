@@ -54,21 +54,44 @@ public sealed class DeeplTranslationClient
     /// <returns>
     /// True if translation can be performed, false otherwise.
     /// </returns>
-    public async Task<bool> TryTestTranslateAsync()
+    public async Task<bool> CanTranslateAsync()
+    {
+        return await CheckUsageAsync() && Settings is not null;
+    }
+    
+    public Task<IReadOnlyCollection<LanguageDescriptor>> GetSourceLanguagesAsync() => GetLanguagesAsync(false);
+    public Task<IReadOnlyCollection<LanguageDescriptor>> GetTargetLanguagesAsync() => GetLanguagesAsync(true);
+
+    private async Task<IReadOnlyCollection<LanguageDescriptor>> GetLanguagesAsync(bool getTargetLanguages)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(Settings?.DeeplApiKey)) return false;
+            if (Settings is null) return [];
 
-            var res = await ProcessTranslationRequestAsync("bonjour", new CancellationTokenSource().Token);
-            return res is not null;
+            var parameter = getTargetLanguages ? "target" : "source";
+            var languagesUrl = $"{DeeplSettingsUtils.LanguagesBaseUrl}{parameter}";
+            using var request = new HttpRequestMessage(HttpMethod.Get, languagesUrl);
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("DeepL-Auth-Key", Settings.DeeplApiKey);
+            request.Headers.UserAgent.ParseAdd("RevitTranslator");
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return [];
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var entries = JsonSerializer.Deserialize<ApiLanguageItem[]>(responseBody, JsonSettings.Options);
+            if (entries is null) return [];
+
+            return entries
+                .Select(entry => new LanguageDescriptor(entry.Name, string.Empty, entry.Language))
+                .ToArray();
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException)
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException or TimeoutException)
         {
-            return false;
+            return [];
         }
     }
-
+    
     public async Task<bool> CheckUsageAsync()
     {
         try
