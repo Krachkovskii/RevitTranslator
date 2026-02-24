@@ -33,14 +33,26 @@ jobs:
       - name: Run tests
         run: dotnet test RevitTranslator.Tests/RevitTranslator.Tests.csproj --no-restore
 
+      - name: Restore R23
+        run: dotnet restore -p:Configuration="Release R23"
+
       - name: Build Release R23
         run: dotnet build -c "Release R23" --no-restore -p:Version=${{ steps.version.outputs.VERSION }}
+
+      - name: Restore R24
+        run: dotnet restore -p:Configuration="Release R24"
 
       - name: Build Release R24
         run: dotnet build -c "Release R24" --no-restore -p:Version=${{ steps.version.outputs.VERSION }}
 
+      - name: Restore R25
+        run: dotnet restore -p:Configuration="Release R25"
+
       - name: Build Release R25
         run: dotnet build -c "Release R25" --no-restore -p:Version=${{ steps.version.outputs.VERSION }}
+
+      - name: Restore R26
+        run: dotnet restore -p:Configuration="Release R26"
 
       - name: Build Release R26
         run: dotnet build -c "Release R26" --no-restore -p:Version=${{ steps.version.outputs.VERSION }}
