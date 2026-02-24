@@ -23,14 +23,16 @@ public partial class SettingsViewModel : ObservableValidator
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
-    private LanguageDescriptor? _selectedSourceLanguage = DeeplLanguageCodes.TargetLanguages[0];
+    private LanguageDescriptor? _selectedSourceLanguage;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
-    private LanguageDescriptor _selectedTargetLanguage = DeeplLanguageCodes.TargetLanguages[1];
+    private LanguageDescriptor? _selectedTargetLanguage;
 
     [ObservableProperty] private string _buttonText = string.Empty;
     [ObservableProperty] private bool _isAutoDetectChecked;
+    [ObservableProperty] private LanguageDescriptor[] _sourceLanguages = [];
+    [ObservableProperty] private LanguageDescriptor[] _targetLanguages = [];
 
     private LanguageDescriptor? _previousLanguage;
     private readonly DeeplTranslationClient _translationClient;
@@ -52,7 +54,14 @@ public partial class SettingsViewModel : ObservableValidator
     public int Limit => _translationClient.Limit;
 
     [RelayCommand]
-    private Task OnLoadedAsync() => UpdateUsageAsync();
+    private async Task OnLoadedAsync()
+    {
+        if (IsApiKeyValid)
+        {
+            await LoadLanguagesAsync();
+        }
+        await UpdateUsageAsync();
+    }
 
     [RelayCommand]
     private void SwitchLanguages()
@@ -101,7 +110,7 @@ public partial class SettingsViewModel : ObservableValidator
 
         DeeplApiKey = sanitizedKey;
 
-        var test = await _translationClient.TryTestTranslateAsync();
+        var test = await _translationClient.CanTranslateAsync();
         if (test)
         {
             ButtonText = "Settings saved";
@@ -142,7 +151,7 @@ public partial class SettingsViewModel : ObservableValidator
         }
         else
         {
-            SelectedSourceLanguage = _previousLanguage ??= DeeplLanguageCodes.TargetLanguages[0];
+            SelectedSourceLanguage = _previousLanguage ??= TargetLanguages[0];
         }
     }
 
@@ -161,6 +170,23 @@ public partial class SettingsViewModel : ObservableValidator
         ButtonText = hasChanges ? "Save Settings" : "Settings saved";
 
         return hasChanges;
+    }
+
+    partial void OnDeeplApiKeyChanged(string value)
+    {
+        if (!IsApiKeyValid) return;
+        if (SourceLanguages.Length > 0) return;
+        
+        _ = LoadLanguagesAsync();
+    }
+
+    private async Task LoadLanguagesAsync()
+    {
+        var sourceLanguages = await _translationClient.GetSourceLanguagesAsync();
+        var targetLanguages = await _translationClient.GetTargetLanguagesAsync();
+            
+        SourceLanguages = sourceLanguages.OrderBy(lang => lang.VisibleName).ToArray();
+        TargetLanguages = targetLanguages.OrderBy(lang => lang.VisibleName).ToArray();
     }
     
     private async Task UpdateUsageAsync()
