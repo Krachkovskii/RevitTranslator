@@ -75,28 +75,28 @@ jobs:
             $url = "$baseUrl/$msiName"
             $size = (Get-Item $msiPath).Length
 
-            $xml = @"
-<?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
-  <channel>
-    <title>Revit Translator</title>
-    <link>https://github.com/Krachkovskii/RevitTranslator</link>
-    <description>Machine translation for Revit models using DeepL API</description>
-    <language>en-us</language>
-    <item>
-      <title>Version $version</title>
-      <pubDate>$pubDate</pubDate>
-      <sparkle:releaseNotesLink>https://github.com/Krachkovskii/RevitTranslator/releases/tag/$tag</sparkle:releaseNotesLink>
-      <enclosure
-        url="$url"
-        sparkle:version="$version"
-        sparkle:os="windows"
-        type="application/x-msi"
-        length="$size" />
-    </item>
-  </channel>
-</rss>
-"@
+            $xml = @(
+              '<?xml version="1.0" encoding="utf-8"?>',
+              '<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">',
+              '  <channel>',
+              '    <title>Revit Translator</title>',
+              '    <link>https://github.com/Krachkovskii/RevitTranslator</link>',
+              '    <description>Machine translation for Revit models using DeepL API</description>',
+              '    <language>en-us</language>',
+              '    <item>',
+              "      <title>Version $version</title>",
+              "      <pubDate>$pubDate</pubDate>",
+              "      <sparkle:releaseNotesLink>https://github.com/Krachkovskii/RevitTranslator/releases/tag/$tag</sparkle:releaseNotesLink>",
+              '      <enclosure',
+              "        url=`"$url`"",
+              "        sparkle:version=`"$version`"",
+              '        sparkle:os="windows"',
+              '        type="application/x-msi"',
+              "        length=`"$size`" />",
+              '    </item>',
+              '  </channel>',
+              '</rss>'
+            ) -join "`n"
             $xml | Out-File -FilePath "appcast-R${rv}.xml" -Encoding utf8NoBOM
           }
 
