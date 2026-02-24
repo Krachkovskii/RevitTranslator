@@ -111,9 +111,10 @@
                             Text="From:"
                             Style="{StaticResource Annotation}" />
                         <ComboBox
-                            ItemsSource="{Binding 
-                                Source={x:Static languageModels:DeeplLanguageCodes.TargetLanguages}}"
+                            x:Name="SourceComboBox"
+                            ItemsSource="{Binding SourceLanguages}"
                             DisplayMemberPath="VisibleName"
+                            Style="{StaticResource WrapPanelComboBoxStyle}"
                             IsEnabled="{Binding SelectedSourceLanguage,
                                 Converter={x:Static converters:Converters.ObjectNotNullBoolConverter},
                                 Mode=TwoWay,
@@ -158,12 +159,12 @@
                             Text="To:"
                             Style="{StaticResource Annotation}" />
                         <ComboBox
+                            x:Name="TargetComboBox"
+                            Style="{StaticResource WrapPanelComboBoxStyle}"
                             Foreground="Black"
-                            ItemsSource="{Binding 
-                                Source={x:Static languageModels:DeeplLanguageCodes.TargetLanguages}}"
+                            ItemsSource="{Binding TargetLanguages}"
                             DisplayMemberPath="VisibleName"
-                            SelectedItem="{Binding SelectedTargetLanguage}"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                            SelectedItem="{Binding SelectedTargetLanguage}" />
                         <TextBlock
                             HorizontalAlignment="Right"
                             TextAlignment="Right"

@@ -14,7 +14,6 @@
     MinHeight="150"
     SizeToContent="Height"
     ResizeMode="NoResize"
-    Topmost="True"
     WindowStartupLocation="CenterScreen">
 
     <ui:FluentWindow.Resources>
@@ -112,23 +111,23 @@
                     Grid.Column="0"
                     TextAlignment="Right"
                     Style="{StaticResource Annotation}"
-                    Text="{Binding MonthlyCharacterCount}" />
+                    Text="{Binding MonthlyCharacterCount, FallbackValue=-999999}" />
                 <ui:TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
                     TextAlignment="Right"
                     Style="{StaticResource Annotation}"
-                    Text="{Binding MonthlyCharacterLimit}" />
+                    Text="{Binding MonthlyCharacterLimit, FallbackValue=-999999}" />
                 <ui:TextBlock
                     Grid.Row="0"
                     Grid.Column="1"
                     Style="{StaticResource Annotation}"
-                    Text=" ch used this month" />
+                    Text=" ch/month used" />
                 <ui:TextBlock
                     Grid.Row="1"
                     Grid.Column="1"
                     Style="{StaticResource Annotation}"
-                    Text=" ch monthly limit" />
+                    Text=" ch/month limit" />
             </Grid>
         </Grid>
 

@@ -19,19 +19,12 @@ public partial class ProgressWindow
         InitializeComponent();
 
         Loaded += OnLoaded;
-        ContentRendered += OnContentRendered;
 
         ApplicationThemeManager.Apply(this);
         if (Environment.OSVersion.Version >= new Version(10, 0, 22000))
         {
             WindowBackdropType = WindowBackdropType.Acrylic;
         }
-    }
-
-    private void OnContentRendered(object sender, EventArgs e)
-    {
-        Top -= 200;
-        ContentRendered -= OnContentRendered;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)

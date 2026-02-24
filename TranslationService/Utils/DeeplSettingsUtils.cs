@@ -43,6 +43,7 @@ public static class DeeplSettingsUtils
 
     public static string TranslationUrl { get; private set; } = string.Empty;
     public static string UsageUrl { get; private set; } = string.Empty;
+    public static string LanguagesBaseUrl { get; private set; } = string.Empty;
 
     /// <summary>
     /// Loads the settings from a JSON file.
@@ -139,14 +140,12 @@ public static class DeeplSettingsUtils
     {
         if (descriptor is null) return;
 
-        var translationUrl = descriptor.IsPaidPlan
-            ? "https://api.deepl.com/v2"
-            : "https://api-free.deepl.com/v2";
-        var usageUrl = descriptor.IsPaidPlan
+        var baseUrl = descriptor.IsPaidPlan
             ? "https://api.deepl.com/v2"
             : "https://api-free.deepl.com/v2";
 
-        TranslationUrl = $"{translationUrl}/translate";
-        UsageUrl = $"{usageUrl}/usage";
+        TranslationUrl = $"{baseUrl}/translate";
+        UsageUrl = $"{baseUrl}/usage";
+        LanguagesBaseUrl = $"{baseUrl}/languages?type=";
     }
 }
