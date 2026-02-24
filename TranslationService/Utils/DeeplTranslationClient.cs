@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
@@ -128,19 +129,11 @@ public sealed class DeeplTranslationClient
 
     private async Task<string?> ProcessTranslationRequestAsync(string text, CancellationToken token)
     {
-        var content = new FormUrlEncodedContent(
-        [
-            new KeyValuePair<string, string>("text", text),
-            new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"),
-            new KeyValuePair<string, string>("target_lang", Settings!.TargetLanguage.TargetLanguageCode),
-            new KeyValuePair<string, string?>("source_lang", Settings.SourceLanguage?.SourceLanguageCode)
-        ]);
-
         try
         {
             token.ThrowIfCancellationRequested();
 
-            var response = await SendTranslationRequestWithRateLimitAsync(content, token);
+            var response = await SendTranslationRequestWithRateLimitAsync(text, token);
             if (response is null) return null;
 
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -154,7 +147,7 @@ public sealed class DeeplTranslationClient
         }
     }
 
-    private async Task<HttpResponseMessage?> SendTranslationRequestWithRateLimitAsync(FormUrlEncodedContent content, CancellationToken token)
+    private async Task<HttpResponseMessage?> SendTranslationRequestWithRateLimitAsync(string text, CancellationToken token)
     {
         try
         {
@@ -166,6 +159,13 @@ public sealed class DeeplTranslationClient
             {
                 if (retryCount > retryLimit) return null;
 
+                using var content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("text", text),
+                    new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"),
+                    new KeyValuePair<string, string>("target_lang", Settings!.TargetLanguage.TargetLanguageCode),
+                    new KeyValuePair<string, string?>("source_lang", Settings.SourceLanguage?.SourceLanguageCode)
+                ]);
                 using var request = new HttpRequestMessage(HttpMethod.Post, TranslationUrl)
                 {
                     Content = content
@@ -214,10 +214,28 @@ public sealed class DeeplTranslationClient
             StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage(exception.Message));
             return null;
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        catch (HttpRequestException ex) when (IsNetworkUnavailable(ex))
         {
             StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage("Network error occurred. Please check your connection."));
             return null;
         }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    private static bool IsNetworkUnavailable(HttpRequestException ex)
+    {
+#if NET8_0_OR_GREATER
+        return ex.HttpRequestError is HttpRequestError.NameResolutionError
+            or HttpRequestError.ConnectionError;
+#else
+        return ex.InnerException is SocketException socketEx
+               && socketEx.SocketErrorCode is (SocketError.NetworkUnreachable
+                   or SocketError.NetworkDown
+                   or SocketError.HostUnreachable
+                   or SocketError.HostNotFound);
+#endif
     }
 }
