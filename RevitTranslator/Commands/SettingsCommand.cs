@@ -4,7 +4,6 @@ using Nice3point.Revit.Toolkit.External;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Services;
 using RevitTranslator.UI.Views;
-using SettingsViewModel = RevitTranslator.ViewModels.SettingsViewModel;
 
 namespace RevitTranslator.Commands;
 
