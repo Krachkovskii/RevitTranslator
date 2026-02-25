@@ -12,13 +12,17 @@ namespace RevitTranslator.Services;
 public sealed class UpdaterService : IDisposable
 {
 #if REVIT2023
-    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R23.xml";
+    private const string AppCastUrl =
+        "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R23.xml";
 #elif REVIT2024
-    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R24.xml";
+    private const string AppCastUrl =
+ "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R24.xml";
 #elif REVIT2025
-    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R25.xml";
+    private const string AppCastUrl =
+ "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R25.xml";
 #else
-    private const string AppCastUrl = "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R26.xml";
+    private const string AppCastUrl =
+ "https://raw.githubusercontent.com/Krachkovskii/RevitTranslator/main/appcast-R26.xml";
 #endif
     private const string MsiExtension = ".msi";
 
@@ -44,7 +48,11 @@ public sealed class UpdaterService : IDisposable
 
     public bool HasPendingUpdate => _pendingMsiPath is not null;
 
-    public void StartCheckLoop() => _sparkle.StartLoop(true);
+    public void StartCheckLoop()
+    {
+        _sparkle.StartLoop(true);
+        _sparkle.CheckForUpdatesQuietly();
+    }
 
     public void TriggerDelayedInstall()
     {
@@ -58,9 +66,10 @@ public sealed class UpdaterService : IDisposable
         {
             await _sparkle.InitAndBeginDownload(args.LatestVersion);
         }
-        catch (Exception e)
+        catch
         {
-            throw; // TODO handle exception
+            // do nothing for now
+            // TODO: handle errors
         }
     }
 
