@@ -17,7 +17,8 @@ public class TranslationManager(
     ModelUpdaterService modelUpdaterService,
     EventHandlers handlers,
     Func<ScopedWindowService> scopedServiceFactory,
-    DeeplTranslationClient translationClient) : IRecipient<TokenCancellationRequestedMessage>
+    DeeplTranslationClient translationClient,
+    TranslationReportService reportService) : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly CancellationTokenSource _cts = new();
     private List<DocumentTranslationEntityGroup>? _documentEntities;
@@ -61,7 +62,10 @@ public class TranslationManager(
         _documentEntities = GetTextFromElements();
         await TranslateDocumentsAsync(_documentEntities);
         if (await ShouldUpdateModelAsync())
+        {
             await UpdateRevitModelAsync();
+            reportService.CreateReport(_documentEntities!);
+        }
 
         StrongReferenceMessenger.Default.UnregisterAll(this);
     }

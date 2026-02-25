@@ -41,7 +41,7 @@
                     Margin="0 -2 0 0"
                     VerticalAlignment="Center"
                     FontTypography="Subtitle"
-                    Text="{Binding ButtonText, FallbackValue='Text'}"/>
+                    Text="{Binding ButtonText, FallbackValue='Text'}" />
             </Button>
             <DockPanel
                 Margin="20">
@@ -59,7 +59,7 @@
                         Margin="0 10"
                         Style="{StaticResource ApiTextBoxStyle}"
                         PlaceholderEnabled="True"
-                        PlaceholderText="Insert your DeepL API key here"/>
+                        PlaceholderText="Insert your DeepL API key here" />
                     <Grid>
                         <Grid
                             HorizontalAlignment="Left">
@@ -67,12 +67,13 @@
                                 Visibility="{Binding IsPaidPlan, 
                                     Converter={x:Static converters:Converters.InverseBoolVisibilityConverter}}"
                                 Style="{StaticResource Annotation}"
-                                Text="Free API plan"/>
+                                Text="Free API plan" />
                             <ui:TextBlock
                                 Visibility="{Binding IsPaidPlan, 
                                     Converter={x:Static converters:Converters.BoolVisibilityConverter}}"
                                 Style="{StaticResource Annotation}"
-                                Text="Paid API plan" /></Grid>
+                                Text="Paid API plan" />
+                        </Grid>
                         <StackPanel
                             Orientation="Horizontal"
                             HorizontalAlignment="Right">
@@ -80,7 +81,7 @@
                                 Style="{StaticResource Annotation}"
                                 Text="{Binding Usage, 
                                     StringFormat={}Usage: {0} ch/month,
-                                    FallbackValue='Test monthly usage'}"/>
+                                    FallbackValue='Test monthly usage'}" />
                             <ui:TextBlock
                                 Margin="24 0 0 0"
                                 Style="{StaticResource Annotation}"
@@ -88,7 +89,7 @@
                                     Converter={x:Static converters:Converters.InverseBoolVisibilityConverter}}"
                                 Text="{Binding Limit, 
                                     StringFormat={}Limit: {0} ch/month,
-                                    FallbackValue='Test monthly limit'}"/>
+                                    FallbackValue='Test monthly limit'}" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
@@ -98,7 +99,8 @@
                     Fill="LightGray"
                     Height="1"
                     Margin="0 15" />
-                <Grid>
+                <Grid
+                    DockPanel.Dock="Top">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="50" />
@@ -165,20 +167,18 @@
                             ItemsSource="{Binding TargetLanguages}"
                             DisplayMemberPath="VisibleName"
                             SelectedItem="{Binding SelectedTargetLanguage}" />
-                        <TextBlock
-                            HorizontalAlignment="Right"
-                            TextAlignment="Right"
-                            Margin="0 15 0 0"
-                            VerticalAlignment="Top"
-                            Style="{StaticResource Annotation}"
-                            ToolTip="This link will open my LinkedIn page. Feel free to connect!">
-                            <Run Text="Developed by" />
-                            <Hyperlink
-                                Command="{Binding OpenLinkedinCommand}"
-                                CommandParameter="https://www.linkedin.com/in/ilia-krachkovskii/">
-                                <Run Text="Ilia Krachokvskii" />
-                            </Hyperlink>
-                        </TextBlock>
+
+                    </StackPanel>
+                </Grid>
+                <Grid>
+                    <ui:HyperlinkButton
+                        Margin="0 12"
+                        Appearance="Transparent"
+                        HorizontalAlignment="Left"
+                        Content="Open folder with previous reports"
+                        Command="{Binding OpenReportsFolderCommand}" />
+                    <StackPanel
+                        Orientation="Vertical">
                         <StackPanel
                             Orientation="Horizontal"
                             HorizontalAlignment="Right">
@@ -187,7 +187,7 @@
                                 Text="{Binding Version, 
                                     FallbackValue='Version 9.9.9.9',
                                     StringFormat={}Version {0}}"
-                                Style="{StaticResource Annotation}"/>
+                                Style="{StaticResource Annotation}" />
                             <TextBlock
                                 HorizontalAlignment="Right"
                                 TextAlignment="Right"
@@ -201,7 +201,20 @@
                                 </Hyperlink>
                             </TextBlock>
                         </StackPanel>
-                    </StackPanel>
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            TextAlignment="Right"
+                            Margin="0 4 0 0"
+                            VerticalAlignment="Top"
+                            Style="{StaticResource Annotation}"
+                            ToolTip="This link will open my LinkedIn page. Feel free to connect!">
+                            <Run Text="Developed by" />
+                            <Hyperlink
+                                Command="{Binding OpenLinkedinCommand}"
+                                CommandParameter="https://www.linkedin.com/in/ilia-krachkovskii/">
+                                <Run Text="Ilia Krachokvskii" />
+                            </Hyperlink>
+                        </TextBlock></StackPanel>
                 </Grid>
             </DockPanel>
         </DockPanel>
