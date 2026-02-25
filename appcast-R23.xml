@@ -6,12 +6,12 @@
     <description>Machine translation for Revit models using DeepL API</description>
     <language>en-us</language>
     <item>
-      <title>Version 2.1.0</title>
-      <pubDate>Wed, 25 Feb 2026 19:24:11 +0000</pubDate>
-      <sparkle:releaseNotesLink>https://github.com/Krachkovskii/RevitTranslator/releases/tag/v2.1.0</sparkle:releaseNotesLink>
+      <title>Version 2.1.1</title>
+      <pubDate>Wed, 25 Feb 2026 20:33:07 +0000</pubDate>
+      <sparkle:releaseNotesLink>https://github.com/Krachkovskii/RevitTranslator/releases/tag/v2.1.1</sparkle:releaseNotesLink>
       <enclosure
-        url="https://github.com/Krachkovskii/RevitTranslator/releases/download/v2.1.0/Revit_Translator_V23.msi"
-        sparkle:version="2.1.0"
+        url="https://github.com/Krachkovskii/RevitTranslator/releases/download/v2.1.1/Revit_Translator_V23.msi"
+        sparkle:version="2.1.1"
         sparkle:os="windows"
         type="application/x-msi"
         length="5353472" />
