@@ -179,18 +179,28 @@
                                 <Run Text="Ilia Krachokvskii" />
                             </Hyperlink>
                         </TextBlock>
-                        <TextBlock
-                            HorizontalAlignment="Right"
-                            TextAlignment="Right"
-                            VerticalAlignment="Top"
-                            Style="{StaticResource Annotation}"
-                            ToolTip="This link will open GitHub Issues page - you can create an Issue so others could see its status too. Alternatively, you can send me a text over LinkedIn.">
-                            <Hyperlink
-                                Command="{Binding OpenLinkedinCommand}"
-                                CommandParameter="https://github.com/Krachkovskii/RevitTranslator/issues">
-                                <Run Text="Having an issue?" />
-                            </Hyperlink>
-                        </TextBlock>
+                        <StackPanel
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                            <TextBlock
+                                Margin="0 0 16 0"
+                                Text="{Binding Version, 
+                                    FallbackValue='Version 9.9.9.9',
+                                    StringFormat={}Version {0}}"
+                                Style="{StaticResource Annotation}"/>
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                TextAlignment="Right"
+                                VerticalAlignment="Top"
+                                Style="{StaticResource Annotation}"
+                                ToolTip="This link will open GitHub Issues page - you can create an Issue so others could see its status too. Alternatively, you can send me a text over LinkedIn.">
+                                <Hyperlink
+                                    Command="{Binding OpenLinkedinCommand}"
+                                    CommandParameter="https://github.com/Krachkovskii/RevitTranslator/issues">
+                                    <Run Text="Having an issue?" />
+                                </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </DockPanel>
