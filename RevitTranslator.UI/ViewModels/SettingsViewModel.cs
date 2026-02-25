@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,6 +21,7 @@ public partial class SettingsViewModel : ObservableValidator
 
     public bool IsApiKeyValid => ApiKeyValidator.TryValidate(DeeplApiKey, out _, out _);
     public bool? IsPaidPlan => IsApiKeyValid ? !ApiKeyValidator.IsFreePlan(DeeplApiKey) : null;
+    public string Version { get; } = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
@@ -36,7 +38,7 @@ public partial class SettingsViewModel : ObservableValidator
 
     private LanguageDescriptor? _previousLanguage;
     private readonly DeeplTranslationClient _translationClient;
-
+    
     public SettingsViewModel(DeeplTranslationClient translationClient)
     {
         _translationClient = translationClient;
@@ -48,6 +50,7 @@ public partial class SettingsViewModel : ObservableValidator
         }
         SetSettingsValues();
         ButtonText = "Save Settings";
+        Version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "";
     }
     
     public int Usage => _translationClient.Usage;
