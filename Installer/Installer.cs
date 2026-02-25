@@ -24,7 +24,7 @@ public static class Installer
                 OutFileName = $"Revit_Translator_V{version}",
                 Name = $"Revit Translator for Revit 20{version}",
                 Platform = Platform.x64,
-                InstallScope = InstallScope.perMachine,
+                InstallScope = InstallScope.perUser,
                 UI = WUI.WixUI_ProgressOnly,
                 MajorUpgrade = new MajorUpgrade
                 {
