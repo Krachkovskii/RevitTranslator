@@ -95,6 +95,19 @@ public static class DeeplSettingsUtils
         }
     }
 
+    /// <summary>
+    /// Validates that settings are usable for translation:
+    /// a non-null target language and a working API key verified via a real DeepL request.
+    /// Loads settings from disk if not yet loaded.
+    /// </summary>
+    public static async Task<bool> ValidateAsync(DeeplTranslationClient client)
+    {
+        if (CurrentSettings is null) Load();
+        if (CurrentSettings?.TargetLanguage is null) return false;
+
+        return await client.CanTranslateAsync();
+    }
+
     public static void Save(this DeeplSettingsDescriptor descriptor) => descriptor.SaveToJson();
 
     private static void SaveToJson(this DeeplSettingsDescriptor settingsDescriptor)

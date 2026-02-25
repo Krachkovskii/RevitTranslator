@@ -5,7 +5,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Contracts;
+using RevitTranslator.Common.Messages;
 using TranslationService.Models;
 using TranslationService.Utils;
 using TranslationService.Validation;
@@ -116,6 +118,8 @@ public partial class SettingsViewModel : ObservableValidator
         DeeplApiKey = sanitizedKey;
 
         var test = await _translationClient.CanTranslateAsync();
+        StrongReferenceMessenger.Default.Send(new SettingsValidityChangedMessage(test));
+
         if (test)
         {
             await UpdateUsageAsync();
@@ -189,8 +193,8 @@ public partial class SettingsViewModel : ObservableValidator
 
     private async Task LoadLanguagesAsync()
     {
-        var sourceLanguages = await _translationClient.GetSourceLanguagesAsync();
-        var targetLanguages = await _translationClient.GetTargetLanguagesAsync();
+        var sourceLanguages = await _translationClient.GetSourceLanguagesAsync(DeeplApiKey);
+        var targetLanguages = await _translationClient.GetTargetLanguagesAsync(DeeplApiKey);
 
         SourceLanguages = sourceLanguages.OrderBy(lang => lang.VisibleName).ToArray();
         TargetLanguages = targetLanguages.OrderBy(lang => lang.VisibleName).ToArray();
