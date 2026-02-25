@@ -5,6 +5,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using RevitTranslator.Common.Contracts;
+using RevitTranslator.Common.Messages;
 using TranslationService.Models;
 using TranslationService.Utils;
 using TranslationService.Validation;
@@ -23,12 +26,10 @@ public partial class SettingsViewModel : ObservableValidator
     public bool? IsPaidPlan => IsApiKeyValid ? !ApiKeyValidator.IsFreePlan(DeeplApiKey) : null;
     public string Version { get; } = "";
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private LanguageDescriptor? _selectedSourceLanguage;
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     private LanguageDescriptor? _selectedTargetLanguage;
 
     [ObservableProperty] private string _buttonText = string.Empty;
@@ -38,21 +39,24 @@ public partial class SettingsViewModel : ObservableValidator
 
     private LanguageDescriptor? _previousLanguage;
     private readonly DeeplTranslationClient _translationClient;
-    
-    public SettingsViewModel(DeeplTranslationClient translationClient)
+    private readonly ITranslationReportService _reportService;
+
+    public SettingsViewModel(DeeplTranslationClient translationClient, ITranslationReportService reportService)
     {
         _translationClient = translationClient;
+        _reportService = reportService;
 
         if (!DeeplSettingsUtils.Load())
         {
             ButtonText = "Failed to load settings";
             return;
         }
+
         SetSettingsValues();
         ButtonText = "Save Settings";
         Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
     }
-    
+
     public int Usage => _translationClient.Usage;
     public int Limit => _translationClient.Limit;
 
@@ -63,6 +67,7 @@ public partial class SettingsViewModel : ObservableValidator
         {
             await LoadLanguagesAsync();
         }
+
         await UpdateUsageAsync();
     }
 
@@ -80,10 +85,9 @@ public partial class SettingsViewModel : ObservableValidator
     [RelayCommand]
     private void OpenLinkedin(string uri)
     {
-        if (Uri.TryCreate(uri, UriKind.Absolute, out var validUri))
-        {
-            Process.Start(new ProcessStartInfo(validUri.AbsoluteUri) { UseShellExecute = true });
-        }
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out var validUri)) return;
+
+        Process.Start(new ProcessStartInfo(validUri.AbsoluteUri) { UseShellExecute = true });
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteSaveSettings))]
@@ -114,8 +118,11 @@ public partial class SettingsViewModel : ObservableValidator
         DeeplApiKey = sanitizedKey;
 
         var test = await _translationClient.CanTranslateAsync();
+        StrongReferenceMessenger.Default.Send(new SettingsValidityChangedMessage(test));
+
         if (test)
         {
+            await UpdateUsageAsync();
             ButtonText = "Settings saved";
             return;
         }
@@ -128,9 +135,10 @@ public partial class SettingsViewModel : ObservableValidator
 
         await Task.Delay(3000);
         ButtonText = "Settings were restored";
-
-        await UpdateUsageAsync();
     }
+
+    [RelayCommand]
+    private void OpenReportsFolder() => _reportService.OpenReportDirectory();
 
     private void SetSettingsValues()
     {
@@ -161,7 +169,7 @@ public partial class SettingsViewModel : ObservableValidator
     private bool CanExecuteSaveSettings()
     {
         if (!IsApiKeyValid) return false;
-        
+
         var savedSettings = DeeplSettingsUtils.CurrentSettings;
         if (savedSettings is null) return true;
 
@@ -179,19 +187,21 @@ public partial class SettingsViewModel : ObservableValidator
     {
         if (!IsApiKeyValid) return;
         if (SourceLanguages.Length > 0) return;
-        
+
         _ = LoadLanguagesAsync();
     }
 
     private async Task LoadLanguagesAsync()
     {
-        var sourceLanguages = await _translationClient.GetSourceLanguagesAsync();
-        var targetLanguages = await _translationClient.GetTargetLanguagesAsync();
-            
+        var sourceLanguages = await _translationClient.GetSourceLanguagesAsync(DeeplApiKey);
+        var targetLanguages = await _translationClient.GetTargetLanguagesAsync(DeeplApiKey);
+
         SourceLanguages = sourceLanguages.OrderBy(lang => lang.VisibleName).ToArray();
         TargetLanguages = targetLanguages.OrderBy(lang => lang.VisibleName).ToArray();
+        
+        SelectedSourceLanguage ??= SourceLanguages.First();
     }
-    
+
     private async Task UpdateUsageAsync()
     {
         await _translationClient.CheckUsageAsync();

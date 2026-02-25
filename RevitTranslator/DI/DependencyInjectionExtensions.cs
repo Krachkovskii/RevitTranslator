@@ -22,7 +22,10 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddRevitServices(this IServiceCollection serviceCollection)
     {
         return serviceCollection
+            .AddSingleton<RibbonService>()
             .AddScoped<TranslationManager>()
+            .AddSingleton<TranslationReportService>()
+            .AddSingleton<ITranslationReportService>(sp => sp.GetRequiredService<TranslationReportService>())
             .AddScoped<ConcurrentTranslationService>()
             .AddScoped<CategorySelectionService>()
             .AddScoped<SheetSelectionService>()

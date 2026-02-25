@@ -2,6 +2,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using RevitTranslator.Common.Contracts;
 using RevitTranslator.Common.Messages;
 using TranslationService.Utils;
 
@@ -15,6 +16,8 @@ public partial class ProgressWindowViewModel : ObservableObject,
     IDisposable
 {
     private readonly DeeplTranslationClient _deeplClient;
+    private readonly ITranslationReportService _reportService;
+    
     [ObservableProperty] private int _totalTranslationCount;
     [ObservableProperty] private int _finishedTranslationCount;
     [ObservableProperty] private int _monthlyCharacterLimit;
@@ -33,13 +36,12 @@ public partial class ProgressWindowViewModel : ObservableObject,
     private bool _isAwaitingConfirmation;
     private bool _isModelUpdateActive;
     private readonly DispatcherTimer _uiUpdateTimer;
-
-    public bool IsAwaitingConfirmation => _isAwaitingConfirmation;
-
-    public ProgressWindowViewModel(DeeplTranslationClient deeplClient)
+    
+    public ProgressWindowViewModel(DeeplTranslationClient deeplClient, ITranslationReportService reportService)
     {
         _deeplClient = deeplClient;
-        
+        _reportService = reportService;
+
         StrongReferenceMessenger.Default.Register<TextRetrievedMessage>(this);
         StrongReferenceMessenger.Default.Register<EntityTranslatedMessage>(this);
         StrongReferenceMessenger.Default.Register<TranslationFinishedMessage>(this);
@@ -71,6 +73,9 @@ public partial class ProgressWindowViewModel : ObservableObject,
         else
             CancelTranslation();
     }
+
+    [RelayCommand]
+    private void OpenReportCommand() => _reportService.OpenLastReportDirectory();
 
     private void CancelTranslation()
     {
