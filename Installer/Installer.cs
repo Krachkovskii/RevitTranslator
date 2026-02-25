@@ -15,8 +15,8 @@ public static class Installer
             var configDir = GetConfigurationPath(version);
             if (!AreBinariesFresh(configDir)) throw new Exception($"Binaries for Revit 20{version} are not fresh.");
                 
-            var assemblies = new Files($@"{configDir}\*.*");
-            var manifest = new Files($@"{MainDirectoryPath}\{Constants.ProjectName}.addin");
+            var assemblies = new DirFiles($@"{configDir}\*.*");
+            var manifest = new WixSharp.File($@"{MainDirectoryPath}\{Constants.ProjectName}.addin");
             
             var project = new Project
             {
