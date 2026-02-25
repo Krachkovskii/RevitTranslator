@@ -1,4 +1,6 @@
 ﻿using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
+using RevitTranslator.Common.Messages;
 using RevitTranslator.Ui.Library.Controls;
 using RevitTranslator.UI.ViewModels;
 using RevitTranslator.Ui.Library.Appearance;
@@ -8,7 +10,7 @@ namespace RevitTranslator.UI.Views;
 /// <summary>
 /// Interaction logic for ProgressWindow.xaml
 /// </summary>
-public partial class ProgressWindow
+public partial class ProgressWindow : IRecipient<ModelUpdatedMessage>
 {
     private readonly ProgressWindowViewModel _viewModel;
 
@@ -16,6 +18,7 @@ public partial class ProgressWindow
     {
         _viewModel = viewModel;
         DataContext = _viewModel;
+        StrongReferenceMessenger.Default.Register(this);
         InitializeComponent();
 
         Loaded += OnLoaded;
@@ -46,6 +49,11 @@ public partial class ProgressWindow
     private void OnCloseClicked(TitleBar sender, RoutedEventArgs args)
     {
         var shouldClose = _viewModel.CloseRequested();
-        if (shouldClose) Close();
+        StrongReferenceMessenger.Default.UnregisterAll(this);
+        if (!shouldClose) return;
+        
+        Close();
     }
+
+    public void Receive(ModelUpdatedMessage message) => LastReportButton.Visibility = Visibility.Visible;
 }

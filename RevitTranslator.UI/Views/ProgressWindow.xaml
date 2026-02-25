@@ -41,7 +41,7 @@
 
         <Grid
             Grid.Row="1"
-            Margin="20 30 20 40">
+            Margin="20 30 20 20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -131,16 +131,26 @@
             </Grid>
         </Grid>
 
-        <Grid Grid.Row="2">
+        <Grid 
+            Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+            
+            <ui:HyperlinkButton
+                x:Name="LastReportButton"
+                HorizontalAlignment="Center"
+                Content="Open translation report"
+                ToolTip="You can also open reports folder from Settings window"
+                Command="{Binding OpenReportCommandCommand}"
+                Visibility="Collapsed"/>
 
             <ProgressBar
-                Grid.Row="0"
+                Grid.Row="1"
                 Height="8"
-                Margin="0 0 0 5"
+                Margin="0 20 0 5"
                 Value="{Binding FinishedTranslationCount, FallbackValue=50}"
                 Maximum="{Binding TotalTranslationCount, FallbackValue=100}"
                 IsIndeterminate="{Binding IsProgressBarIntermediate,
@@ -148,7 +158,7 @@
                     UpdateSourceTrigger=PropertyChanged}" />
 
             <Button
-                Grid.Row="1"
+                Grid.Row="2"
                 Command="{Binding HandleButtonClickCommand}"
                 Style="{StaticResource LargeButton}"
                 IsEnabled="{Binding IsMainButtonEnabled}"

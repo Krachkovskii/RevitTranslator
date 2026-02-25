@@ -23,6 +23,8 @@ public static class DependencyInjectionExtensions
     {
         return serviceCollection
             .AddScoped<TranslationManager>()
+            .AddScoped<TranslationReportService>()
+            .AddScoped<ITranslationReportService>(sp => sp.GetRequiredService<TranslationReportService>())
             .AddScoped<ConcurrentTranslationService>()
             .AddScoped<CategorySelectionService>()
             .AddScoped<SheetSelectionService>()
