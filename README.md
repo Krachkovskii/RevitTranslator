@@ -2,7 +2,7 @@
 
 Revit Translator is a free add-in for Autodesk Revit, aimed at BIM teams working on international projects that require translation of models or drawings into other language.
 
-It simplifies translation pipeline to 100+ languages by automatically extracting text from all user-modifiable text properties, translating it via third-party service, and updating them back in Revit. This plug-in uses API provided by DeepL - industry leader in accurate technical machine translations.
+It simplifies translation pipeline to 100+ languages by automatically extracting text from all user-modifiable text properties, translating it via third-party service, and updating them back in Revit. This plug-in uses API provided by DeepL - industry leader in accurate technical machine translations. Plug-in supports Revit versions from 2023 to 2026.
 
 ---
 
@@ -48,13 +48,16 @@ Add-in can be uninstalled from `Control Panel` like any other application.
 
 # How to use
 
-### - Price
+## Price
 The plug-in itself is free to use. DeepL API provides two tiers: Free and Pro. 
 - Free is limited to 500 000 characters per month; that's an equivalent of "the Great Gatsby" being translated every week. Model-wise, it can be very different and depends heavily on text information density in your model.
 - Paid tier does not have usage cap; instead, it has a pay-as-you-go scheme. Please refer to https://www.deepl.com/en/pro#api for pricing.
 
-### - Usage modes
+## Usage modes
 The app has four modes of translation: `Current selection`, `Categories`, `Sheets` and `Model`.
+
+<img height="250" alt="image" src="https://github.com/user-attachments/assets/05183b39-0e2d-49a3-aa6f-2b5ef7cf34d5" />
+
 
 #### Selection
 The app gets all currently selected elements and translates them. You can select elements in the viewport, as well as in the project browser, such as Views or Family Types.
@@ -65,6 +68,8 @@ When you update your selection of categories, the app will show you the total nu
 You can select sheets or sheet collections (available in Revit 2025+). It will translate all elements on the sheet (TitleBlock, annotations, etc.) and all elements visible in Viewports placed on said sheet.
 #### Model
 The app collects all user-editable elements in the model and translates them all. The lazy approach, most time- and resource-consuming.
+
+## Features
 
 ### - Translation cancellation
 Translations can be stopped mid-way. To do this, click "Cancel" in the progress window. 
@@ -78,11 +83,15 @@ To avoid any unexpected behavior, it is recommended to perform translations in a
 ### - Translation speed
 DeepL limits request rate to their endpoints, so I had to slow down calls using a semaphore. You can expect speed of 3-5 translations per second, with occasional pauses - don't panic, let it cook.
 
-### - Black/white lists
-Currently, add-in does not support exclusion of specific elements or categories. For this, you can try selecting only specific categories, or manually selecting elements you want to translate using Selection mode.
-
-### - Reports
+### - Progress & Reports
+When translation is in progress, a Progress window is shown. You can see how many translations are left and how your usage goes up.
 After a successful translation, add-in will save a report. It will include overall session information, as well as detailed information on each translated entry, including original text, translation and element ID. You can open report from progress window after model has finished updating. You can also open folder with reports from Settings window. Generally, reports will be saved in `%APPDATA%\Autodesk\ApplicationPlugins\RevitTranslator\Reports`.
+
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/200873c6-a4a6-44c3-80ef-aa66c665f25b" />
+
+
+### [not supported] Black/white lists
+Currently, add-in does not support exclusion of specific elements or categories. For this, you can try selecting only specific categories, or manually selecting elements you want to translate using Selection mode.
 
 ### - Translation logic
 The plug-in handles nuances of many kinds of Revit elements. Important notice: all elements selected for translation will also be processed as "base" elements.
