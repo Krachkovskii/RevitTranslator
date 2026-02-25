@@ -59,10 +59,10 @@ public sealed class DeeplTranslationClient
         return await CheckUsageAsync() && Settings is not null;
     }
     
-    public Task<IReadOnlyCollection<LanguageDescriptor>> GetSourceLanguagesAsync() => GetLanguagesAsync(false);
-    public Task<IReadOnlyCollection<LanguageDescriptor>> GetTargetLanguagesAsync() => GetLanguagesAsync(true);
+    public Task<IReadOnlyCollection<LanguageDescriptor>> GetSourceLanguagesAsync(string apiKey = "") => GetLanguagesAsync(false, apiKey);
+    public Task<IReadOnlyCollection<LanguageDescriptor>> GetTargetLanguagesAsync(string apiKey = "") => GetLanguagesAsync(true, apiKey);
 
-    private async Task<IReadOnlyCollection<LanguageDescriptor>> GetLanguagesAsync(bool getTargetLanguages)
+    private async Task<IReadOnlyCollection<LanguageDescriptor>> GetLanguagesAsync(bool getTargetLanguages, string apiKey)
     {
         try
         {
@@ -72,7 +72,8 @@ public sealed class DeeplTranslationClient
             var languagesUrl = $"{DeeplSettingsUtils.LanguagesBaseUrl}{parameter}";
             using var request = new HttpRequestMessage(HttpMethod.Get, languagesUrl);
             request.Headers.Authorization =
-                new AuthenticationHeaderValue("DeepL-Auth-Key", Settings.DeeplApiKey);
+                new AuthenticationHeaderValue("DeepL-Auth-Key", 
+                    string.IsNullOrEmpty(Settings?.DeeplApiKey) ? apiKey : Settings!.DeeplApiKey);
             request.Headers.UserAgent.ParseAdd("RevitTranslator");
 
             var response = await _httpClient.SendAsync(request);
