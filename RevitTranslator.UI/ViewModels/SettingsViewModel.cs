@@ -162,7 +162,7 @@ public partial class SettingsViewModel : ObservableValidator
         }
         else
         {
-            SelectedSourceLanguage = _previousLanguage ??= TargetLanguages[0];
+            SelectedSourceLanguage = _previousLanguage ??= SourceLanguages[0];
         }
     }
 
@@ -199,7 +199,7 @@ public partial class SettingsViewModel : ObservableValidator
         SourceLanguages = sourceLanguages.OrderBy(lang => lang.VisibleName).ToArray();
         TargetLanguages = targetLanguages.OrderBy(lang => lang.VisibleName).ToArray();
         
-        SelectedSourceLanguage ??= SourceLanguages.First();
+        SelectedTargetLanguage ??= TargetLanguages.First();
     }
 
     private async Task UpdateUsageAsync()
