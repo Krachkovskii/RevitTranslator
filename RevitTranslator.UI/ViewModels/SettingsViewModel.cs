@@ -50,7 +50,7 @@ public partial class SettingsViewModel : ObservableValidator
         }
         SetSettingsValues();
         ButtonText = "Save Settings";
-        Version = Assembly.GetCallingAssembly().GetName().Version?.ToString() ?? "";
+        Version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "";
     }
     
     public int Usage => _translationClient.Usage;
