@@ -1,10 +1,13 @@
 ﻿using WixSharp;
+using Assembly = System.Reflection.Assembly;
 using File = System.IO.File;
 
 namespace Installer;
 
 public static class Installer
 {
+    private const string ProjectName = "RevitTranslator";
+    
     private static readonly int[] VersionList = [23, 24, 25, 26];
     private static readonly string MainDirectoryPath = GetMainDirectory();
 
@@ -16,7 +19,9 @@ public static class Installer
             if (!AreBinariesFresh(configDir)) throw new Exception($"Binaries for Revit 20{version} are not fresh.");
                 
             var assemblies = new DirFiles($@"{configDir}\*.*");
-            var manifest = new WixSharp.File($@"{MainDirectoryPath}\{Constants.ProjectName}.addin");
+            var manifest = new WixSharp.File($@"{MainDirectoryPath}\{ProjectName}.addin");
+            
+            var appVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(); 
             
             var project = new Project
             {
@@ -33,7 +38,7 @@ public static class Installer
                     Schedule = UpgradeSchedule.afterInstallInitialize
                 },
                 UpgradeCode = new Guid($"46A798D3-104B-2E3A-8126-CE3A212C98{version}"),
-                Version = new Version(Constants.Version),
+                Version = new Version(appVersion),
                 ControlPanelInfo =
                 {
                     Manufacturer = "Ilia Krachkovskii",
@@ -41,7 +46,7 @@ public static class Installer
                 Dirs =
                 [
                     new Dir(@$"%AppData%\Autodesk\Revit\Addins\20{version}\",
-                        new Dir($@"{Constants.ProjectName}\", assemblies),
+                        new Dir($@"{ProjectName}\", assemblies),
                         manifest
                         )
                 ]
@@ -60,7 +65,7 @@ public static class Installer
         {
             foreach (var dir in Directory.GetDirectories(path))
             {
-                if (dir.EndsWith(Constants.ProjectName)) return dir;
+                if (dir.EndsWith(ProjectName)) return dir;
             }
 
             var parentDir = Directory.GetParent(path);
