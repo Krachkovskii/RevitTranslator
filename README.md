@@ -1,85 +1,185 @@
 # Erasing language barriers in international BIM collaboration.
-Revit Translator is a free add-in for Autodesk Revit that translates and updates various text data in your Revit models. Use it to translate views, schedules, annotations, parameters and much more.
 
-It uses DeepL API to perform quick and accurate translations of whole Revit projects within seconds. DeepL account with API key is required.
----
-Used by architectural and engineering firms across the globe: Netherlands | Canada | Italy | Switzerland
+**Revit Translator** is a free add-in for Autodesk Revit, aimed at BIM teams working on international projects that require translation of models or drawings into another language.
+
+It simplifies the translation pipeline to **100+ languages** by automatically extracting text from all user-modifiable text properties, translating it via a third-party service, and updating them back in Revit. This plug-in uses the API provided by **DeepL** — industry leader in accurate technical machine translations.
+
+> Supports Revit 2023 · 2024 · 2025 · 2026
 
 ---
 
 ![github-poster](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/34d3c2e5-4887-45ca-9d2a-754ee7dc71a2)
 
-# How to set up
-### Installation steps
-1. Go to the latest GitHub release.
-2. Download .msi file for each Revit version that you're using.
-3. Run each .msi file. It will install all necessary files automatically.
-4. Start Revit, click `Always Load`.
+---
 
-    ![image](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/48934b38-dfbd-4b14-bbfd-de40818c45d5)
+# Setup
 
-### DeepL setup steps
-To use the addin, you need to set up a DeepL Pro account. Free account has a limit of 500 000 characters/month, while Paid tier offers unlimited paid translations.
-1. Go to [DeepL website](www.deepl.com), register an account;
-2. Set up your billing; it's necessary even for free accounts. You won't be charged, but unfortunately, bank cards of some countries may not be permitted;
-3. Create an API key. It can be copied later.
+## 1. Download & Install
 
-### Revit setup steps
-1. The app is in Revit's default `Add-Ins` tab;
-2. Click on the `Translator` button, then on `Settings`;
-3. Set up your API key, specify if you have Free or Paid plan. Select translation languages, click `Save Settings`.
+1. Go to the [latest GitHub release](../../releases/latest).
+2. Download the `.msi` file for each Revit version you're using.
+3. Run the file. Windows will show a standard security warning — click **More Info → Run Anyway**.
 
-    ![image](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/910ef370-b7b9-4b71-a11e-69cd0c200b6a)
+<img width="392" height="311" alt="Windows security prompt" src="https://github.com/user-attachments/assets/b0c2f399-25cc-4c12-8360-8ab2c4e51a93" />
 
-Settings configurations are saved in this path: `%appdata%\Autodesk\ApplicationPlugins\RevitTranslator\settings.json`. This file is used by all Revit versions. If 
+4. Start Revit and click **Always Load**.
 
-# How to use
-The app has three modes of translation: `Current selection`, `Categories` and `Model`.
-### Current selection
-The app gets all currently selected elements and translates them. You can select elements in the viewport, as well as elements in the project browser, such as Views or Family Types.
-### Selected Categories
-You can select any number of Revit Categories, such as Doors, Text Notes, Floor Tags etc., and translate all elements of these categoories in the model.
-When you update your selection of categories, the app will show you the total number of translatable elements. NB: actual number of translations will be ~10x higher, since each element contains at least several translatable properties.
-### Whole model
-The app collects all user-editable elements in the model and translates them all.
+![Revit load prompt](https://github.com/Krachkovskii/RevitTranslator/assets/117347760/48934b38-dfbd-4b14-bbfd-de40818c45d5)
 
-Translations can be stopped mid-way. To do this, click "Cancel translation" in the progress window. Completed translations will still be applied. If you don't need them, just hit `ctrl+Z`.
+---
 
-# Translated elements
-The following text information can be translated:
-* **Elements**: Element name; All parameter values for user-selectable elements. This type of translation also applies for all elements below - i.e. for Schedules, not only headers, but also all parameter values will be applied.
-  * **Families**
-  * **Family types**
-  * **Family instances**
-* **Text elements**: `TextElement` and `TextNote`. The `text` property will be translated;
-* **Views**
-* **Schedules**: schedule column headers;
-* **Dimensions**: all overrides - `above`, `below`, `suffix`, `prefix` and `value override`. Single- and multi-segment dimensions are supported;
-* **Titleblocks**: all `TextElements` *inside* a titleblock family will be translated.
+## 2. Set Up a DeepL Account & API Key
 
-# How to uninstall
-1. Make sure Revit is not running.
-2. Open Windows' Run command (Win + R) and insert the following path: `%appdata%\Autodesk\Revit\Addins`, click Enter.
-3. Open the corresponding Revit version folder.
-4. Remove the folder `RevitTranslatorAddin` and manifest file `RevitTranslatorAddin.addin`.
-5. Go to `Control Panel` -> `Programs and Features`. Select corresponding version of `Revit Translator` and click "uninstall".
+To use the add-in, you need a DeepL API account. Two tiers are available:
 
-# Roadmap
-There are lots of things I would love to improve. Eventually I will deal with some of them in my free time.
-### UI:
-* Introduce "Black list" (or is it a white list?) for parameter names and values to prevent their translation.
-* Add glossaries.
-### Revit:
-* Add translation of parameter names (at least global and user-added from downloadable families).
-### Application:
-* Add basic logging.
-* Add automatic updater functionality.
+| Tier | Limit | Cost |
+|------|-------|------|
+| **Free** | 500,000 characters/month | Free (card required) |
+| **Pro** | Unlimited | Pay-as-you-go |
 
-## Technical details
-The add-in was tested on Windows 11 and in Revit versions 2023 and 2025. It is designed to work in all Revit versions from 2023 to 2025.
+1. Go to [deepl.com/pro#api](https://www.deepl.com/en/pro#api) and register an account.
+2. Set up billing — required even for free accounts. You won't be charged on the free tier.
+3. Create an API key: **Account → API keys & limits → Create key**.
+
+> ⚠️ Payment cards from some countries may not be accepted by DeepL. Check their website for details.
+
+---
+
+## 3. Configure the Add-In in Revit
+
+1. Open the **Add-Ins** tab in Revit.
+2. Click **Translator → Settings**.
+3. Paste your API key. Free or Pro tier is detected automatically.
+4. Select your **target language**. Source language is optional — it can be auto-detected.
+5. Click **Save Settings**.
+
+<img width="500" alt="Settings window" src="https://github.com/user-attachments/assets/ea6d8217-2f13-412a-b023-f8cc3da684f2" />
+
+> From the Settings window you can also access previous translation reports, or navigate to the GitHub Issues page if something goes wrong.
+
+---
+
+## Update & Uninstall
+
+- **Updates** are automatic — the add-in checks for new releases while Revit is running and installs them silently after Revit closes.
+- **Uninstall** via **Control Panel**, like any other application.
+
+---
+
+# How to Use
+
+## Price
+
+The plug-in itself is **free**. Translation costs depend on your DeepL plan:
+
+- **Free tier** — 500,000 characters/month. As a rough guide, that's about the length of *The Great Gatsby* translated every week. How far it goes in a Revit model depends heavily on how much text your model contains.
+- **Pro tier** — No monthly cap. Pay-as-you-go pricing at [deepl.com/pro#api](https://www.deepl.com/en/pro#api).
+
+---
+
+## Translation Modes
+
+The add-in offers four modes. Choose the one that fits your workflow:
+
+<img height="250" alt="Translation modes UI" src="https://github.com/user-attachments/assets/05183b39-0e2d-49a3-aa6f-2b5ef7cf34d5" />
+
+### Selection
+Translates all currently selected elements. Works with elements picked in the viewport as well as in the Project Browser (Views, Family Types, etc.).
+
+### Categories
+Select one or more Revit categories (Doors, Text Notes, Floor Tags, etc.) and translate all matching elements in the model. The add-in will show you the total count of translatable elements when you update your selection.
+
+> **Note:** The actual number of translation calls is roughly 10× the element count, since each element has multiple text properties.
+
+### Sheets
+Select individual sheets or sheet collections *(collections available in Revit 2025+)*. Translates all elements on the sheet — title block, annotations — as well as everything visible in placed viewports.
+
+### Model
+Collects and translates every user-editable element in the model. The most thorough option, and the most time-consuming.
+
+---
+
+## Features
+
+### Cancellation & Undo
+
+Translations can be stopped at any point by clicking **Cancel** in the progress window. You can then choose to apply the completed portion, or discard everything.
+
+Already-applied translations can be fully reversed with a single **Ctrl+Z** — the entire session is committed as one transaction.
+
+### Workshared Models
+
+It is recommended to run translations on a **detached copy** of the model to avoid conflicts. If working in a workshared environment, ensure all relevant elements are editable before starting.
+
+### Translation Speed
+
+DeepL rate-limits API calls, so the add-in paces requests accordingly. Expect **3–5 translations per second**, with occasional short pauses — this is normal.
+
+### Progress & Reports
+
+A **Progress window** shows remaining translations and running character usage in real time.
+
+After each session, a **report is saved automatically**, containing:
+- Session summary
+- Each translated entry with original text, translation, and Revit element ID
+
+Reports can be opened from the Progress window or accessed later via **Settings → Open Reports Folder**.
+Default location: `%APPDATA%\Autodesk\ApplicationPlugins\RevitTranslator\Reports`
+
+<img width="600" alt="Progress window" src="https://github.com/user-attachments/assets/200873c6-a4a6-44c3-80ef-aa66c665f25b" />
+
+### ~~Black/White Lists~~ *(not yet supported)*
+
+The add-in currently does not support excluding specific elements or categories from translation. As a workaround, use **Selection** or **Categories** mode to translate only what you need.
+
+---
+
+## What Gets Translated
+
+The add-in handles a range of Revit element types:
+
+| Element type | What's translated |
+|---|---|
+| **Text Notes & Text Elements** | Text content |
+| **Views** | View name |
+| **Schedules** | Column headers |
+| **Dimensions** | Above / below / prefix / suffix / value override |
+| **Title Blocks** | All text elements inside the family |
+| **Families, Types, Instances** | Name + all user-modifiable string parameters |
+
+> The add-in will skip values containing characters that Revit treats as reserved or invalid (such as `< > | :`). Revit will display the full list if this occurs.
+
+---
+
+## Technical Details
+
+- Tested on **Windows 11**, Revit **2023** and **2025**
+- Designed to support Revit **2023–2026**
+- Compatibility with other add-ins is not guaranteed — conflicts may occur if another plug-in uses a different version of a shared package
+
+---
 
 # Afterword
-Do you have any feedback, proposals, inquiries or offers? Feel free to write me on [LinkedIn](https://www.linkedin.com/in/ilia-krachkovskii/), or send me an [email](mailto:i.krachkovskii@gmail.com). 
 
-This is a free and open-source plug-in that I have developed in my free time. If something doesn't work, let me know and I will try to fix it as soon as possible. 
-If you like it, a kind word goes a long way: share it, write a post, comment, or send me a simple direct message on LinkedIn.
+Have feedback, a proposal, or just want to say hello? Reach out on [LinkedIn](https://www.linkedin.com/in/ilia-krachkovskii/) or by [email](mailto:i.krachkovskii@gmail.com).
+
+<details>
+<summary>Background & motivation</summary>
+
+Years ago, I was working in an architectural studio on a project in another country. All drawings had to be handed off in the client's language — a perfectly standard practice.
+
+The prototype for this plug-in was a Dynamo script that made the process bearable: extract text from elements into an Excel file (tracking Parameter IDs) → hand it to translators → proofread the results → feed the Excel back into Dynamo → update parameter values automatically.
+
+It was a time-saver, but eventually I decided it would be a good challenge to build something more polished — and to learn .NET development along the way.
+
+</details>
+
+### A note on support
+
+This is a free, open-source plug-in maintained in my spare time. I cannot guarantee prompt bug fixes, new features, or indefinite maintenance.
+
+If it's useful to you, a kind word goes a long way — share it, write a post, leave a comment, or send a quick message on LinkedIn.
+
+---
+
+> **Legal notice:** Always work from backups and local files. Use this plug-in at your own discretion.
