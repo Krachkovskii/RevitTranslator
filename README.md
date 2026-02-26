@@ -20,7 +20,7 @@ It simplifies the translation pipeline to **100+ languages** by automatically ex
 2. Download the `.msi` file for each Revit version you're using.
 3. Run the file. Windows will show a standard security warning — click **More Info → Run Anyway**.
 
-<img width="392" height="311" alt="Windows security prompt" src="https://github.com/user-attachments/assets/b0c2f399-25cc-4c12-8360-8ab2c4e51a93" />
+<img width="350" alt="Windows security prompt" src="https://github.com/user-attachments/assets/b0c2f399-25cc-4c12-8360-8ab2c4e51a93" />
 
 4. Start Revit and click **Always Load**.
 
@@ -53,7 +53,8 @@ To use the add-in, you need a DeepL API account. Two tiers are available:
 4. Select your **target language**. Source language is optional — it can be auto-detected.
 5. Click **Save Settings**.
 
-<img width="500" alt="Settings window" src="https://github.com/user-attachments/assets/ea6d8217-2f13-412a-b023-f8cc3da684f2" />
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/9f76bead-fa2c-4639-8f1f-0728aa0c7933" />
+
 
 > From the Settings window you can also access previous translation reports, or navigate to the GitHub Issues page if something goes wrong.
 
@@ -72,7 +73,7 @@ To use the add-in, you need a DeepL API account. Two tiers are available:
 
 The plug-in itself is **free**. Translation costs depend on your DeepL plan:
 
-- **Free tier** — 500,000 characters/month. As a rough guide, that's about the length of *The Great Gatsby* translated every week. How far it goes in a Revit model depends heavily on how much text your model contains.
+- **Free tier** — 500,000 characters/month free of charge. As a rough guide, that's about the length of *The Great Gatsby* translated every week. How far it goes in a Revit model depends heavily on how much text your model contains.
 - **Pro tier** — No monthly cap. Pay-as-you-go pricing at [deepl.com/pro#api](https://www.deepl.com/en/pro#api).
 
 ---
@@ -103,7 +104,7 @@ Collects and translates every user-editable element in the model. The most thoro
 
 ### Cancellation & Undo
 
-Translations can be stopped at any point by clicking **Cancel** in the progress window. You can then choose to apply the completed portion, or discard everything.
+Translations can be stopped at any point by clicking **Cancel** in the progress window. You can then choose to update the model with the completed portion, or discard everything.
 
 Already-applied translations can be fully reversed with a single **Ctrl+Z** — the entire session is committed as one transaction.
 
