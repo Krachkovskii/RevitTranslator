@@ -22,9 +22,15 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
+Installer/Installer/
+Installer/wix/
 
-# Visual Studio 2015/2017 cache/options directory
+*.ps1
+
 .vs/
+.idea/
+
+nul
 
 # Visual Studio 2017 auto generated files
 Generated\ Files/
