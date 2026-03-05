@@ -4,6 +4,9 @@
         <UseWPF>true</UseWPF>
         <OutputType>Library</OutputType>
         <PublishAddinFiles>true</PublishAddinFiles>
+        <IsRepackable>true</IsRepackable>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <RepackBinariesExcludes>Nice3point.Revit.Api*.dll;</RepackBinariesExcludes>
         <Configurations>Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
         <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26</Configurations>
     </PropertyGroup>
@@ -15,6 +18,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="ILRepack"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Newtonsoft.Json" />
@@ -41,5 +45,4 @@
       <ProjectReference Include="..\RevitTranslator.Common\RevitTranslator.Common.csproj" />
       <ProjectReference Include="..\RevitTranslator.UI\RevitTranslator.UI.csproj" />
     </ItemGroup>
-
 </Project>

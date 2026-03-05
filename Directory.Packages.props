@@ -6,13 +6,17 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Build -->
+    <PackageVersion Include="ILRepack" Version="2.0.44">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
     <PackageVersion Include="Microsoft.Build" Version="17.13.*" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageVersion Include="WixSharp" Version="1.*" />
     <PackageVersion Include="WixSharp.wix.bin" Version="3.*" />
     <!-- Revit References -->
-    <PackageVersion Include="Nice3point.Revit.Build.Tasks" Version="2.*" />
+    <PackageVersion Include="Nice3point.Revit.Build.Tasks" Version="3.*" />
     <PackageVersion Include="Nice3point.Revit.Extensions" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
     <PackageVersion Include="Nice3point.Revit.Toolkit" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
     <PackageVersion Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" Condition="$(RevitVersion) != ''" />
