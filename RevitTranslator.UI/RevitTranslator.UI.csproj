@@ -2,7 +2,7 @@
     <PropertyGroup>
         <UseWpf>true</UseWpf>
         <OutputType>Library</OutputType>
-        <TargetFramework>net48</TargetFramework>
+        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <XamlDebuggingInformation>True</XamlDebuggingInformation>

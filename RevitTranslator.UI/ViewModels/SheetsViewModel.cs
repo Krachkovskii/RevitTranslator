@@ -7,7 +7,9 @@ using RevitTranslator.Common.Contracts;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Messages;
 using RevitTranslator.Common.Models.Views;
+#if NETFRAMEWORK
 using RevitTranslator.UI.Extensions;
+#endif
 
 namespace RevitTranslator.UI.ViewModels;
 
