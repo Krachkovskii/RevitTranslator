@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <UseWpf>true</UseWpf>
-        <TargetFramework>net48</TargetFramework>
+        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
         <OutputType>Library</OutputType>
     </PropertyGroup>
 

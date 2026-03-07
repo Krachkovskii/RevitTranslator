@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -17,7 +16,6 @@ namespace RevitTranslator.UI.ViewModels;
 public partial class SettingsViewModel : ObservableValidator
 {
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
     [NotifyPropertyChangedFor(nameof(IsApiKeyValid))]
     [NotifyPropertyChangedFor(nameof(IsPaidPlan))]
     private string _deeplApiKey = string.Empty;
@@ -26,18 +24,18 @@ public partial class SettingsViewModel : ObservableValidator
     public bool? IsPaidPlan => IsApiKeyValid ? !ApiKeyValidator.IsFreePlan(DeeplApiKey) : null;
     public string Version { get; } = "";
 
-    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
-    private LanguageDescriptor? _selectedSourceLanguage;
+    [ObservableProperty] private LanguageDescriptor? _selectedSourceLanguage;
+    [ObservableProperty] private LanguageDescriptor? _selectedTargetLanguage;
 
-    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveSettingsCommand))]
-    private LanguageDescriptor? _selectedTargetLanguage;
-
-    [ObservableProperty] private string _buttonText = string.Empty;
     [ObservableProperty] private bool _isAutoDetectChecked;
+    [ObservableProperty] private bool _isValidatingApiKey;
+    [ObservableProperty] private bool _isApiKeyWorking;
+    [ObservableProperty] private string _apiKeyValidationMessage = string.Empty;
     [ObservableProperty] private LanguageDescriptor[] _sourceLanguages = [];
     [ObservableProperty] private LanguageDescriptor[] _targetLanguages = [];
 
     private LanguageDescriptor? _previousLanguage;
+    private string _keyBeingValidated = string.Empty;
     private readonly DeeplTranslationClient _translationClient;
     private readonly ITranslationReportService _reportService;
 
@@ -48,12 +46,10 @@ public partial class SettingsViewModel : ObservableValidator
 
         if (!DeeplSettingsUtils.Load())
         {
-            ButtonText = "Failed to load settings";
             return;
         }
 
         SetSettingsValues();
-        ButtonText = "Save Settings";
         Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
     }
 
@@ -63,12 +59,10 @@ public partial class SettingsViewModel : ObservableValidator
     [RelayCommand]
     private async Task OnLoadedAsync()
     {
-        if (IsApiKeyValid)
-        {
-            await LoadLanguagesAsync();
-        }
+        if (!IsApiKeyValid) return;
+        if (IsValidatingApiKey) return;
 
-        await UpdateUsageAsync();
+        await ValidateApiKeyAsync(DeeplApiKey);
     }
 
     [RelayCommand]
@@ -90,63 +84,78 @@ public partial class SettingsViewModel : ObservableValidator
         Process.Start(new ProcessStartInfo(validUri.AbsoluteUri) { UseShellExecute = true });
     }
 
-    [RelayCommand(CanExecute = nameof(CanExecuteSaveSettings))]
-    private async Task SaveSettingsAsync()
+    [RelayCommand]
+    private void OpenReportsFolder() => _reportService.OpenReportDirectory();
+
+    public void SaveSettings()
     {
-        ButtonText = "Validating...";
+        if (!ApiKeyValidator.TryValidate(DeeplApiKey, out var sanitizedKey, out _)) return;
 
-        if (!ApiKeyValidator.TryValidate(DeeplApiKey, out var sanitizedKey, out var validationError))
-        {
-            ButtonText = validationError ?? "Invalid API key";
-            await Task.Delay(3000);
-            ButtonText = "Save Settings";
-            return;
-        }
+        var targetLanguage = SelectedTargetLanguage ?? DeeplSettingsUtils.CurrentSettings?.TargetLanguage;
+        if (targetLanguage is null) return;
 
-        ButtonText = "Saving settings...";
-
-        var oldSettings = DeeplSettingsUtils.CurrentSettings;
-        var newSettings = new DeeplSettingsDescriptor
+        var settings = new DeeplSettingsDescriptor
         {
             IsPaidPlan = IsPaidPlan is true,
             DeeplApiKey = sanitizedKey,
-            SourceLanguage = SelectedSourceLanguage,
-            TargetLanguage = SelectedTargetLanguage
+            SourceLanguage = IsAutoDetectChecked ? null : SelectedSourceLanguage,
+            TargetLanguage = targetLanguage
         };
-        newSettings.Save();
+        settings.Save();
+    }
 
-        DeeplApiKey = sanitizedKey;
+    private async Task ValidateApiKeyAsync(string key)
+    {
+        _keyBeingValidated = key;
 
-        var test = await _translationClient.CanTranslateAsync();
-        StrongReferenceMessenger.Default.Send(new SettingsValidityChangedMessage(test));
-
-        if (test)
+        if (!ApiKeyValidator.TryValidate(key, out var sanitizedKey, out _))
         {
-            await UpdateUsageAsync();
-            ButtonText = "Settings saved";
+            IsApiKeyWorking = false;
+            ApiKeyValidationMessage = string.Empty;
             return;
         }
 
-        ButtonText = "Invalid credentials";
-        if (oldSettings is null) return;
+        IsValidatingApiKey = true;
+        ApiKeyValidationMessage = "Validating...";
 
-        oldSettings.Save();
-        SetSettingsValues();
+        var tempSettings = new DeeplSettingsDescriptor
+        {
+            DeeplApiKey = sanitizedKey,
+            IsPaidPlan = !ApiKeyValidator.IsFreePlan(sanitizedKey),
+            SourceLanguage = IsAutoDetectChecked ? null : SelectedSourceLanguage,
+            TargetLanguage = SelectedTargetLanguage ?? DeeplSettingsUtils.CurrentSettings?.TargetLanguage
+        };
+        DeeplSettingsUtils.UpdateInMemory(tempSettings);
 
-        await Task.Delay(3000);
-        ButtonText = "Settings were restored";
+        var isValid = await _translationClient.CanTranslateAsync();
+
+        if (_keyBeingValidated != key)
+        {
+            IsValidatingApiKey = false;
+            return;
+        }
+
+        IsApiKeyWorking = isValid;
+        IsValidatingApiKey = false;
+        ApiKeyValidationMessage = isValid ? string.Empty : "Invalid API key";
+        StrongReferenceMessenger.Default.Send(new SettingsValidityChangedMessage(isValid));
+
+        if (!isValid) return;
+
+        await UpdateUsageAsync();
+
+        if (SourceLanguages.Length > 0) return;
+
+        await LoadLanguagesAsync();
     }
-
-    [RelayCommand]
-    private void OpenReportsFolder() => _reportService.OpenReportDirectory();
 
     private void SetSettingsValues()
     {
         if (DeeplSettingsUtils.CurrentSettings is null) return;
 
-        DeeplApiKey = DeeplSettingsUtils.CurrentSettings.DeeplApiKey;
         SelectedSourceLanguage = DeeplSettingsUtils.CurrentSettings.SourceLanguage;
         SelectedTargetLanguage = DeeplSettingsUtils.CurrentSettings.TargetLanguage;
+        DeeplApiKey = DeeplSettingsUtils.CurrentSettings.DeeplApiKey;
 
         if (SelectedSourceLanguage is not null) return;
 
@@ -162,44 +171,37 @@ public partial class SettingsViewModel : ObservableValidator
         }
         else
         {
-            SelectedSourceLanguage = _previousLanguage ??= SourceLanguages[0];
+            SelectedSourceLanguage = _previousLanguage ??= TargetLanguages[0];
         }
-    }
-
-    private bool CanExecuteSaveSettings()
-    {
-        if (!IsApiKeyValid) return false;
-
-        var savedSettings = DeeplSettingsUtils.CurrentSettings;
-        if (savedSettings is null) return true;
-
-        var hasChanges = savedSettings.IsPaidPlan != IsPaidPlan ||
-                         savedSettings.DeeplApiKey != DeeplApiKey ||
-                         savedSettings.SourceLanguage != SelectedSourceLanguage ||
-                         savedSettings.TargetLanguage != SelectedTargetLanguage;
-
-        ButtonText = hasChanges ? "Save Settings" : "Settings saved";
-
-        return hasChanges;
     }
 
     partial void OnDeeplApiKeyChanged(string value)
     {
-        if (!IsApiKeyValid) return;
-        if (SourceLanguages.Length > 0) return;
-
-        _ = LoadLanguagesAsync();
+        IsApiKeyWorking = false;
+        ApiKeyValidationMessage = string.Empty;
+        _ = ValidateApiKeyAsync(value);
     }
 
     private async Task LoadLanguagesAsync()
     {
+        var savedTarget = SelectedTargetLanguage ?? DeeplSettingsUtils.CurrentSettings?.TargetLanguage;
+        var savedSource = SelectedSourceLanguage ?? DeeplSettingsUtils.CurrentSettings?.SourceLanguage;
+
         var sourceLanguages = await _translationClient.GetSourceLanguagesAsync(DeeplApiKey);
         var targetLanguages = await _translationClient.GetTargetLanguagesAsync(DeeplApiKey);
 
         SourceLanguages = sourceLanguages.OrderBy(lang => lang.VisibleName).ToArray();
         TargetLanguages = targetLanguages.OrderBy(lang => lang.VisibleName).ToArray();
-        
-        SelectedTargetLanguage ??= TargetLanguages.First();
+
+        // ComboBox may reset SelectedItem when ItemsSource changes — restore explicitly
+        SelectedTargetLanguage = TargetLanguages.FirstOrDefault(l => l == savedTarget)
+                                 ?? TargetLanguages.FirstOrDefault();
+
+        if (!IsAutoDetectChecked)
+        {
+            SelectedSourceLanguage = SourceLanguages.FirstOrDefault(l => l == savedSource)
+                                     ?? SourceLanguages.FirstOrDefault();
+        }
     }
 
     private async Task UpdateUsageAsync()

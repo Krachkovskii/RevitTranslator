@@ -34,7 +34,7 @@ public partial class CategoriesWindowViewModel
     private void OnLoaded()
     {
         OnElementCountChanged(0);
-        CategoryTypes = CreateCategoryTypesAsync();
+        CategoryTypes = CreateCategoryTypes();
         foreach (var type in CategoryTypes)
         {
             type.PropertyChanged += OnCategoryTypeChanged;
@@ -50,7 +50,7 @@ public partial class CategoriesWindowViewModel
             .Sum(cat => cat.ElementCount));
     }
 
-    private ObservableCollection<CategoryTypeViewModel> CreateCategoryTypesAsync()
+    private ObservableCollection<CategoryTypeViewModel> CreateCategoryTypes()
     {
         var doc = Context.ActiveDocument;
         if (doc == null) return [];
