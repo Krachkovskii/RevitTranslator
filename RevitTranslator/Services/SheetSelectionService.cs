@@ -1,5 +1,5 @@
-﻿using RevitTranslator.Common.Models.Views;
-using RevitTranslator.Extensions;
+using RevitTranslator.Common.Models.Views;
+using RevitTranslator.Revit.Core.Extensions;
 using RevitTranslator.UI.ViewModels;
 using RevitTranslator.UI.Views;
 

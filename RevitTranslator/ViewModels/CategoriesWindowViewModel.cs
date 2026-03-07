@@ -1,13 +1,13 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Timers;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Models;
 using RevitTranslator.Common.Models.Categories;
-using RevitTranslator.Extensions;
+using RevitTranslator.Revit.Core.Extensions;
+using RevitTranslator.Revit.Core.Utils;
 using RevitTranslator.UI.Contracts;
-using RevitTranslator.Utils;
 using Timer = System.Timers.Timer;
 
 namespace RevitTranslator.ViewModels;
@@ -104,7 +104,7 @@ public partial class CategoriesWindowViewModel
     partial void OnElementCountChanged(int value)
     {
         var suffix = value > 1 ? "s" : "";
-        
+
         MainButtonText = value > 0
                 ? $"Translate {ElementCount} element{suffix}"
                 : "Select category to translate";
@@ -155,7 +155,7 @@ public partial class CategoriesWindowViewModel
             foreach (var category in categoryType.Categories)
             {
 #if NETFRAMEWORK
-                
+
 #endif
                 category.IsVisible = category.Name.Contains(text, StringComparison.InvariantCultureIgnoreCase);
                 if (!category.IsVisible) continue;

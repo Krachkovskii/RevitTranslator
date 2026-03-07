@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(dotnet build:*)",
+      "Bash(grep:*)",
+      "Bash(dotnet list:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(where.exe Revit.exe)",
+      "Bash(dir \"%APPDATA%\\\\Autodesk\\\\Revit\\\\Addins\\\\2025\")",
+      "Bash(test:*)",
+      "Bash(dotnet --list-runtimes:*)",
+      "Bash(dir:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(dotnet msbuild:*)",
+      "Bash(git checkout:*)",
+      "Bash(dotnet test:*)",
+      "WebSearch",
+      "Bash(find \"/c/Users/ilia/RiderProjects/Atomatiq/Cuniform/source\" -name \"*.csproj\" | head -5 && cat \"/c/Users/ilia/RiderProjects/Atomatiq/Cuniform/source/Cuniform.Launcher/Cuniform.Launcher.csproj\" 2>/dev/null || find \"/c/Users/ilia/RiderProjects/Atomatiq/Cuniform\" -name \"Cuniform.Launcher.csproj\" | xargs cat 2>/dev/null)",
+      "Bash(reg query \"HKLM\\\\SOFTWARE\\\\dotnet\\\\Setup\\\\InstalledVersions\\\\x64\\\\sharedhost\" 2>/dev/null && reg query \"HKCU\\\\SOFTWARE\\\\dotnet\\\\Setup\\\\InstalledVersions\" /s 2>/dev/null)",
+      "Bash(head:*)",
+      "Bash(reg query:*)",
+      "Bash(cd:*)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}

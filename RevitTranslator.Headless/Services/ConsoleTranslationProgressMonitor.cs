@@ -1,0 +1,47 @@
+using RevitTranslator.Revit.Core.Contracts;
+
+namespace RevitTranslator.Headless.Services;
+
+public class ConsoleTranslationProgressMonitor : ITranslationProgressMonitor
+{
+    public void Initialize()
+    {
+        Console.WriteLine("[Translation] Starting translation...");
+    }
+
+    public void OnTextRetrieved(int unitCount)
+    {
+        Console.WriteLine($"[Translation] Text retrieved: {unitCount} units to translate.");
+    }
+
+    public void OnEntityTranslated(int charCount)
+    {
+        Console.WriteLine($"[Translation] Entity translated: {charCount} characters.");
+    }
+
+    public void OnTranslationFinished(bool wasCancelled)
+    {
+        Console.WriteLine(wasCancelled
+            ? "[Translation] Translation was cancelled."
+            : "[Translation] Translation finished.");
+    }
+
+    public void OnModelUpdated()
+    {
+        Console.WriteLine("[Translation] Model updated successfully.");
+    }
+
+    public void OnNonUpdatableElements(IReadOnlyList<string> elements, string documentTitle)
+    {
+        Console.WriteLine($"[Translation] Some elements in \"{documentTitle}\" could not be updated due to forbidden symbols:");
+        foreach (var element in elements)
+        {
+            Console.WriteLine($"  - {element}");
+        }
+    }
+
+    public Task<bool> ShouldUpdateAfterCancellationAsync()
+    {
+        return Task.FromResult(false);
+    }
+}
