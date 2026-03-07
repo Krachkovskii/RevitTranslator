@@ -3,12 +3,16 @@
     <PropertyGroup>
         <UseWPF>true</UseWPF>
         <OutputType>Library</OutputType>
-        <PublishAddinFiles>true</PublishAddinFiles>
-        <IsRepackable>true</IsRepackable>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <RepackBinariesExcludes>Nice3point.Revit.Api*.dll;</RepackBinariesExcludes>
+        <DeployRevitAddin>true</DeployRevitAddin>
         <Configurations>Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
         <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26</Configurations>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(Configuration.Contains('Release R2'))">
+        <IsRepackable>true</IsRepackable>
+        <RepackBinariesExcludes>Nice3point.Revit.Api*.dll;</RepackBinariesExcludes>
+        <PublishAddinFiles>true</PublishAddinFiles>
     </PropertyGroup>
 
     <PropertyGroup>
