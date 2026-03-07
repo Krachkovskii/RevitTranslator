@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Media;
 using RevitTranslator.UI.ViewModels;
 using RevitTranslator.Ui.Library.Appearance;
@@ -20,6 +21,7 @@ public partial class SettingsWindow
         InitializeComponent();
 
         Loaded += OnLoaded;
+        Closing += OnClosing;
 
         ApplicationThemeManager.Apply(this);
 
@@ -50,5 +52,11 @@ public partial class SettingsWindow
         {
             Loaded -= OnLoaded;
         }
+    }
+
+    private void OnClosing(object sender, CancelEventArgs e)
+    {
+        _viewModel.SaveSettings();
+        Closing -= OnClosing;
     }
 }

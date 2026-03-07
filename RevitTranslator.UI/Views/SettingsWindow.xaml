@@ -33,16 +33,6 @@
                 Title="Revit Translator | Settings"
                 ShowMaximize="False"
                 ShowMinimize="False" />
-            <Button
-                DockPanel.Dock="Bottom"
-                Command="{Binding SaveSettingsCommand}"
-                Style="{StaticResource LargeButton}">
-                <ui:TextBlock
-                    Margin="0 -2 0 0"
-                    VerticalAlignment="Center"
-                    FontTypography="Subtitle"
-                    Text="{Binding ButtonText, FallbackValue='Text'}" />
-            </Button>
             <DockPanel
                 Margin="20">
 
@@ -69,10 +59,15 @@
                                 Style="{StaticResource Annotation}"
                                 Text="Free API plan" />
                             <ui:TextBlock
-                                Visibility="{Binding IsPaidPlan, 
+                                Visibility="{Binding IsPaidPlan,
                                     Converter={x:Static converters:Converters.BoolVisibilityConverter}}"
                                 Style="{StaticResource Annotation}"
                                 Text="Paid API plan" />
+                            <ui:TextBlock
+                                Visibility="{Binding ApiKeyValidationMessage,
+                                    Converter={x:Static converters:Converters.StringToVisibilityConverter}}"
+                                Style="{StaticResource Annotation}"
+                                Text="{Binding ApiKeyValidationMessage}" />
                         </Grid>
                         <StackPanel
                             Orientation="Horizontal"
@@ -100,7 +95,9 @@
                     Height="1"
                     Margin="0 15" />
                 <Grid
-                    DockPanel.Dock="Top">
+                    x:Name="LanguageSelectionGrid"
+                    DockPanel.Dock="Top"
+                    IsEnabled="{Binding IsApiKeyWorking}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="50" />
@@ -170,7 +167,14 @@
 
                     </StackPanel>
                 </Grid>
-                <Grid>
+                <TextBlock
+                    DockPanel.Dock="Bottom"
+                    HorizontalAlignment="Center"
+                    Margin="0 16 0 4"
+                    Style="{StaticResource Annotation}"
+                    Text="Settings are saved automatically" />
+                <Grid
+                    HorizontalAlignment="Stretch">
                     <ui:HyperlinkButton
                         Margin="0 12"
                         Appearance="Transparent"
@@ -178,10 +182,10 @@
                         Content="Open folder with previous reports"
                         Command="{Binding OpenReportsFolderCommand}" />
                     <StackPanel
-                        Orientation="Vertical">
+                        Orientation="Vertical"
+                        HorizontalAlignment="Right">
                         <StackPanel
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right">
+                            Orientation="Horizontal">
                             <TextBlock
                                 Margin="0 0 16 0"
                                 Text="{Binding Version, 
@@ -212,9 +216,10 @@
                             <Hyperlink
                                 Command="{Binding OpenLinkedinCommand}"
                                 CommandParameter="https://www.linkedin.com/in/ilia-krachkovskii/">
-                                <Run Text="Ilia Krachokvskii" />
+                                <Run Text="Ilia Krachkovskii" />
                             </Hyperlink>
-                        </TextBlock></StackPanel>
+                        </TextBlock>
+                    </StackPanel>
                 </Grid>
             </DockPanel>
         </DockPanel>
