@@ -108,6 +108,15 @@ public static class DeeplSettingsUtils
         return await client.CanTranslateAsync();
     }
 
+    public static void UpdateInMemory(DeeplSettingsDescriptor descriptor)
+    {
+        lock (LockObject)
+        {
+            _currentSettings = descriptor;
+            descriptor.SetDeeplUrls();
+        }
+    }
+
     public static void Save(this DeeplSettingsDescriptor descriptor) => descriptor.SaveToJson();
 
     private static void SaveToJson(this DeeplSettingsDescriptor settingsDescriptor)

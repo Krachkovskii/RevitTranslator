@@ -1,4 +1,5 @@
 using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Xaml.Behaviors;
 using Nice3point.Revit.Toolkit.External;
@@ -20,6 +21,7 @@ public class Application : ExternalApplication
         var ribbonService = Host.ServiceProvider.GetRequiredService<RibbonService>();
         ribbonService.CreateRibbonPanel(Application);
         FixBehaviors();
+        FixReferenceMessenger();
         Host.ServiceProvider.GetRequiredService<UpdaterService>().StartCheckLoop();
         ValidateSettingsOnStartupAsync(ribbonService);
     }
@@ -47,5 +49,15 @@ public class Application : ExternalApplication
     {
         //https://github.com/microsoft/XamlBehaviorsWpf/issues/86
         _ = new DefaultTriggerAttribute(typeof(Trigger), typeof(TriggerBase), null);
+    }
+    
+    private static void FixReferenceMessenger()
+    {
+        //send some text to initialize and load reference messenger
+        var pray = "God Bless this Plugin's Flight," +
+                   "Guide its code to shine so bright." +
+                   "May each line bring joy and grace," +
+                   "In Revit's realm, find its place.";
+        StrongReferenceMessenger.Default.Send(pray);
     }
 }

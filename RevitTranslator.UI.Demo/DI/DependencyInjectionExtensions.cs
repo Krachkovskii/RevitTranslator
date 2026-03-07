@@ -20,7 +20,8 @@ public static class DependencyInjectionExtensions
             .AddScoped<DemoWindow>()
             .AddScoped<DemoViewModel>()
             .AddSingleton(_ => new HttpClient())
-            .AddSingleton<DeeplTranslationClient>();
+            .AddSingleton<DeeplTranslationClient>()
+            .AddSingleton<ITranslationReportService, MockTranslationReportService>();
 
         return serviceCollection;
     }
