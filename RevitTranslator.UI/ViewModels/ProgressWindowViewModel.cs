@@ -27,6 +27,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
     [ObservableProperty] private bool _isMainButtonEnabled;
     [ObservableProperty] private string _buttonText = "";
     [ObservableProperty] private string _buttonSubtext = "";
+    [ObservableProperty] private string _elapsedTime = "";
 
     private int _threadSafeTranslationCount;
     private int _threadSafeSessionCharacterCount;
@@ -36,6 +37,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
     private bool _isAwaitingConfirmation;
     private bool _isModelUpdateActive;
     private readonly DispatcherTimer _uiUpdateTimer;
+    private DateTime _translationStartTime;
     
     public ProgressWindowViewModel(DeeplTranslationClient deeplClient, ITranslationReportService reportService)
     {
@@ -131,6 +133,11 @@ public partial class ProgressWindowViewModel : ObservableObject,
         MonthlyCharacterCount = monthlyCharacterCount;
         FinishedTranslationCount = translationCount;
 
+        var elapsed = DateTime.Now - _translationStartTime;
+        ElapsedTime = elapsed.TotalMinutes >= 1
+            ? $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s elapsed"
+            : $"{(int)elapsed.TotalSeconds}s elapsed";
+
         if (MonthlyCharacterCount >= MonthlyCharacterLimit && MonthlyCharacterLimit > 0)
         {
             CancelTranslation();
@@ -148,6 +155,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
             TotalTranslationCount = message.EntityCount;
             ButtonText = "Cancel translation";
 
+            _translationStartTime = DateTime.Now;
             _uiUpdateTimer.Start();
         });
     }
@@ -161,6 +169,12 @@ public partial class ProgressWindowViewModel : ObservableObject,
             _isTranslationActive = false;
             _uiUpdateTimer.Stop();
             OnUiUpdateTimerTick(null, EventArgs.Empty);
+
+            var elapsed = DateTime.Now - _translationStartTime;
+            var elapsedText = elapsed.TotalMinutes >= 1
+                ? $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s"
+                : $"{(int)elapsed.TotalSeconds}s";
+            ElapsedTime = $"Translation finished in {elapsedText}";
 
             if (message.CancelRequested)
             {

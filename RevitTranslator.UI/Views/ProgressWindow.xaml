@@ -105,6 +105,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <ui:TextBlock
                     Grid.Row="0"
@@ -122,12 +123,19 @@
                     Grid.Row="0"
                     Grid.Column="1"
                     Style="{StaticResource Annotation}"
-                    Text=" ch/month used" />
+                    Text=" ch/mo. used" />
                 <ui:TextBlock
                     Grid.Row="1"
                     Grid.Column="1"
                     Style="{StaticResource Annotation}"
-                    Text=" ch/month limit" />
+                    Text=" ch/mo. limit" />
+                <ui:TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    TextAlignment="Right"
+                    Style="{StaticResource Annotation}"
+                    Text="{Binding ElapsedTime, FallbackValue='00:00 elapsed'}" />
             </Grid>
         </Grid>
 
