@@ -14,9 +14,9 @@ public class ConsoleTranslationProgressMonitor : ITranslationProgressMonitor
         Console.WriteLine($"[Translation] Text retrieved: {unitCount} units to translate.");
     }
 
-    public void OnEntityTranslated(int charCount)
+    public void OnEntitiesTranslated(int entityCount, int charCount)
     {
-        Console.WriteLine($"[Translation] Entity translated: {charCount} characters.");
+        Console.WriteLine($"[Translation] {entityCount} entities translated: {charCount} characters.");
     }
 
     public void OnTranslationFinished(bool wasCancelled)

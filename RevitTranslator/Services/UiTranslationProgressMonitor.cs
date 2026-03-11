@@ -22,9 +22,9 @@ public class UiTranslationProgressMonitor(ProgressWindow progressWindow) : ITran
         StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(unitCount));
     }
 
-    public void OnEntityTranslated(int charCount)
+    public void OnEntitiesTranslated(int entityCount, int charCount)
     {
-        StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(charCount));
+        StrongReferenceMessenger.Default.Send(new EntitiesTranslatedMessage(entityCount, charCount));
     }
 
     public void OnTranslationFinished(bool wasCancelled)

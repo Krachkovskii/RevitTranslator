@@ -7,6 +7,7 @@ namespace RevitTranslator.Revit.Core.Services;
 
 /// <summary>
 /// This class batches text for translation requests and sends them concurrently.
+/// Duplicate texts are grouped so each unique text is translated only once.
 /// </summary>
 public class ConcurrentTranslationService(
     DeeplTranslationClient translationClient,
@@ -22,11 +23,15 @@ public class ConcurrentTranslationService(
     {
         try
         {
-            var batches = CreateBatches(entities);
+            var groups = entities
+                .GroupBy(entity => entity.OriginalText)
+                .ToDictionary(group => group.Key, group => group.ToArray());
+
+            var batches = CreateBatches([.. groups.Keys]);
             foreach (var batch in batches)
             {
                 token.ThrowIfCancellationRequested();
-                await ProcessBatchAsync(batch, token);
+                await ProcessBatchAsync(batch, groups, token);
             }
         }
         catch (OperationCanceledException exception)
@@ -35,23 +40,23 @@ public class ConcurrentTranslationService(
         }
     }
 
-    private static List<List<TranslationEntity>> CreateBatches(TranslationEntity[] entities)
+    private static List<List<string>> CreateBatches(string[] texts)
     {
-        var batches = new List<List<TranslationEntity>>();
-        var currentBatch = new List<TranslationEntity>();
+        var batches = new List<List<string>>();
+        var currentBatch = new List<string>();
         var currentSizeBytes = 0;
 
-        foreach (var entity in entities)
+        foreach (var text in texts)
         {
-            var textSizeBytes = Encoding.UTF8.GetByteCount(entity.OriginalText);
+            var textSizeBytes = Encoding.UTF8.GetByteCount(text);
             if (currentSizeBytes + textSizeBytes > MaxBatchSizeBytes && currentBatch.Count > 0)
             {
                 batches.Add(currentBatch);
-                currentBatch = new List<TranslationEntity>();
+                currentBatch = new List<string>();
                 currentSizeBytes = 0;
             }
 
-            currentBatch.Add(entity);
+            currentBatch.Add(text);
             currentSizeBytes += textSizeBytes;
         }
 
@@ -59,27 +64,33 @@ public class ConcurrentTranslationService(
         return batches;
     }
 
-    private async Task ProcessBatchAsync(List<TranslationEntity> batch, CancellationToken token)
+    private async Task ProcessBatchAsync(
+        List<string> batch,
+        Dictionary<string, TranslationEntity[]> groups,
+        CancellationToken token)
     {
-        var texts = batch.Select(entity => entity.OriginalText).ToArray();
-        var translations = await translationClient.TranslateTextsAsync(texts, token);
+        var translations = await translationClient.TranslateTextsAsync(batch.ToArray(), token);
         if (translations is null) return;
 
         for (var i = 0; i < batch.Count; i++)
         {
-            var entity = batch[i];
+            var originalText = batch[i];
             var translated = i < translations.Length ? translations[i] : null;
-
             if (translated is null) continue;
 
+            var entityGroup = groups[originalText];
             if (translated == string.Empty)
             {
-                progressMonitor.OnEntityTranslated(entity.OriginalText.Length);
+                progressMonitor.OnEntitiesTranslated(entityGroup.Length, originalText.Length * entityGroup.Length);
                 continue;
             }
 
-            entity.TranslatedText = translated;
-            progressMonitor.OnEntityTranslated(translated.Length);
+            foreach (var entity in entityGroup)
+            {
+                entity.TranslatedText = translated;
+            }
+
+            progressMonitor.OnEntitiesTranslated(entityGroup.Length, translated.Length * entityGroup.Length);
         }
     }
 }

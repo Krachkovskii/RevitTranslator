@@ -75,7 +75,7 @@ public class MockConcurrentTranslationHandler(DeeplTranslationClient client) : I
                 await client.TranslateTextAsync(text, _cancellationToken);
             }
 
-            StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));
+            StrongReferenceMessenger.Default.Send(new EntitiesTranslatedMessage(1, text.Length));
         }, _cancellationToken));
     }
 

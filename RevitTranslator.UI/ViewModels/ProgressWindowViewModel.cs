@@ -10,7 +10,7 @@ namespace RevitTranslator.UI.ViewModels;
 
 public partial class ProgressWindowViewModel : ObservableObject,
     IRecipient<TextRetrievedMessage>,
-    IRecipient<EntityTranslatedMessage>,
+    IRecipient<EntitiesTranslatedMessage>,
     IRecipient<TranslationFinishedMessage>,
     IRecipient<ModelUpdatedMessage>,
     IDisposable
@@ -45,7 +45,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
         _reportService = reportService;
 
         StrongReferenceMessenger.Default.Register<TextRetrievedMessage>(this);
-        StrongReferenceMessenger.Default.Register<EntityTranslatedMessage>(this);
+        StrongReferenceMessenger.Default.Register<EntitiesTranslatedMessage>(this);
         StrongReferenceMessenger.Default.Register<TranslationFinishedMessage>(this);
         StrongReferenceMessenger.Default.Register<ModelUpdatedMessage>(this);
 
@@ -116,11 +116,11 @@ public partial class ProgressWindowViewModel : ObservableObject,
         return true;
     }
 
-    private void UpdateProgress(int translationLength)
+    private void UpdateProgress(int entityCount, int charCount)
     {
-        Interlocked.Add(ref _threadSafeTranslationCount, 1);
-        Interlocked.Add(ref _threadSafeSessionCharacterCount, translationLength);
-        Interlocked.Add(ref _threadSafeMonthlyCharacterCount, translationLength);
+        Interlocked.Add(ref _threadSafeTranslationCount, entityCount);
+        Interlocked.Add(ref _threadSafeSessionCharacterCount, charCount);
+        Interlocked.Add(ref _threadSafeMonthlyCharacterCount, charCount);
     }
 
     private void OnUiUpdateTimerTick(object? sender, EventArgs args)
@@ -160,7 +160,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
         });
     }
 
-    public void Receive(EntityTranslatedMessage message) => UpdateProgress(message.CharacterCount);
+    public void Receive(EntitiesTranslatedMessage message) => UpdateProgress(message.EntityCount, message.CharacterCount);
 
     public void Receive(TranslationFinishedMessage message)
     {
