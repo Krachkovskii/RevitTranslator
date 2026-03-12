@@ -16,9 +16,11 @@
 
 	<!-- Colors -->
     <Color x:Key="LightGray">#646464</Color>
+    <Color x:Key="Salmon">#FA8072</Color>
 
 	<!-- Brushes -->
     <SolidColorBrush x:Key="LightGrayBrush" Color="{StaticResource LightGray}"/>
+    <SolidColorBrush x:Key="SalmonBrush" Color="{StaticResource Salmon}"/>
 
     <!-- Button Styles -->
 	<Style x:Key="ButtonStyle" TargetType="Button">

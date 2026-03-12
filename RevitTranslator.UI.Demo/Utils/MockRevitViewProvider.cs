@@ -30,9 +30,9 @@ public class MockRevitViewProvider : IRevitViewProvider
         _allIterableViews = GenerateIterableViews(faker);
     }
 
-    public IReadOnlyCollection<ViewDto> GetAllSheets() => _allSheets;
-    public IReadOnlyCollection<ViewGroupDto> GetAllSheetCollections() => _sheetCollections;
-    public IReadOnlyCollection<ViewDto> GetAllIterableViews() => _allIterableViews;
+    public Task<IReadOnlyCollection<ViewDto>> GetAllSheetsAsync() => Task.FromResult(_allSheets);
+    public Task<IReadOnlyCollection<ViewGroupDto>> GetAllSheetCollectionsAsync() => Task.FromResult(_sheetCollections);
+    public Task<IReadOnlyCollection<ViewDto>> GetAllIterableViewsAsync() => Task.FromResult(_allIterableViews);
 
     private static List<ViewDto> GenerateSheets(Faker faker, int count) =>
         Enumerable.Range(1, count)

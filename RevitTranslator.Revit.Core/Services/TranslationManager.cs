@@ -34,7 +34,7 @@ public class TranslationManager(
         if (await ShouldUpdateModelAsync())
         {
             await UpdateRevitModelAsync();
-            reportService.CreateReport(_documentEntities!);
+            reportService.CreateReport(_documentEntities);
         }
 
         StrongReferenceMessenger.Default.UnregisterAll(this);

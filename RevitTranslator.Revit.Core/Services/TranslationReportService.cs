@@ -48,54 +48,139 @@ public class TranslationReportService : ITranslationReportService
     public void CreateReport(List<DocumentTranslationEntityGroup> documentEntities)
     {
         var settings = DeeplSettingsUtils.CurrentSettings;
-        var allEntities = documentEntities
+        var updatedEntities = documentEntities
             .SelectMany(group => group.TranslationEntities)
-            .Where(entity => !string.IsNullOrEmpty(entity.TranslatedText))
+            .Where(entity => entity.UpdatedInModel)
             .ToList();
+
+        var nonUpdatedEntities = documentEntities
+            .SelectMany(group => group.TranslationEntities)
+            .Where(entity => entity.IllegalCharacter.HasValue)
+            .ToList();
+
+        var documents = documentEntities.Select(group => group.Document).Distinct().ToList();
+        var documentCodeMap = documents.Count > 1
+            ? documents
+                .Select((doc, index) => (doc, code: GetDocumentCode(index)))
+                .ToDictionary(pair => pair.doc, pair => pair.code)
+            : null;
 
         var sb = new StringBuilder();
 
-        AppendSessionInfo(sb, settings, allEntities);
+        AppendSessionInfo(sb, settings, updatedEntities, nonUpdatedEntities, documents, documentCodeMap);
         sb.AppendLine();
-        AppendTranslationTable(sb, allEntities);
+
+        if (nonUpdatedEntities.Count > 0)
+        {
+            AppendTranslationTable(sb, nonUpdatedEntities, documentCodeMap,
+                "✗ The following elements were translated but not updated in the model due to characters that cannot be used in user-set values:",
+                includeForbiddenCharacter: true);
+            sb.AppendLine();
+        }
+
+        AppendTranslationTable(sb,
+            updatedEntities,
+            documentCodeMap,
+            "✓ The following elements have been successfully translated and updated in model:");
 
         var path = SaveReport(sb.ToString());
         _lastReportPath = path;
     }
 
+    private static string GetDocumentCode(int index)
+    {
+        return index < 26
+            ? ((char)('A' + index)).ToString()
+            : GetDocumentCode(index / 26 - 1) + GetDocumentCode(index % 26);
+    }
+
     private static void AppendSessionInfo(
         StringBuilder sb,
         TranslationService.Models.DeeplSettingsDescriptor? settings,
-        List<TranslationEntity> entities)
+        List<TranslationEntity> updatedEntities,
+        List<TranslationEntity> nonUpdatedEntities,
+        List<Document> documents,
+        Dictionary<Document, string>? documentCodeMap)
     {
-        var isFreePlan = settings?.IsPaidPlan != true;
-        var sourceLanguage = settings?.SourceLanguage?.VisibleName ?? "Auto";
+        var translationTime = DateTime.Now.ToString("yyyy.MM.dd HH:mm");
+        var deeplPlan = settings?.IsPaidPlan != true ? "Free" : "Paid";
+        var sourceLanguage = settings?.SourceLanguage?.VisibleName ?? "Auto-detected";
         var targetLanguage = settings?.TargetLanguage?.VisibleName ?? "Unknown";
-        var characterCount = entities.Sum(entity => entity.TranslatedText.Length);
+        var characterCount = updatedEntities
+            .Concat(nonUpdatedEntities)
+            .GroupBy(entity => entity.OriginalText)
+            .Sum(group => group.First().TranslatedText.Length);
 
-        sb.AppendLine($"Free plan: {isFreePlan}");
+        sb.AppendLine($"Translation session report created at {translationTime}");
+        sb.AppendLine($"DeepL API plan: {deeplPlan}");
         sb.AppendLine($"Source language: {sourceLanguage}");
         sb.AppendLine($"Target language: {targetLanguage}");
-        sb.AppendLine($"Elements translated: {entities.Count}");
+        sb.AppendLine($"Elements translated: {updatedEntities.Count}");
         sb.AppendLine($"Characters translated: {characterCount}");
+        if (nonUpdatedEntities.Count > 0)
+        {
+            sb.AppendLine($"Elements not updated in the model due to forbidden characters: {nonUpdatedEntities.Count}");
+        }
+
+        if (documentCodeMap is null)
+        {
+            sb.AppendLine($"Document title: {GetDocumentDisplayName(documents[0])}");
+        }
+        else
+        {
+            sb.AppendLine("Documents:");
+            foreach (var (doc, code) in documentCodeMap)
+            {
+                sb.AppendLine($"  {code} - {GetDocumentDisplayName(doc)}");
+            }
+        }
     }
 
-    private static void AppendTranslationTable(StringBuilder sb, List<TranslationEntity> entities)
+    private static string GetDocumentDisplayName(Document document)
     {
-        sb.AppendLine("Document name,ElementId,Source text,Translated text");
+        return document.IsFamilyDocument ? document.Title : document.Title + ".rvt";
+    }
+
+    private static void AppendTranslationTable(
+        StringBuilder sb,
+        List<TranslationEntity> entities,
+        Dictionary<Document, string>? documentCodeMap,
+        string sectionHeader,
+        bool includeForbiddenCharacter = false)
+    {
+        sb.AppendLine(sectionHeader);
+
+        var header = documentCodeMap is null
+            ? "ElementId,Source text,Translated text"
+            : "ElementId,Source text,Translated text,Document";
+
+        sb.AppendLine(includeForbiddenCharacter ? header + ",Forbidden character" : header);
         sb.AppendLine();
 
         foreach (var entity in entities)
         {
-            var elementId = entity.ParentElement is not null
-                ? entity.ParentElement.Id.ToLong().ToString()
+            var elementId = entity.ParentElementId is not null
+                ? entity.ParentElementId.ToLong().ToString()
                 : entity.ElementId.ToLong().ToString();
 
-            sb.AppendLine(string.Join(",",
-                EscapeCsvValue(entity.Document.Title),
+            var columns = new List<string>
+            {
                 elementId,
                 EscapeCsvValue(entity.OriginalText),
-                EscapeCsvValue(entity.TranslatedText)));
+                EscapeCsvValue(entity.TranslatedText)
+            };
+
+            if (documentCodeMap is not null)
+            {
+                columns.Add(documentCodeMap[entity.Document]);
+            }
+
+            if (includeForbiddenCharacter)
+            {
+                columns.Add(EscapeCsvValue(entity.IllegalCharacter?.ToString() ?? string.Empty));
+            }
+
+            sb.AppendLine(string.Join(",", columns));
         }
     }
 

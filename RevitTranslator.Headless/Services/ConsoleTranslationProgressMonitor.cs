@@ -26,18 +26,11 @@ public class ConsoleTranslationProgressMonitor : ITranslationProgressMonitor
             : "[Translation] Translation finished.");
     }
 
-    public void OnModelUpdated()
+    public void OnModelUpdated(int nonUpdatedEntitiesCount, int updatedInModelCount, int updatedFamiliesCount)
     {
         Console.WriteLine("[Translation] Model updated successfully.");
-    }
-
-    public void OnNonUpdatableElements(IReadOnlyList<string> elements, string documentTitle)
-    {
-        Console.WriteLine($"[Translation] Some elements in \"{documentTitle}\" could not be updated due to forbidden symbols:");
-        foreach (var element in elements)
-        {
-            Console.WriteLine($"  - {element}");
-        }
+        if (nonUpdatedEntitiesCount > 0)
+            Console.WriteLine($"[Translation] {nonUpdatedEntitiesCount} element name(s) were not updated due to forbidden characters.");
     }
 
     public Task<bool> ShouldUpdateAfterCancellationAsync()

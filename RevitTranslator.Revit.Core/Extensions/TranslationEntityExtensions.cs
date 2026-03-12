@@ -6,15 +6,11 @@ namespace RevitTranslator.Revit.Core.Extensions;
 
 public static class TranslationEntityExtensions
 {
-    public static bool HasText(this TranslationEntity entity)
-    {
-        return !string.IsNullOrWhiteSpace(entity.OriginalText);
-    }
+    public static bool HasText(this TranslationEntity entity) => !string.IsNullOrWhiteSpace(entity.OriginalText);
 
-    public static bool IsTranslated(this TranslationEntity entity)
-    {
-        return !string.IsNullOrWhiteSpace(entity.TranslatedText) && entity.TranslatedText != entity.OriginalText;
-    }
+    public static bool IsTranslated(this TranslationEntity entity) => 
+        !string.IsNullOrWhiteSpace(entity.TranslatedText) 
+        && !entity.TranslatedText.Equals(entity.OriginalText, StringComparison.InvariantCulture);
 
     public static bool NameHasIllegalCharacters(this TranslationEntity entity)
     {

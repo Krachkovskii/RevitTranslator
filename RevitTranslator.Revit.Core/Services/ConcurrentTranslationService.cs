@@ -81,7 +81,7 @@ public class ConcurrentTranslationService(
             var entityGroup = groups[originalText];
             if (translated == string.Empty)
             {
-                progressMonitor.OnEntitiesTranslated(entityGroup.Length, originalText.Length * entityGroup.Length);
+                progressMonitor.OnEntitiesTranslated(entityGroup.Length, originalText.Length);
                 continue;
             }
 
@@ -90,7 +90,7 @@ public class ConcurrentTranslationService(
                 entity.TranslatedText = translated;
             }
 
-            progressMonitor.OnEntitiesTranslated(entityGroup.Length, translated.Length * entityGroup.Length);
+            progressMonitor.OnEntitiesTranslated(entityGroup.Length, translated.Length);
         }
     }
 }

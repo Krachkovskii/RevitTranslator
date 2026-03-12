@@ -49,119 +49,140 @@
                 Style="{StaticResource LargeButton}" />
             <Grid
                 DockPanel.Dock="Top">
-                <ScrollViewer
-                    Margin="14 36 0 0"
-                    VerticalScrollBarVisibility="Auto"
-                    HorizontalScrollBarVisibility="Disabled">
-                    <ItemsControl
-                        DockPanel.Dock="Top"
-                        Margin="0 8 14 14"
-                        ItemsSource="{Binding ViewGroups}">
-                        <ItemsControl.Resources>
-                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                             Color="Transparent" />
-                        </ItemsControl.Resources>
-                        <ItemsControl.ItemContainerStyle>
-                            <Style
-                                TargetType="{x:Type ContentPresenter}">
-                                <Setter
-                                    Property="Visibility"
-                                    Value="{Binding IsVisible,
-                                        Converter={x:Static converters:Converters.CollapsedBoolVisibilityConverter},
-                                        Mode=OneWay}" />
-                            </Style>
-                        </ItemsControl.ItemContainerStyle>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <ui:CardExpander
-                                    Padding="4 8 16 8"
-                                    Margin="0 4"
-                                    IsExpanded="{Binding IsExpanded,
-                                        Mode=TwoWay,
-                                        UpdateSourceTrigger=PropertyChanged}">
-                                    <ui:CardExpander.Header>
-                                        <CheckBox
-                                            IsChecked="{Binding IsChecked}"
-                                            Content="{Binding Name, Mode=OneTime}"
-                                            VerticalContentAlignment="Center" />
-                                    </ui:CardExpander.Header>
-                                    <ui:CardExpander.Content>
-                                        <ItemsControl
-                                            ItemsSource="{Binding Views}">
-                                            <ItemsControl.ItemContainerStyle>
-                                                <Style
-                                                    TargetType="{x:Type ContentPresenter}">
-                                                    <Setter
-                                                        Property="Visibility"
-                                                        Value="{Binding IsVisible,
-                                                            Converter={x:Static converters:Converters.CollapsedBoolVisibilityConverter},
-                                                            Mode=OneWay}" />
-                                                </Style>
-                                            </ItemsControl.ItemContainerStyle>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border
-                                                        x:Name="ItemBorder"
-                                                        Background="Transparent"
-                                                        BorderThickness="1"
-                                                        BorderBrush="Transparent"
-                                                        CornerRadius="4"
-                                                        Padding="0 4"
-                                                        Cursor="Hand"
-                                                        MouseLeftButtonUp="OnItemBorderLeftMouseUp">
-                                                        <CheckBox
-                                                            x:Name="CategoryCheckBox"
-                                                            IsChecked="{Binding IsChecked, 
-                                                                Mode=TwoWay, 
-                                                                UpdateSourceTrigger=PropertyChanged}"
-                                                            Content="{Binding Name, 
-                                                                Mode=OneTime}"
-                                                            VerticalContentAlignment="Center" />
-                                                    </Border>
-                                                    <DataTemplate.Triggers>
-                                                        <Trigger
-                                                            SourceName="ItemBorder"
-                                                            Property="IsMouseOver"
-                                                            Value="True">
-                                                            <Setter
-                                                                TargetName="ItemBorder"
-                                                                Property="Background"
-                                                                Value="{DynamicResource ControlFillColorSecondaryBrush}" />
-                                                            <Setter
-                                                                TargetName="ItemBorder"
-                                                                Property="BorderBrush"
-                                                                Value="{DynamicResource ControlElevationBorderBrush}" />
-                                                        </Trigger>
-                                                    </DataTemplate.Triggers>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ui:CardExpander.Content>
-                                </ui:CardExpander>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-                <ui:TextBox
-                    Icon="{ui:SymbolIcon Search24}"
-                    Background="White"
-                    ShowClearButton="True"
-                    Height="36"
-                    VerticalAlignment="Top"
-                    Text="{Binding SearchText, 
-                        Mode=TwoWay, 
-                            UpdateSourceTrigger=PropertyChanged}"
-                    PlaceholderText="Search sheet name..."
-                    Margin="14 4 14 0">
-                    <ui:TextBox.Effect>
-                        <DropShadowEffect
-                            Direction="270"
-                            Opacity="0.1"
-                            BlurRadius="12"
-                            RenderingBias="Performance"
-                            ShadowDepth="8" />
-                    </ui:TextBox.Effect>
-                </ui:TextBox>
+                <Grid
+                    Visibility="{Binding IsLoading,
+                        Converter={x:Static converters:Converters.InverseBoolVisibilityConverter}}">
+                    <ScrollViewer
+                        Margin="14 36 0 0"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl
+                            DockPanel.Dock="Top"
+                            Margin="0 8 14 14"
+                            ItemsSource="{Binding ViewGroups}">
+                            <ItemsControl.Resources>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                                 Color="Transparent" />
+                            </ItemsControl.Resources>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style
+                                    TargetType="{x:Type ContentPresenter}">
+                                    <Setter
+                                        Property="Visibility"
+                                        Value="{Binding IsVisible,
+                                            Converter={x:Static converters:Converters.CollapsedBoolVisibilityConverter},
+                                            Mode=OneWay}" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ui:CardExpander
+                                        Padding="4 8 16 8"
+                                        Margin="0 4"
+                                        IsExpanded="{Binding IsExpanded,
+                                            Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}">
+                                        <ui:CardExpander.Header>
+                                            <CheckBox
+                                                IsChecked="{Binding IsChecked}"
+                                                Content="{Binding Name, Mode=OneTime}"
+                                                VerticalContentAlignment="Center" />
+                                        </ui:CardExpander.Header>
+                                        <ui:CardExpander.Content>
+                                            <ItemsControl
+                                                ItemsSource="{Binding Views}">
+                                                <ItemsControl.ItemContainerStyle>
+                                                    <Style
+                                                        TargetType="{x:Type ContentPresenter}">
+                                                        <Setter
+                                                            Property="Visibility"
+                                                            Value="{Binding IsVisible,
+                                                                Converter={x:Static converters:Converters.CollapsedBoolVisibilityConverter},
+                                                                Mode=OneWay}" />
+                                                    </Style>
+                                                </ItemsControl.ItemContainerStyle>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            x:Name="ItemBorder"
+                                                            Background="Transparent"
+                                                            BorderThickness="1"
+                                                            BorderBrush="Transparent"
+                                                            CornerRadius="4"
+                                                            Padding="0 4"
+                                                            Cursor="Hand"
+                                                            MouseLeftButtonUp="OnItemBorderLeftMouseUp">
+                                                            <CheckBox
+                                                                x:Name="CategoryCheckBox"
+                                                                IsChecked="{Binding IsChecked,
+                                                                    Mode=TwoWay,
+                                                                    UpdateSourceTrigger=PropertyChanged}"
+                                                                Content="{Binding Name,
+                                                                    Mode=OneTime}"
+                                                                VerticalContentAlignment="Center" />
+                                                        </Border>
+                                                        <DataTemplate.Triggers>
+                                                            <Trigger
+                                                                SourceName="ItemBorder"
+                                                                Property="IsMouseOver"
+                                                                Value="True">
+                                                                <Setter
+                                                                    TargetName="ItemBorder"
+                                                                    Property="Background"
+                                                                    Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                                <Setter
+                                                                    TargetName="ItemBorder"
+                                                                    Property="BorderBrush"
+                                                                    Value="{DynamicResource ControlElevationBorderBrush}" />
+                                                            </Trigger>
+                                                        </DataTemplate.Triggers>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ui:CardExpander.Content>
+                                    </ui:CardExpander>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <ui:TextBox
+                        Icon="{ui:SymbolIcon Search24}"
+                        Background="White"
+                        ShowClearButton="True"
+                        Height="36"
+                        VerticalAlignment="Top"
+                        Text="{Binding SearchText,
+                            Mode=TwoWay,
+                                UpdateSourceTrigger=PropertyChanged}"
+                        PlaceholderText="Search sheet name..."
+                        Margin="14 4 14 0">
+                        <ui:TextBox.Effect>
+                            <DropShadowEffect
+                                Direction="270"
+                                Opacity="0.1"
+                                BlurRadius="12"
+                                RenderingBias="Performance"
+                                ShadowDepth="8" />
+                        </ui:TextBox.Effect>
+                    </ui:TextBox>
+                </Grid>
+                <Grid
+                    Visibility="{Binding IsLoading,
+                        Converter={x:Static converters:Converters.CollapsedBoolVisibilityConverter}}">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                        <ui:ProgressRing
+                            IsIndeterminate="True"
+                            Width="48"
+                            Height="48"
+                            HorizontalAlignment="Center" />
+                        <TextBlock
+                            Text="Loading sheet info..."
+                            HorizontalAlignment="Center"
+                            Margin="0 12 0 0" />
+                    </StackPanel>
+                </Grid>
             </Grid>
         </DockPanel>
     </Grid>

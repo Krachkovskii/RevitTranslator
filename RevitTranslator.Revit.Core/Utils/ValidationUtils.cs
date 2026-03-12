@@ -26,19 +26,8 @@ public static class ValidationUtils
     /// <summary>
     /// Characters that can't be used in certain Revit text properties.
     /// </summary>
-    public static readonly List<char> ForbiddenParameterSymbols = new()
-    {
+    public static readonly char[] ForbiddenParameterSymbols =
+    [
         '\\', ':', '{', '}', '[', ']', '|', ';', '<', '>', '?', '`', '~'
-    };
-
-    /// <summary>
-    /// Checks if an element is valid for family translation.
-    /// Usually, it's downloadable families, such as annotations or titleblocks.
-    /// </summary>
-    /// <param name="element"></param>
-    /// <returns></returns>
-    public static bool IsValidForFamilyEdit(this Element element)
-    {
-        return element.Category?.BuiltInCategory == BuiltInCategory.OST_TitleBlocks;
-    }
+    ];
 }
