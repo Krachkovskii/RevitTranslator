@@ -6,6 +6,6 @@ public interface ITranslationProgressMonitor
     void OnTextRetrieved(int unitCount);
     void OnEntitiesTranslated(int entityCount, int charCount);
     void OnTranslationFinished(bool wasCancelled);
-    void OnModelUpdated(int nonUpdatedEntitiesCount);
+    void OnModelUpdated(int nonUpdatedEntitiesCount, int updatedInModelCount, int updatedFamiliesCount);
     Task<bool> ShouldUpdateAfterCancellationAsync();
 }

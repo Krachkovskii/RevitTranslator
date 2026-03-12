@@ -67,7 +67,7 @@ public class TranslationReportService : ITranslationReportService
 
         var sb = new StringBuilder();
 
-        AppendSessionInfo(sb, settings, updatedEntities, nonUpdatedEntities.Count, documents, documentCodeMap);
+        AppendSessionInfo(sb, settings, updatedEntities, nonUpdatedEntities, documents, documentCodeMap);
         sb.AppendLine();
 
         if (nonUpdatedEntities.Count > 0)
@@ -98,7 +98,7 @@ public class TranslationReportService : ITranslationReportService
         StringBuilder sb,
         TranslationService.Models.DeeplSettingsDescriptor? settings,
         List<TranslationEntity> updatedEntities,
-        int nonUpdatedCount,
+        List<TranslationEntity> nonUpdatedEntities,
         List<Document> documents,
         Dictionary<Document, string>? documentCodeMap)
     {
@@ -107,18 +107,19 @@ public class TranslationReportService : ITranslationReportService
         var sourceLanguage = settings?.SourceLanguage?.VisibleName ?? "Auto-detected";
         var targetLanguage = settings?.TargetLanguage?.VisibleName ?? "Unknown";
         var characterCount = updatedEntities
+            .Concat(nonUpdatedEntities)
             .GroupBy(entity => entity.OriginalText)
             .Sum(group => group.First().TranslatedText.Length);
 
-        sb.AppendLine($"Report created at {translationTime}");
+        sb.AppendLine($"Translation session report created at {translationTime}");
         sb.AppendLine($"DeepL API plan: {deeplPlan}");
         sb.AppendLine($"Source language: {sourceLanguage}");
         sb.AppendLine($"Target language: {targetLanguage}");
         sb.AppendLine($"Elements translated: {updatedEntities.Count}");
         sb.AppendLine($"Characters translated: {characterCount}");
-        if (nonUpdatedCount > 0)
+        if (nonUpdatedEntities.Count > 0)
         {
-            sb.AppendLine($"Elements not updated in the model due to forbidden characters: {nonUpdatedCount}");
+            sb.AppendLine($"Elements not updated in the model due to forbidden characters: {nonUpdatedEntities.Count}");
         }
 
         if (documentCodeMap is null)

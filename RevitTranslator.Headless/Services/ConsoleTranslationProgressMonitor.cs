@@ -26,7 +26,7 @@ public class ConsoleTranslationProgressMonitor : ITranslationProgressMonitor
             : "[Translation] Translation finished.");
     }
 
-    public void OnModelUpdated(int nonUpdatedEntitiesCount)
+    public void OnModelUpdated(int nonUpdatedEntitiesCount, int updatedInModelCount, int updatedFamiliesCount)
     {
         Console.WriteLine("[Translation] Model updated successfully.");
         if (nonUpdatedEntitiesCount > 0)

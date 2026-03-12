@@ -140,9 +140,10 @@
             </Grid>
         </Grid>
 
-        <Grid 
+        <Grid
             Grid.Row="2">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -160,17 +161,26 @@
                     Converter={x:Static converters:Converters.StringToVisibilityConverter}}"
                 Text="{Binding IllegalCharacterWarning}" />
 
-            <ui:HyperlinkButton
+            <TextBlock
                 Grid.Row="1"
+                HorizontalAlignment="Center"
+                TextAlignment="Center"
+                Margin="20 0 20 8"
+                Visibility="{Binding UpdatedElementsText,
+                    Converter={x:Static converters:Converters.StringToVisibilityConverter}}"
+                Text="{Binding UpdatedElementsText}" />
+
+            <ui:HyperlinkButton
+                Grid.Row="2"
                 x:Name="LastReportButton"
                 HorizontalAlignment="Center"
-                Content="Open translation report"
+                Content="Open detailed report"
                 ToolTip="You can also open reports folder from Settings window"
                 Command="{Binding OpenReportCommandCommand}"
                 Visibility="Collapsed"/>
 
             <ProgressBar
-                Grid.Row="2"
+                Grid.Row="3"
                 Height="8"
                 Margin="0 20 0 5"
                 Value="{Binding FinishedTranslationCount, FallbackValue=50}"
@@ -180,7 +190,7 @@
                     UpdateSourceTrigger=PropertyChanged}" />
 
             <Button
-                Grid.Row="3"
+                Grid.Row="4"
                 Command="{Binding HandleButtonClickCommand}"
                 Style="{StaticResource LargeButton}"
                 IsEnabled="{Binding IsMainButtonEnabled}"

@@ -32,9 +32,9 @@ public class UiTranslationProgressMonitor(ProgressWindow progressWindow) : ITran
         StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(wasCancelled));
     }
 
-    public void OnModelUpdated(int nonUpdatedEntitiesCount)
+    public void OnModelUpdated(int nonUpdatedEntitiesCount, int updatedInModelCount, int updatedFamiliesCount)
     {
-        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage(nonUpdatedEntitiesCount));
+        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage(nonUpdatedEntitiesCount, updatedInModelCount, updatedFamiliesCount));
     }
 
     public Task<bool> ShouldUpdateAfterCancellationAsync()
