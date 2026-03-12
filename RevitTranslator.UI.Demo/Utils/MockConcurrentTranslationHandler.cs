@@ -1,3 +1,4 @@
+using Bogus;
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
 using TranslationService.Utils;
@@ -58,7 +59,10 @@ public class MockConcurrentTranslationHandler(DeeplTranslationClient client) : I
     private async Task SimulateModelUpdateAsync()
     {
         await Task.Delay(1500);
-        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
+        var faker = new Faker();
+        var hasFailedUpdates = faker.Random.Bool();
+        var failedUpdatesCount = hasFailedUpdates ? faker.Random.Int(1, 20) : 0;
+        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage(failedUpdatesCount, 0, 0));
     }
 
     private void AddTranslationTask(string text)
@@ -75,7 +79,7 @@ public class MockConcurrentTranslationHandler(DeeplTranslationClient client) : I
                 await client.TranslateTextAsync(text, _cancellationToken);
             }
 
-            StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(text.Length));
+            StrongReferenceMessenger.Default.Send(new EntitiesTranslatedMessage(1, text.Length));
         }, _cancellationToken));
     }
 

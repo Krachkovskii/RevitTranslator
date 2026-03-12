@@ -1,11 +1,8 @@
-﻿using Autodesk.Revit.Attributes;
+using Autodesk.Revit.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
-using RevitTranslator.Common.Extensions;
-using RevitTranslator.Common.Services;
+using RevitTranslator.Revit.Core.Services;
 using RevitTranslator.Services;
-using RevitTranslator.UI.Views;
-using RevitTranslator.ViewModels;
 
 namespace RevitTranslator.Commands;
 
@@ -18,11 +15,11 @@ public class TranslateSheetsCommand : ExternalCommand
         try
         {
             using var scope = Host.ServiceProvider.CreateScope();
-            var categoryService = scope.ServiceProvider.GetRequiredService<SheetSelectionService>();
-            var result = categoryService.Initialize();
+            var sheetService = scope.ServiceProvider.GetRequiredService<SheetSelectionService>();
+            var result = sheetService.Initialize();
             if (result is not true) return;
-            
-            await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(categoryService.SelectedElements);
+
+            await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(sheetService.SelectedElements);
         }
         catch (Exception ex)
         {

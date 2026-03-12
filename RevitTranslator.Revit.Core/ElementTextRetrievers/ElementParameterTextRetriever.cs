@@ -1,0 +1,51 @@
+using RevitTranslator.Revit.Core.Models;
+using RevitTranslator.Revit.Core.Utils;
+using CoreParameterUtils = RevitTranslator.Revit.Core.Utils.ParameterUtils;
+
+namespace RevitTranslator.Revit.Core.ElementTextRetrievers;
+
+public class ElementParameterTextRetriever : BaseElementTextRetriever
+{
+    public ElementParameterTextRetriever(Element element)
+    {
+        Process(element);
+    }
+
+    protected override sealed void Process(object Object)
+    {
+        // Making sure that we're processing only elements - only they can have parameters.
+        // Other non-Element objects, e.g. ScheduleFields, don't have parameters.
+        if (Object is not Element element) return;
+
+        var parameters = GetElementParameters(element);
+        foreach (var parameter in parameters)
+        {
+            ProcessParameter(parameter);
+        }
+    }
+
+    private static List<Parameter> GetElementParameters(Element element)
+    {
+        return element.Parameters
+            .Cast<Parameter>()
+            .Where(CoreParameterUtils.CanUseParameter)
+            .ToList();
+    }
+
+    private void ProcessParameter(Parameter param)
+    {
+        var text = param.GetText();
+        if (!text.HasText()) return;
+
+        var unit = new TranslationEntity
+        {
+            Element = param,
+            ElementId = param.Id,
+            ParentElementId = param.Element.Id,
+            Document = param.Element.Document,
+            OriginalText = text,
+        };
+
+        AddUnitToList(unit);
+    }
+}

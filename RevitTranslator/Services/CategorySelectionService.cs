@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Services;
-using RevitTranslator.Extensions;
+using RevitTranslator.Revit.Core.Extensions;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.UI.Views;
 
@@ -14,7 +13,7 @@ public class CategorySelectionService(ICategoriesWindowViewModel viewModel, Cate
     public bool Initialize()
     {
         var result = window.ShowDialog();
-        
+
         SelectedElements = new FilteredElementCollector(Context.ActiveDocument)
             .WherePasses(
                 new ElementMulticategoryFilter(viewModel.CategoryTypes
