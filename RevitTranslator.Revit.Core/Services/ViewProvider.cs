@@ -2,76 +2,95 @@ using RevitTranslator.Common.Contracts;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Common.Models.Views;
 using RevitTranslator.Revit.Core.Extensions;
+using RevitTranslator.Revit.Core.Utils;
 
 namespace RevitTranslator.Revit.Core.Services;
 
-public class ViewProvider : IRevitViewProvider
+public class ViewProvider(EventHandlers revitHandler) : IRevitViewProvider
 {
-    public IReadOnlyCollection<ViewDto> GetAllIterableViews()
+    public async Task<IReadOnlyCollection<ViewDto>> GetAllIterableViewsAsync()
     {
-        var viewTypes = new List<Type>
+        ViewDto[] views = [];
+
+        await revitHandler.AsyncHandler.RaiseAsync(uiapp =>
         {
-            typeof(ViewPlan),
-            typeof(View3D),
-            typeof(ViewSheet),
-            typeof(ViewDrafting),
-            typeof(ViewSection)
-        };
-        var document = Context.ActiveDocument;
-
-        return new FilteredElementCollector(document)
-            .WherePasses(new ElementMulticlassFilter(viewTypes))
-            .ToElements()
-            .Cast<View>()
-            .Where(view => !view.IsTemplate)
-            .Select(view => new ViewDto(
-                view.Id.ToLong(),
-                view.ViewType.ToInternal(),
-                view is ViewSheet sheet ? $"{sheet.SheetNumber} - {sheet.Name}" : view.Name,
-                new FilteredElementCollector(document, view.Id).GetElementCount()))
-            .Where(view => view.ViewType != ViewTypeInternal.Undefined)
-            .ToArray();
-    }
-
-    public IReadOnlyCollection<ViewDto> GetAllSheets()
-    {
-        var document = Context.ActiveDocument;
-        if (document is null) return [];
-
-        return document.EnumerateInstances<ViewSheet>()
-            .Select(sheet => new ViewDto(
-                Id: sheet.Id.ToLong(),
-                ViewType: sheet.ViewType.ToInternal(),
-                Name: $"{sheet.SheetNumber} - {sheet.Name}",
-                ElementCount: new FilteredElementCollector(document, sheet.Id).GetElementCount()))
-            .ToArray();
-    }
-
-    public IReadOnlyCollection<ViewGroupDto> GetAllSheetCollections()
-    {
-#if NET8_0_OR_GREATER
-        var document = Context.ActiveDocument;
-        if (document is null) return [];
-
-        return document.EnumerateInstances<ViewSheet>()
-            .GroupBy(sheet => sheet.SheetCollectionId)
-            .Select(collection => new ViewGroupDto
+            var viewTypes = new List<Type>
             {
-                Name = collection.First()
-                           .SheetCollectionId
-                           .ToElement<SheetCollection>(document)?
-                           .Name
-                       ?? "Ungrouped sheets",
-                Views = collection.Select(sheet => new ViewDto(
-                        Id: sheet.Id.ToLong(),
-                        ViewType: sheet.ViewType.ToInternal(),
-                        Name: $"{sheet.SheetNumber} - {sheet.Name}",
-                        ElementCount: new FilteredElementCollector(document, sheet.Id).GetElementCount()))
-                    .ToArray()
-            })
-            .ToArray();
+                typeof(ViewPlan),
+                typeof(View3D),
+                typeof(ViewSheet),
+                typeof(ViewDrafting),
+                typeof(ViewSection)
+            };
+            var document = uiapp.ActiveUIDocument.Document;
+
+            views = new FilteredElementCollector(document)
+                .WherePasses(new ElementMulticlassFilter(viewTypes))
+                .ToElements()
+                .Cast<View>()
+                .Where(view => !view.IsTemplate)
+                .Select(view => new ViewDto(
+                    view.Id.ToLong(),
+                    view.ViewType.ToInternal(),
+                    view is ViewSheet sheet ? $"{sheet.SheetNumber} - {sheet.Name}" : view.Name,
+                    new FilteredElementCollector(document, view.Id).GetElementCount()))
+                .Where(view => view.ViewType != ViewTypeInternal.Undefined)
+                .ToArray();
+        });
+
+        return views;
+    }
+
+    public async Task<IReadOnlyCollection<ViewDto>> GetAllSheetsAsync()
+    {
+        ViewDto[] views = [];
+
+        await revitHandler.AsyncHandler.RaiseAsync((uiapp) =>
+        {
+            var document = uiapp.ActiveUIDocument.Document;
+            views = document.EnumerateInstances<ViewSheet>()
+                .Select(sheet => new ViewDto(
+                    Id: sheet.Id.ToLong(),
+                    ViewType: sheet.ViewType.ToInternal(),
+                    Name: $"{sheet.SheetNumber} - {sheet.Name}",
+                    ElementCount: new FilteredElementCollector(document, sheet.Id).GetElementCount()))
+                .ToArray();
+        });
+
+        return views;
+    }
+
+    public async Task<IReadOnlyCollection<ViewGroupDto>> GetAllSheetCollectionsAsync()
+    {
+        ViewGroupDto[] groups = [];
+
+#if NET8_0_OR_GREATER
+        await revitHandler.AsyncHandler.RaiseAsync(uiapp =>
+        {
+            var document = uiapp.ActiveUIDocument.Document;
+
+            groups = document.EnumerateInstances<ViewSheet>()
+                .GroupBy(sheet => sheet.SheetCollectionId)
+                .Select(collection => new ViewGroupDto
+                {
+                    Name = collection.First()
+                               .SheetCollectionId
+                               .ToElement<SheetCollection>(document)?
+                               .Name
+                           ?? "Ungrouped sheets",
+                    Views = collection.Select(sheet => new ViewDto(
+                            Id: sheet.Id.ToLong(),
+                            ViewType: sheet.ViewType.ToInternal(),
+                            Name: $"{sheet.SheetNumber} - {sheet.Name}",
+                            ElementCount: new FilteredElementCollector(document, sheet.Id).GetElementCount()))
+                        .ToArray()
+                })
+                .ToArray();
+        });
 #else
-        return [];
+        await Task.CompletedTask;
 #endif
+
+        return groups;
     }
 }

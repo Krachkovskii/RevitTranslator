@@ -123,15 +123,24 @@ public sealed class DeeplTranslationClient
     }
 
     /// <summary>
-    /// Translates text asynchronously. Can be used concurrently.
+    /// Translates a single text string. Wraps <see cref="TranslateTextsAsync"/>.
     /// </summary>
-    /// <param name="text">Text to be translated.</param>
+    public async Task<string?> TranslateTextAsync(string text, CancellationToken token)
+    {
+        var results = await TranslateTextsAsync([text], token);
+        return results is { Length: > 0 } ? results[0] : null;
+    }
+
+    /// <summary>
+    /// Translates a batch of text strings in a single request. Can be used concurrently.
+    /// </summary>
+    /// <param name="texts">Texts to be translated.</param>
     /// <param name="token">Cancellation token.</param>
-    /// <returns>Translated text; null if there has been a translation error.
-    /// If server response does not allow further translation (e.g. quota exceeded,
+    /// <returns>Translated texts in the same order as the input; null if there has been a translation error.
+    /// If the server response does not allow further translation (e.g. quota exceeded,
     /// or request configuration is invalid), <c>OperationCanceledException</c> will be thrown,
     /// and token cancellation will be requested.</returns>
-    public async Task<string?> TranslateTextAsync(string text, CancellationToken token)
+    public async Task<string?[]?> TranslateTextsAsync(string[] texts, CancellationToken token)
     {
         var acquired = false;
         try
@@ -139,7 +148,7 @@ public sealed class DeeplTranslationClient
             await _semaphore.WaitAsync(token);
             acquired = true;
             token.ThrowIfCancellationRequested();
-            return await ProcessTranslationRequestAsync(text, token);
+            return await ProcessBatchRequestAsync(texts, token);
         }
         catch (Exception ex) when (ex is OperationCanceledException or HttpRequestException or JsonException or TaskCanceledException)
         {
@@ -151,19 +160,19 @@ public sealed class DeeplTranslationClient
         }
     }
 
-    private async Task<string?> ProcessTranslationRequestAsync(string text, CancellationToken token)
+    private async Task<string?[]?> ProcessBatchRequestAsync(string[] texts, CancellationToken token)
     {
         try
         {
             token.ThrowIfCancellationRequested();
 
-            var response = await SendTranslationRequestWithRateLimitAsync(text, token);
+            var response = await SendRequestWithRateLimitAsync(texts, token);
             if (response is null) return null;
 
             var responseBody = await response.Content.ReadAsStringAsync();
             var translationResult = JsonSerializer.Deserialize<TranslationResult>(responseBody, JsonSettings.Options);
 
-            return translationResult?.Translations[0].Text;
+            return translationResult?.Translations.Select(translation => translation.Text).ToArray();
         }
         catch (Exception ex) when (ex is OperationCanceledException or JsonException or InvalidOperationException)
         {
@@ -171,7 +180,7 @@ public sealed class DeeplTranslationClient
         }
     }
 
-    private async Task<HttpResponseMessage?> SendTranslationRequestWithRateLimitAsync(string text, CancellationToken token)
+    private async Task<HttpResponseMessage?> SendRequestWithRateLimitAsync(string[] texts, CancellationToken token)
     {
         try
         {
@@ -183,13 +192,15 @@ public sealed class DeeplTranslationClient
             {
                 if (retryCount > retryLimit) return null;
 
-                using var content = new FormUrlEncodedContent(
-                [
-                    new KeyValuePair<string, string>("text", text),
-                    new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"),
-                    new KeyValuePair<string, string>("target_lang", Settings!.TargetLanguage.TargetLanguageCode),
-                    new KeyValuePair<string, string?>("source_lang", Settings.SourceLanguage?.SourceLanguageCode)
-                ]);
+                var formData = new List<KeyValuePair<string, string>>(texts.Length + 3);
+                foreach (var text in texts)
+                    formData.Add(new KeyValuePair<string, string>("text", text));
+                formData.Add(new KeyValuePair<string, string>("context", "(This is a property of an element in a BIM Model)"));
+                formData.Add(new KeyValuePair<string, string>("target_lang", Settings!.TargetLanguage!.TargetLanguageCode));
+                if (Settings.SourceLanguage?.SourceLanguageCode is { } sourceLang)
+                    formData.Add(new KeyValuePair<string, string>("source_lang", sourceLang));
+
+                using var content = new FormUrlEncodedContent(formData);
                 using var request = new HttpRequestMessage(HttpMethod.Post, TranslationUrl)
                 {
                     Content = content

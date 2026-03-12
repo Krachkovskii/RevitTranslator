@@ -22,9 +22,9 @@ public class UiTranslationProgressMonitor(ProgressWindow progressWindow) : ITran
         StrongReferenceMessenger.Default.Send(new TextRetrievedMessage(unitCount));
     }
 
-    public void OnEntityTranslated(int charCount)
+    public void OnEntitiesTranslated(int entityCount, int charCount)
     {
-        StrongReferenceMessenger.Default.Send(new EntityTranslatedMessage(charCount));
+        StrongReferenceMessenger.Default.Send(new EntitiesTranslatedMessage(entityCount, charCount));
     }
 
     public void OnTranslationFinished(bool wasCancelled)
@@ -32,18 +32,9 @@ public class UiTranslationProgressMonitor(ProgressWindow progressWindow) : ITran
         StrongReferenceMessenger.Default.Send(new TranslationFinishedMessage(wasCancelled));
     }
 
-    public void OnModelUpdated()
+    public void OnModelUpdated(int nonUpdatedEntitiesCount, int updatedInModelCount, int updatedFamiliesCount)
     {
-        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
-    }
-
-    public void OnNonUpdatableElements(IReadOnlyList<string> elements, string documentTitle)
-    {
-        MessageBox.Show(
-            $"Some translations in document \"{documentTitle}\" weren't updated due to forbidden symbols: \n{string.Join("\n", elements)}.",
-            "Warning",
-            MessageBoxButton.OK,
-            MessageBoxImage.Warning);
+        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage(nonUpdatedEntitiesCount, updatedInModelCount, updatedFamiliesCount));
     }
 
     public Task<bool> ShouldUpdateAfterCancellationAsync()

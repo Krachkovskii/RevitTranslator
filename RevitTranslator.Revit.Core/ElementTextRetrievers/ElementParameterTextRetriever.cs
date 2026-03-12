@@ -41,7 +41,7 @@ public class ElementParameterTextRetriever : BaseElementTextRetriever
         {
             Element = param,
             ElementId = param.Id,
-            ParentElement = param.Element,
+            ParentElementId = param.Element.Id,
             Document = param.Element.Document,
             OriginalText = text,
         };

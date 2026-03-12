@@ -57,7 +57,7 @@ public class DimensionTextRetriever : BaseElementTextRetriever
         {
             var dim = (DimensionSegment)dimensionObject;
             unit.Element = dim;
-            unit.ParentElement = _dimension;
+            unit.ParentElementId = _dimension.Id;
         }
 
         unit.ElementId = _dimension.Id;
@@ -109,7 +109,7 @@ public class DimensionTextRetriever : BaseElementTextRetriever
     {
         if (entity.Element is DimensionSegment)
         {
-            entity.ParentElement = _dimension;
+            entity.ParentElementId = _dimension.Id;
         }
 
         base.AddUnitToList(entity);

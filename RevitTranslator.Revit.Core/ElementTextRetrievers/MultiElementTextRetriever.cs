@@ -102,6 +102,16 @@ public class MultiElementTextRetriever : BaseElementTextRetriever
     {
         if (retriever.EntityGroup is null) return;
 
+        var existingGroup = _unitGroups.FirstOrDefault(group => group.Document.Equals(retriever.EntityGroup.Document));
+        if (existingGroup is not null)
+        {
+            foreach (var entity in retriever.EntityGroup.TranslationEntities)
+            {
+                existingGroup.TranslationEntities.Add(entity);
+            }
+            return;
+        }
+
         _unitGroups.Add(retriever.EntityGroup);
     }
 

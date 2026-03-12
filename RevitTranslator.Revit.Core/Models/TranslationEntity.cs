@@ -29,11 +29,10 @@ public sealed class TranslationEntity
     public string OriginalText { get; set; } = string.Empty;
 
     /// <summary>
-    /// Optional: parent element that is UI-visible.
-    /// e.g.: if translated object is Parameter, you can store the element for this parameter;
-    /// if translated object is ScheduleField, store Schedule element here.
+    /// Optional: ElementId of the ParentElement, stored as a safe value that remains valid
+    /// after the parent element's document is closed or its transaction is rolled back.
     /// </summary>
-    public Element? ParentElement { get; set; }
+    public ElementId? ParentElementId { get; set; }
 
     /// <summary>
     /// Optional: TableSectionData coordinates (row, column).
@@ -49,4 +48,14 @@ public sealed class TranslationEntity
     /// Optional: Additional details of the translation, e.g. Dimension Override or Element Name.
     /// </summary>
     public TranslationDetails TranslationDetails { get; set; } = TranslationDetails.None;
+
+    /// <summary>
+    /// Indicates whether the translated text was successfully written back to the Revit model.
+    /// </summary>
+    public bool UpdatedInModel { get; set; }
+
+    /// <summary>
+    /// The illegal character that prevented the entity from being updated in the model, if any.
+    /// </summary>
+    public char? IllegalCharacter { get; set; }
 }

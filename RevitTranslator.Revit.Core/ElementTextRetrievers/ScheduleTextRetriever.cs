@@ -37,7 +37,7 @@ public class ScheduleTextRetriever : BaseElementTextRetriever
             var unit = new TranslationEntity
             {
                 Element = field,
-                ParentElement = schedule,
+                ParentElementId = schedule.Id,
                 Document = schedule.Document,
                 ElementId = schedule.Id,
                 OriginalText = headerText,
