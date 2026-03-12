@@ -8,7 +8,6 @@ namespace RevitTranslator.Revit.Core.Services;
 
 public class ModelUpdaterService(ITranslationProgressMonitor progressMonitor)
 {
-    private readonly List<string> _nonUpdatableElements = [];
     private TranslationEntity _currentEntity = null!;
 
     public void Update(List<DocumentTranslationEntityGroup> documentGroups)
@@ -39,11 +38,6 @@ public class ModelUpdaterService(ITranslationProgressMonitor progressMonitor)
                 ProcessEntity();
             }
 
-            if (_nonUpdatableElements.Count > 0)
-            {
-                progressMonitor.OnNonUpdatableElements(_nonUpdatableElements, group.Document.Title);
-            }
-
             transaction.Commit();
         }
         catch
@@ -55,12 +49,11 @@ public class ModelUpdaterService(ITranslationProgressMonitor progressMonitor)
     private void ProcessEntity()
     {
         if (!_currentEntity.IsTranslated()) return;
+
         if (_currentEntity.NameHasIllegalCharacters())
         {
-            _nonUpdatableElements.Add($"{_currentEntity.TranslatedText} " +
-                                      $"(Symbol: \"{_currentEntity.TranslatedText
-                                          .FirstOrDefault(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c))}\", " +
-                                      $"ElementId: {_currentEntity.ElementId})");
+            _currentEntity.IllegalCharacter = _currentEntity.TranslatedText
+                .FirstOrDefault(c => ValidationUtils.ForbiddenParameterSymbols.Contains(c));
             return;
         }
 
@@ -97,6 +90,8 @@ public class ModelUpdaterService(ITranslationProgressMonitor progressMonitor)
                 }
                 break;
         }
+
+        _currentEntity.UpdatedInModel = true;
     }
 
     private void SetDimensionSegmentText(DimensionSegment dim)

@@ -37,15 +37,6 @@ public class UiTranslationProgressMonitor(ProgressWindow progressWindow) : ITran
         StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
     }
 
-    public void OnNonUpdatableElements(IReadOnlyList<string> elements, string documentTitle)
-    {
-        MessageBox.Show(
-            $"Some translations in document \"{documentTitle}\" weren't updated due to forbidden symbols: \n{string.Join("\n", elements)}.",
-            "Warning",
-            MessageBoxButton.OK,
-            MessageBoxImage.Warning);
-    }
-
     public Task<bool> ShouldUpdateAfterCancellationAsync()
     {
         _updateDecisionTcs = new TaskCompletionSource<bool>();

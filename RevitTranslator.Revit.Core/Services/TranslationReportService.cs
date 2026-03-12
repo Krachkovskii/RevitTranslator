@@ -50,7 +50,7 @@ public class TranslationReportService : ITranslationReportService
         var settings = DeeplSettingsUtils.CurrentSettings;
         var allEntities = documentEntities
             .SelectMany(group => group.TranslationEntities)
-            .Where(entity => !string.IsNullOrEmpty(entity.TranslatedText))
+            .Where(entity => entity.UpdatedInModel)
             .ToList();
 
         var documents = documentEntities.Select(group => group.Document).Distinct().ToList();

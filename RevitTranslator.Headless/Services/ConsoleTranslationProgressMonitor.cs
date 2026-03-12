@@ -31,15 +31,6 @@ public class ConsoleTranslationProgressMonitor : ITranslationProgressMonitor
         Console.WriteLine("[Translation] Model updated successfully.");
     }
 
-    public void OnNonUpdatableElements(IReadOnlyList<string> elements, string documentTitle)
-    {
-        Console.WriteLine($"[Translation] Some elements in \"{documentTitle}\" could not be updated due to forbidden symbols:");
-        foreach (var element in elements)
-        {
-            Console.WriteLine($"  - {element}");
-        }
-    }
-
     public Task<bool> ShouldUpdateAfterCancellationAsync()
     {
         return Task.FromResult(false);

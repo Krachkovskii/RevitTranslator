@@ -48,4 +48,14 @@ public sealed class TranslationEntity
     /// Optional: Additional details of the translation, e.g. Dimension Override or Element Name.
     /// </summary>
     public TranslationDetails TranslationDetails { get; set; } = TranslationDetails.None;
+
+    /// <summary>
+    /// Indicates whether the translated text was successfully written back to the Revit model.
+    /// </summary>
+    public bool UpdatedInModel { get; set; }
+
+    /// <summary>
+    /// The illegal character that prevented the entity from being updated in the model, if any.
+    /// </summary>
+    public char? IllegalCharacter { get; set; }
 }
