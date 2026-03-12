@@ -48,9 +48,14 @@ public class TranslationReportService : ITranslationReportService
     public void CreateReport(List<DocumentTranslationEntityGroup> documentEntities)
     {
         var settings = DeeplSettingsUtils.CurrentSettings;
-        var allEntities = documentEntities
+        var updatedEntities = documentEntities
             .SelectMany(group => group.TranslationEntities)
             .Where(entity => entity.UpdatedInModel)
+            .ToList();
+
+        var nonUpdatedEntities = documentEntities
+            .SelectMany(group => group.TranslationEntities)
+            .Where(entity => entity.IllegalCharacter.HasValue)
             .ToList();
 
         var documents = documentEntities.Select(group => group.Document).Distinct().ToList();
@@ -62,9 +67,21 @@ public class TranslationReportService : ITranslationReportService
 
         var sb = new StringBuilder();
 
-        AppendSessionInfo(sb, settings, allEntities, documents, documentCodeMap);
+        AppendSessionInfo(sb, settings, updatedEntities, nonUpdatedEntities.Count, documents, documentCodeMap);
         sb.AppendLine();
-        AppendTranslationTable(sb, allEntities, documentCodeMap);
+
+        if (nonUpdatedEntities.Count > 0)
+        {
+            AppendTranslationTable(sb, nonUpdatedEntities, documentCodeMap,
+                "> The following elements were translated, but not updated in the model due to characters that cannot be used in user-set values:",
+                includeForbiddenCharacter: true);
+            sb.AppendLine();
+        }
+
+        AppendTranslationTable(sb,
+            updatedEntities,
+            documentCodeMap,
+            "> The following elements have been successfully translated and updated in model:");
 
         var path = SaveReport(sb.ToString());
         _lastReportPath = path;
@@ -80,7 +97,8 @@ public class TranslationReportService : ITranslationReportService
     private static void AppendSessionInfo(
         StringBuilder sb,
         TranslationService.Models.DeeplSettingsDescriptor? settings,
-        List<TranslationEntity> entities,
+        List<TranslationEntity> updatedEntities,
+        int nonUpdatedCount,
         List<Document> documents,
         Dictionary<Document, string>? documentCodeMap)
     {
@@ -88,40 +106,52 @@ public class TranslationReportService : ITranslationReportService
         var deeplPlan = settings?.IsPaidPlan != true ? "Free" : "Paid";
         var sourceLanguage = settings?.SourceLanguage?.VisibleName ?? "Auto-detected";
         var targetLanguage = settings?.TargetLanguage?.VisibleName ?? "Unknown";
-        var characterCount = entities.Sum(entity => entity.TranslatedText.Length);
+        var characterCount = updatedEntities.Sum(entity => entity.TranslatedText.Length);
 
         sb.AppendLine($"Report created at {translationTime}");
         sb.AppendLine($"DeepL API plan: {deeplPlan}");
         sb.AppendLine($"Source language: {sourceLanguage}");
         sb.AppendLine($"Target language: {targetLanguage}");
-        sb.AppendLine($"Elements translated: {entities.Count}");
+        sb.AppendLine($"Elements translated: {updatedEntities.Count}");
         sb.AppendLine($"Characters translated: {characterCount}");
+        if (nonUpdatedCount > 0)
+        {
+            sb.AppendLine($"Elements not updated in the model due to forbidden characters: {nonUpdatedCount}");
+        }
 
         if (documentCodeMap is null)
         {
-            var document = documents[0];
-            var documentName = document.IsFamilyDocument ? document.Title : document.Title + ".rvt";
-            sb.AppendLine($"Document title: {documentName}");
+            sb.AppendLine($"Document title: {GetDocumentDisplayName(documents[0])}");
         }
         else
         {
             sb.AppendLine("Documents:");
             foreach (var (doc, code) in documentCodeMap)
             {
-                var documentName = doc.IsFamilyDocument ? doc.Title : doc.Title + ".rvt";
-                sb.AppendLine($"  {code} - {documentName}");
+                sb.AppendLine($"  {code} - {GetDocumentDisplayName(doc)}");
             }
         }
+    }
+
+    private static string GetDocumentDisplayName(Document document)
+    {
+        return document.IsFamilyDocument ? document.Title : document.Title + ".rvt";
     }
 
     private static void AppendTranslationTable(
         StringBuilder sb,
         List<TranslationEntity> entities,
-        Dictionary<Document, string>? documentCodeMap)
+        Dictionary<Document, string>? documentCodeMap,
+        string sectionHeader,
+        bool includeForbiddenCharacter = false)
     {
-        sb.AppendLine(documentCodeMap is null
+        sb.AppendLine(sectionHeader);
+
+        var header = documentCodeMap is null
             ? "ElementId,Source text,Translated text"
-            : "ElementId,Source text,Translated text,Document");
+            : "ElementId,Source text,Translated text,Document";
+
+        sb.AppendLine(includeForbiddenCharacter ? header + ",Forbidden character" : header);
         sb.AppendLine();
 
         foreach (var entity in entities)
@@ -140,6 +170,11 @@ public class TranslationReportService : ITranslationReportService
             if (documentCodeMap is not null)
             {
                 columns.Add(documentCodeMap[entity.Document]);
+            }
+
+            if (includeForbiddenCharacter)
+            {
+                columns.Add(entity.IllegalCharacter?.ToString() ?? string.Empty);
             }
 
             sb.AppendLine(string.Join(",", columns));
