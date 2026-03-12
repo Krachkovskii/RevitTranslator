@@ -1,3 +1,3 @@
 namespace RevitTranslator.Common.Messages;
 
-public record ModelUpdatedMessage;
+public record ModelUpdatedMessage(int NonUpdatedEntitiesCount);

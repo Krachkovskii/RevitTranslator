@@ -21,7 +21,10 @@ public class ModelUpdaterService(ITranslationProgressMonitor progressMonitor)
             }
         }
 
-        progressMonitor.OnModelUpdated();
+        var nonUpdatedEntitiesCount = documentGroups
+            .SelectMany(group => group.TranslationEntities)
+            .Count(entity => entity.IllegalCharacter.HasValue);
+        progressMonitor.OnModelUpdated(nonUpdatedEntitiesCount);
     }
 
     private void UpdateDocument(DocumentTranslationEntityGroup group)

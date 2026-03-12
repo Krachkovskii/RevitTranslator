@@ -26,9 +26,11 @@ public class ConsoleTranslationProgressMonitor : ITranslationProgressMonitor
             : "[Translation] Translation finished.");
     }
 
-    public void OnModelUpdated()
+    public void OnModelUpdated(int nonUpdatedEntitiesCount)
     {
         Console.WriteLine("[Translation] Model updated successfully.");
+        if (nonUpdatedEntitiesCount > 0)
+            Console.WriteLine($"[Translation] {nonUpdatedEntitiesCount} element name(s) were not updated due to forbidden characters.");
     }
 
     public Task<bool> ShouldUpdateAfterCancellationAsync()

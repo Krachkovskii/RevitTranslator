@@ -28,6 +28,7 @@ public partial class ProgressWindowViewModel : ObservableObject,
     [ObservableProperty] private string _buttonText = "";
     [ObservableProperty] private string _buttonSubtext = "";
     [ObservableProperty] private string _elapsedTime = "";
+    [ObservableProperty] private string _illegalCharacterWarning = string.Empty;
 
     private int _threadSafeTranslationCount;
     private int _threadSafeSessionCharacterCount;
@@ -204,6 +205,11 @@ public partial class ProgressWindowViewModel : ObservableObject,
             ButtonSubtext = _wasTranslationCanceled
                 ? "Translation was canceled. Window can be closed now."
                 : "Window can be closed now.";
+
+            if (message.NonUpdatedEntitiesCount == 0) return;
+            
+            var nameSuffix = message.NonUpdatedEntitiesCount == 1 ? "name was" : "names were";
+            IllegalCharacterWarning = $"{message.NonUpdatedEntitiesCount} element {nameSuffix} translated, but not updated due to forbidden characters.\nSee report for details.";
         });
     }
 

@@ -134,6 +134,7 @@
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     TextAlignment="Right"
+                    HorizontalAlignment="Right"
                     Style="{StaticResource Annotation}"
                     Text="{Binding ElapsedTime, FallbackValue='00:00 elapsed'}" />
             </Grid>
@@ -145,9 +146,22 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            
+
+            <TextBlock
+                Grid.Row="0"
+                HorizontalAlignment="Center"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                Margin="20 0 20 16"
+                Foreground="{DynamicResource SalmonBrush}"
+                Visibility="{Binding IllegalCharacterWarning,
+                    Converter={x:Static converters:Converters.StringToVisibilityConverter}}"
+                Text="{Binding IllegalCharacterWarning}" />
+
             <ui:HyperlinkButton
+                Grid.Row="1"
                 x:Name="LastReportButton"
                 HorizontalAlignment="Center"
                 Content="Open translation report"
@@ -156,7 +170,7 @@
                 Visibility="Collapsed"/>
 
             <ProgressBar
-                Grid.Row="1"
+                Grid.Row="2"
                 Height="8"
                 Margin="0 20 0 5"
                 Value="{Binding FinishedTranslationCount, FallbackValue=50}"
@@ -166,7 +180,7 @@
                     UpdateSourceTrigger=PropertyChanged}" />
 
             <Button
-                Grid.Row="2"
+                Grid.Row="3"
                 Command="{Binding HandleButtonClickCommand}"
                 Style="{StaticResource LargeButton}"
                 IsEnabled="{Binding IsMainButtonEnabled}"
