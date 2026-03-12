@@ -29,11 +29,10 @@ public sealed class TranslationEntity
     public string OriginalText { get; set; } = string.Empty;
 
     /// <summary>
-    /// Optional: parent element that is UI-visible.
-    /// e.g.: if translated object is Parameter, you can store the element for this parameter;
-    /// if translated object is ScheduleField, store Schedule element here.
+    /// Optional: ElementId of the ParentElement, stored as a safe value that remains valid
+    /// after the parent element's document is closed or its transaction is rolled back.
     /// </summary>
-    public Element? ParentElement { get; set; }
+    public ElementId? ParentElementId { get; set; }
 
     /// <summary>
     /// Optional: TableSectionData coordinates (row, column).
