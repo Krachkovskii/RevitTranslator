@@ -106,7 +106,9 @@ public class TranslationReportService : ITranslationReportService
         var deeplPlan = settings?.IsPaidPlan != true ? "Free" : "Paid";
         var sourceLanguage = settings?.SourceLanguage?.VisibleName ?? "Auto-detected";
         var targetLanguage = settings?.TargetLanguage?.VisibleName ?? "Unknown";
-        var characterCount = updatedEntities.Sum(entity => entity.TranslatedText.Length);
+        var characterCount = updatedEntities
+            .GroupBy(entity => entity.OriginalText)
+            .Sum(group => group.First().TranslatedText.Length);
 
         sb.AppendLine($"Report created at {translationTime}");
         sb.AppendLine($"DeepL API plan: {deeplPlan}");
