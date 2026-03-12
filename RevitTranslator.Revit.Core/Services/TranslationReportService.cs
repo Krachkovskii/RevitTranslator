@@ -73,7 +73,7 @@ public class TranslationReportService : ITranslationReportService
         if (nonUpdatedEntities.Count > 0)
         {
             AppendTranslationTable(sb, nonUpdatedEntities, documentCodeMap,
-                "> The following elements were translated, but not updated in the model due to characters that cannot be used in user-set values:",
+                "✗ The following elements were translated but not updated in the model due to characters that cannot be used in user-set values:",
                 includeForbiddenCharacter: true);
             sb.AppendLine();
         }
@@ -81,7 +81,7 @@ public class TranslationReportService : ITranslationReportService
         AppendTranslationTable(sb,
             updatedEntities,
             documentCodeMap,
-            "> The following elements have been successfully translated and updated in model:");
+            "✓ The following elements have been successfully translated and updated in model:");
 
         var path = SaveReport(sb.ToString());
         _lastReportPath = path;
@@ -174,7 +174,7 @@ public class TranslationReportService : ITranslationReportService
 
             if (includeForbiddenCharacter)
             {
-                columns.Add(entity.IllegalCharacter?.ToString() ?? string.Empty);
+                columns.Add(EscapeCsvValue(entity.IllegalCharacter?.ToString() ?? string.Empty));
             }
 
             sb.AppendLine(string.Join(",", columns));
