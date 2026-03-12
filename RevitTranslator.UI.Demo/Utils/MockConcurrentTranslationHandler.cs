@@ -62,7 +62,7 @@ public class MockConcurrentTranslationHandler(DeeplTranslationClient client) : I
         var faker = new Faker();
         var hasFailedUpdates = faker.Random.Bool();
         var failedUpdatesCount = hasFailedUpdates ? faker.Random.Int(1, 20) : 0;
-        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage(failedUpdatesCount));
+        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage(failedUpdatesCount, 0, 0));
     }
 
     private void AddTranslationTask(string text)

@@ -105,7 +105,6 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <ui:TextBlock
                     Grid.Row="0"
@@ -129,14 +128,6 @@
                     Grid.Column="1"
                     Style="{StaticResource Annotation}"
                     Text=" ch/mo. limit" />
-                <ui:TextBlock
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    TextAlignment="Right"
-                    HorizontalAlignment="Right"
-                    Style="{StaticResource Annotation}"
-                    Text="{Binding ElapsedTime, FallbackValue='00:00 elapsed'}" />
             </Grid>
         </Grid>
 
@@ -150,34 +141,37 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock
+            <ui:InfoBar
                 Grid.Row="0"
-                HorizontalAlignment="Center"
-                TextAlignment="Center"
-                TextWrapping="Wrap"
                 Margin="20 0 20 16"
-                Foreground="{DynamicResource SalmonBrush}"
+                IsClosable="False"
+                Severity="Error"
+                Title="Some elements were not updated"
+                IsOpen="True"
+                Message="{Binding IllegalCharacterWarning}"
                 Visibility="{Binding IllegalCharacterWarning,
-                    Converter={x:Static converters:Converters.StringToVisibilityConverter}}"
-                Text="{Binding IllegalCharacterWarning}" />
+                    Converter={x:Static converters:Converters.StringToVisibilityConverter}}"/>
 
-            <TextBlock
+            <Grid
                 Grid.Row="1"
-                HorizontalAlignment="Center"
-                TextAlignment="Center"
-                Margin="20 0 20 8"
-                Visibility="{Binding UpdatedElementsText,
+                Margin="20 0 20 8">
+                <TextBlock
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Visibility="{Binding UpdatedElementsText,
                     Converter={x:Static converters:Converters.StringToVisibilityConverter}}"
-                Text="{Binding UpdatedElementsText}" />
+                    Text="{Binding UpdatedElementsText}" />
 
-            <ui:HyperlinkButton
-                Grid.Row="2"
-                x:Name="LastReportButton"
-                HorizontalAlignment="Center"
-                Content="Open detailed report"
-                ToolTip="You can also open reports folder from Settings window"
-                Command="{Binding OpenReportCommandCommand}"
-                Visibility="Collapsed"/>
+                <ui:Button
+                    x:Name="LastReportButton"
+                    Appearance="Secondary"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Content="Open detailed report"
+                    ToolTip="You can also open reports folder from Settings window"
+                    Command="{Binding OpenReportCommandCommand}"
+                    Visibility="Collapsed" />
+            </Grid>
 
             <ProgressBar
                 Grid.Row="3"

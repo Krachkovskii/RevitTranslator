@@ -1,4 +1,3 @@
-using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -27,19 +26,13 @@ public partial class ProgressWindowViewModel : ObservableObject,
     [ObservableProperty] private bool _isMainButtonEnabled;
     [ObservableProperty] private string _buttonText = "";
     [ObservableProperty] private string _buttonSubtext = "";
-    [ObservableProperty] private string _elapsedTime = "";
     [ObservableProperty] private string _illegalCharacterWarning = string.Empty;
     [ObservableProperty] private string _updatedElementsText = string.Empty;
 
-    private int _threadSafeTranslationCount;
-    private int _threadSafeSessionCharacterCount;
-    private int _threadSafeMonthlyCharacterCount;
     private bool _wasTranslationCanceled;
     private bool _isTranslationActive;
     private bool _isAwaitingConfirmation;
     private bool _isModelUpdateActive;
-    private readonly DispatcherTimer _uiUpdateTimer;
-    private DateTime _translationStartTime;
     
     public ProgressWindowViewModel(DeeplTranslationClient deeplClient, ITranslationReportService reportService)
     {
@@ -53,19 +46,13 @@ public partial class ProgressWindowViewModel : ObservableObject,
 
         IsProgressBarIntermediate = true;
         ButtonText = "Retrieving text from elements...";
-
-        _uiUpdateTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(100)
-        };
-        _uiUpdateTimer.Tick += OnUiUpdateTimerTick;
     }
 
     [RelayCommand]
     private async Task OnLoadedAsync()
     {
         await _deeplClient.CheckUsageAsync();
-        _threadSafeMonthlyCharacterCount = MonthlyCharacterCount = _deeplClient.Usage;
+        MonthlyCharacterCount = _deeplClient.Usage;
         MonthlyCharacterLimit = _deeplClient.Limit;
     }
 
@@ -85,7 +72,6 @@ public partial class ProgressWindowViewModel : ObservableObject,
     {
         StrongReferenceMessenger.Default.Send(
             new TokenCancellationRequestedMessage("Translation was cancelled by user"));
-        _uiUpdateTimer.Stop();
         _wasTranslationCanceled = true;
         _isTranslationActive = false;
         IsMainButtonEnabled = false;
@@ -120,30 +106,15 @@ public partial class ProgressWindowViewModel : ObservableObject,
 
     private void UpdateProgress(int entityCount, int charCount)
     {
-        Interlocked.Add(ref _threadSafeTranslationCount, entityCount);
-        Interlocked.Add(ref _threadSafeSessionCharacterCount, charCount);
-        Interlocked.Add(ref _threadSafeMonthlyCharacterCount, charCount);
-    }
-
-    private void OnUiUpdateTimerTick(object? sender, EventArgs args)
-    {
-        var translationCount = Interlocked.CompareExchange(ref _threadSafeTranslationCount, 0, 0);
-        var sessionCharacterCount = Interlocked.CompareExchange(ref _threadSafeSessionCharacterCount, 0, 0);
-        var monthlyCharacterCount = Interlocked.CompareExchange(ref _threadSafeMonthlyCharacterCount, 0, 0);
-
-        SessionCharacterCount = sessionCharacterCount;
-        MonthlyCharacterCount = monthlyCharacterCount;
-        FinishedTranslationCount = translationCount;
-
-        var elapsed = DateTime.Now - _translationStartTime;
-        ElapsedTime = elapsed.TotalMinutes >= 1
-            ? $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s elapsed"
-            : $"{(int)elapsed.TotalSeconds}s elapsed";
-
-        if (MonthlyCharacterCount >= MonthlyCharacterLimit && MonthlyCharacterLimit > 0)
+        System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
-            CancelTranslation();
-        }
+            FinishedTranslationCount += entityCount;
+            SessionCharacterCount += charCount;
+            MonthlyCharacterCount += charCount;
+
+            if (MonthlyCharacterLimit > 0 && MonthlyCharacterCount >= MonthlyCharacterLimit)
+                CancelTranslation();
+        });
     }
 
     public void Receive(TextRetrievedMessage message)
@@ -156,9 +127,6 @@ public partial class ProgressWindowViewModel : ObservableObject,
             IsProgressBarIntermediate = false;
             TotalTranslationCount = message.EntityCount;
             ButtonText = "Cancel translation";
-
-            _translationStartTime = DateTime.Now;
-            _uiUpdateTimer.Start();
         });
     }
 
@@ -169,14 +137,6 @@ public partial class ProgressWindowViewModel : ObservableObject,
         System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
             _isTranslationActive = false;
-            _uiUpdateTimer.Stop();
-            OnUiUpdateTimerTick(null, EventArgs.Empty);
-
-            var elapsed = DateTime.Now - _translationStartTime;
-            var elapsedText = elapsed.TotalMinutes >= 1
-                ? $"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s"
-                : $"{(int)elapsed.TotalSeconds}s";
-            ElapsedTime = $"Translation finished in {elapsedText}";
 
             if (message.CancelRequested)
             {
@@ -221,8 +181,6 @@ public partial class ProgressWindowViewModel : ObservableObject,
 
     public void Dispose()
     {
-        _uiUpdateTimer.Stop();
-        _uiUpdateTimer.Tick -= OnUiUpdateTimerTick;
         StrongReferenceMessenger.Default.UnregisterAll(this);
     }
 }
