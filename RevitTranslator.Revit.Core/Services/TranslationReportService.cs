@@ -129,9 +129,9 @@ public class TranslationReportService : ITranslationReportService
         else
         {
             sb.AppendLine("Documents:");
-            foreach (var (doc, code) in documentCodeMap)
+            foreach (var pair in documentCodeMap)
             {
-                sb.AppendLine($"  {code} - {GetDocumentDisplayName(doc)}");
+                sb.AppendLine($"  {pair.Value} - {GetDocumentDisplayName(pair.Key)}");
             }
         }
     }
