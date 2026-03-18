@@ -1,6 +1,5 @@
-using RevitTranslator.Common.Contracts;
-using RevitTranslator.Common.Extensions;
-using RevitTranslator.Common.Models.Views;
+using RevitTranslator.Revit.Core.Contracts;
+using RevitTranslator.Revit.Core.Models;
 using RevitTranslator.Revit.Core.Extensions;
 using RevitTranslator.Revit.Core.Utils;
 

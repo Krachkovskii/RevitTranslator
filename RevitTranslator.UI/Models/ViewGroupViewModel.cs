@@ -1,14 +1,15 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using RevitTranslator.Revit.Core.Models;
 
-namespace RevitTranslator.Common.Models.Views;
+namespace RevitTranslator.UI.Models;
 
 public sealed partial class ViewGroupViewModel : ObservableObject
 {
     private bool _isInternalCheckboxUpdate;
     private int _selectedSubElementsCount;
-    
+
     [ObservableProperty] private bool _isVisible = true;
     [ObservableProperty] private bool? _isChecked = false;
     [ObservableProperty] private bool _isExpanded;
@@ -18,7 +19,7 @@ public sealed partial class ViewGroupViewModel : ObservableObject
     public ViewTypeInternal Type { get; init; }
     public string Name { get; init; } = "";
     public bool IsSheetCollection { get; init; }
-    
+
     partial void OnIsCheckedChanged(bool? value)
     {
         if (_isInternalCheckboxUpdate) return;
@@ -32,17 +33,17 @@ public sealed partial class ViewGroupViewModel : ObservableObject
         }
         _isInternalCheckboxUpdate = false;
     }
-    
+
     partial void OnViewsChanged(ObservableCollection<ViewViewModel>? oldValue, ObservableCollection<ViewViewModel> newValue)
     {
         foreach (var category in newValue)
         {
             category.PropertyChanged += CategoryOnPropertyChanged;
         }
-        
+
         _selectedSubElementsCount = 0;
         if (oldValue is null) return;
-        
+
         foreach (var category in oldValue)
         {
             category.PropertyChanged -= CategoryOnPropertyChanged;

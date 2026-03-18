@@ -3,10 +3,11 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Common.Contracts;
 using RevitTranslator.Common.Extensions;
-using RevitTranslator.Common.Messages;
-using RevitTranslator.Common.Models.Views;
+using RevitTranslator.Revit.Core.Contracts;
+using RevitTranslator.Revit.Core.Models;
+using RevitTranslator.UI.Messages;
+using RevitTranslator.UI.Models;
 #if NETFRAMEWORK
 using RevitTranslator.UI.Extensions;
 #endif

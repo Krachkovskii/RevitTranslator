@@ -5,6 +5,7 @@ using RevitTranslator.Revit.Core.ElementTextRetrievers;
 using RevitTranslator.Revit.Core.Models;
 using RevitTranslator.Revit.Core.Services;
 using RevitTranslator.Revit.Core.Utils;
+using TranslationService.Exceptions;
 
 namespace RevitTranslator.Services;
 
@@ -59,6 +60,11 @@ public class TranslationManager(
                 _cts.Token);
 
             progressMonitor.OnTranslationFinished(false);
+        }
+        catch (FatalTranslationException)
+        {
+            _cts.Cancel();
+            progressMonitor.OnTranslationFinished(true);
         }
         catch (OperationCanceledException)
         {

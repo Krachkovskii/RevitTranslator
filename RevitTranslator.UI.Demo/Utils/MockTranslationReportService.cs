@@ -1,4 +1,4 @@
-using RevitTranslator.Common.Contracts;
+using RevitTranslator.Revit.Core.Contracts;
 
 namespace RevitTranslator.UI.Demo.Utils;
 
