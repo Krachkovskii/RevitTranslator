@@ -15,7 +15,6 @@ public static class CoreDependencyInjectionExtensions
             .AddSingleton<TranslationReportService>()
             .AddSingleton<ITranslationReportService>(sp => sp.GetRequiredService<TranslationReportService>())
             .AddScoped<ConcurrentTranslationService>()
-            .AddScoped<ModelUpdaterService>()
-            .AddScoped<TranslationManager>();
+            .AddScoped<ModelUpdaterService>();
     }
 }

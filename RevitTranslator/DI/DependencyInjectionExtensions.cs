@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Services;
 using RevitTranslator.UI.ViewModels;
@@ -28,6 +28,7 @@ public static class DependencyInjectionExtensions
             .AddSingleton(_ => new HttpClient())
             .AddSingleton<DeeplTranslationClient>()
             .AddScoped<ITranslationProgressMonitor, UiTranslationProgressMonitor>()
+            .AddScoped<TranslationManager>()
             .AddScoped<ISettingsValidator, UiSettingsValidator>();
     }
 }
