@@ -3,13 +3,29 @@ name: Publish RevitTranslator.Revit.Core
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Package version (e.g. 1.2.3)'
+      revit_minor:
+        description: 'Revit API minor version (e.g. 0, 3)'
+        required: true
+      patch:
+        description: 'Package patch version (e.g. 1, 2)'
         required: true
 
 jobs:
   publish:
     runs-on: windows-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - config: R23
+            revit_year: 2023
+          - config: R24
+            revit_year: 2024
+          - config: R25
+            revit_year: 2025
+          - config: R26
+            revit_year: 2026
     steps:
       - uses: actions/checkout@v4
 
@@ -17,35 +33,12 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # Build net48 output (Revit 2023/2024)
-      - name: Build R23 (net48)
-        run: >
-          dotnet build RevitTranslator.Revit.Core/RevitTranslator.Revit.Core.csproj
-          -c "Release R23"
-
-      # Build net8.0-windows output and produce the base package (Revit 2025/2026)
-      - name: Pack R25 (net8.0-windows)
+      - name: Pack ${{ matrix.config }}
         run: >
           dotnet pack RevitTranslator.Revit.Core/RevitTranslator.Revit.Core.csproj
-          -c "Release R25"
-          -p:PackageVersion=${{ inputs.version }}
+          -c "Release ${{ matrix.config }}"
+          -p:PackageVersion=${{ matrix.revit_year }}.${{ inputs.revit_minor }}.${{ inputs.patch }}
           --output nupkg
-
-      # Inject the net48 DLL into the package so consumers targeting R23/R24 are covered
-      - name: Inject net48 DLL into package
-        shell: pwsh
-        run: |
-          $nupkg  = (Get-Item nupkg/*.nupkg).FullName
-          $net48Dll = Resolve-Path "RevitTranslator.Revit.Core/bin/Release R23/net48/RevitTranslator.Revit.Core.dll"
-
-          Add-Type -AssemblyName System.IO.Compression.FileSystem
-          $zip = [System.IO.Compression.ZipFile]::Open($nupkg, 'Update')
-          $entry  = $zip.CreateEntry("lib/net48/RevitTranslator.Revit.Core.dll")
-          $stream = $entry.Open()
-          $bytes  = [System.IO.File]::ReadAllBytes($net48Dll)
-          $stream.Write($bytes, 0, $bytes.Length)
-          $stream.Dispose()
-          $zip.Dispose()
 
       - name: Push
         shell: pwsh
