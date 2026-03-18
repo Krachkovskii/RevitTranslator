@@ -1,11 +1,8 @@
-﻿using Autodesk.Revit.Attributes;
+using Autodesk.Revit.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
-using RevitTranslator.Common.Extensions;
-using RevitTranslator.Common.Services;
+using RevitTranslator.Revit.Core.Services;
 using RevitTranslator.Services;
-using RevitTranslator.UI.Views;
-using RevitTranslator.ViewModels;
 
 namespace RevitTranslator.Commands;
 
@@ -21,7 +18,7 @@ public class TranslateCategoriesCommand : ExternalCommand
             var categoryService = scope.ServiceProvider.GetRequiredService<CategorySelectionService>();
             var result = categoryService.Initialize();
             if (result is not true) return;
-            
+
             await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(categoryService.SelectedElements);
         }
         catch (Exception ex)

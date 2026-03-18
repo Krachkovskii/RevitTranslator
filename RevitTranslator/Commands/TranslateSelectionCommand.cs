@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Autodesk.Revit.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Nice3point.Revit.Toolkit.External;
-using RevitTranslator.Extensions;
-using RevitTranslator.Services;
+using RevitTranslator.Revit.Core.Extensions;
+using RevitTranslator.Revit.Core.Services;
 
 namespace RevitTranslator.Commands;
 
@@ -18,7 +18,7 @@ public class TranslateSelectionCommand : ExternalCommand
             using var scope = Host.ServiceProvider.CreateScope();
             var selection = UiDocument.GetSelectedElements().ToArray();
             if (selection.Length == 0) return;
-        
+
             await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(selection);
         }
         catch (Exception ex)

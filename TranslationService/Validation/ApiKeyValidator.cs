@@ -14,6 +14,7 @@ public static partial class ApiKeyValidator
     [GeneratedRegex(ApiKeyPattern, RegexOptions.Compiled)]
     private static partial Regex ApiKeyRegex();
 #else
+    // ReSharper disable once InconsistentNaming
     private static readonly Regex _apiKeyRegex = new(ApiKeyPattern, RegexOptions.Compiled);
     private static Regex ApiKeyRegex() => _apiKeyRegex;
 #endif
@@ -36,27 +37,23 @@ public static partial class ApiKeyValidator
             return false;
         }
 
-        sanitizedKey = apiKey.Trim();
+        sanitizedKey = apiKey?.Trim() ?? string.Empty;
 
-        if (sanitizedKey.Length < 36)
+        switch (sanitizedKey.Length)
         {
-            errorMessage = "API key is too short. DeepL API keys are 36-39 characters long.";
-            return false;
+            case < 36:
+                errorMessage = "API key is too short. DeepL API keys are 36-39 characters long.";
+                return false;
+            case > 50:
+                errorMessage = "API key is too long. Please verify your key.";
+                return false;
         }
 
-        if (sanitizedKey.Length > 50)
-        {
-            errorMessage = "API key is too long. Please verify your key.";
-            return false;
-        }
+        if (ApiKeyRegex().IsMatch(sanitizedKey)) return true;
+        
+        errorMessage = "API key format is invalid. DeepL API keys should follow the format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (with optional :fx suffix for free plans).";
+        return false;
 
-        if (!ApiKeyRegex().IsMatch(sanitizedKey))
-        {
-            errorMessage = "API key format is invalid. DeepL API keys should follow the format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (with optional :fx suffix for free plans).";
-            return false;
-        }
-
-        return true;
     }
 
     /// <summary>

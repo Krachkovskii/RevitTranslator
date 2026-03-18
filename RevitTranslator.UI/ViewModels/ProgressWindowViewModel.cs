@@ -1,4 +1,3 @@
-using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -10,7 +9,7 @@ namespace RevitTranslator.UI.ViewModels;
 
 public partial class ProgressWindowViewModel : ObservableObject,
     IRecipient<TextRetrievedMessage>,
-    IRecipient<EntityTranslatedMessage>,
+    IRecipient<EntitiesTranslatedMessage>,
     IRecipient<TranslationFinishedMessage>,
     IRecipient<ModelUpdatedMessage>,
     IDisposable
@@ -27,15 +26,13 @@ public partial class ProgressWindowViewModel : ObservableObject,
     [ObservableProperty] private bool _isMainButtonEnabled;
     [ObservableProperty] private string _buttonText = "";
     [ObservableProperty] private string _buttonSubtext = "";
+    [ObservableProperty] private string _illegalCharacterWarning = string.Empty;
+    [ObservableProperty] private string _updatedElementsText = string.Empty;
 
-    private int _threadSafeTranslationCount;
-    private int _threadSafeSessionCharacterCount;
-    private int _threadSafeMonthlyCharacterCount;
     private bool _wasTranslationCanceled;
     private bool _isTranslationActive;
     private bool _isAwaitingConfirmation;
     private bool _isModelUpdateActive;
-    private readonly DispatcherTimer _uiUpdateTimer;
     
     public ProgressWindowViewModel(DeeplTranslationClient deeplClient, ITranslationReportService reportService)
     {
@@ -43,25 +40,19 @@ public partial class ProgressWindowViewModel : ObservableObject,
         _reportService = reportService;
 
         StrongReferenceMessenger.Default.Register<TextRetrievedMessage>(this);
-        StrongReferenceMessenger.Default.Register<EntityTranslatedMessage>(this);
+        StrongReferenceMessenger.Default.Register<EntitiesTranslatedMessage>(this);
         StrongReferenceMessenger.Default.Register<TranslationFinishedMessage>(this);
         StrongReferenceMessenger.Default.Register<ModelUpdatedMessage>(this);
 
         IsProgressBarIntermediate = true;
         ButtonText = "Retrieving text from elements...";
-
-        _uiUpdateTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(100)
-        };
-        _uiUpdateTimer.Tick += OnUiUpdateTimerTick;
     }
 
     [RelayCommand]
     private async Task OnLoadedAsync()
     {
         await _deeplClient.CheckUsageAsync();
-        _threadSafeMonthlyCharacterCount = MonthlyCharacterCount = _deeplClient.Usage;
+        MonthlyCharacterCount = _deeplClient.Usage;
         MonthlyCharacterLimit = _deeplClient.Limit;
     }
 
@@ -81,7 +72,6 @@ public partial class ProgressWindowViewModel : ObservableObject,
     {
         StrongReferenceMessenger.Default.Send(
             new TokenCancellationRequestedMessage("Translation was cancelled by user"));
-        _uiUpdateTimer.Stop();
         _wasTranslationCanceled = true;
         _isTranslationActive = false;
         IsMainButtonEnabled = false;
@@ -114,27 +104,17 @@ public partial class ProgressWindowViewModel : ObservableObject,
         return true;
     }
 
-    private void UpdateProgress(int translationLength)
+    private void UpdateProgress(int entityCount, int charCount)
     {
-        Interlocked.Add(ref _threadSafeTranslationCount, 1);
-        Interlocked.Add(ref _threadSafeSessionCharacterCount, translationLength);
-        Interlocked.Add(ref _threadSafeMonthlyCharacterCount, translationLength);
-    }
-
-    private void OnUiUpdateTimerTick(object? sender, EventArgs args)
-    {
-        var translationCount = Interlocked.CompareExchange(ref _threadSafeTranslationCount, 0, 0);
-        var sessionCharacterCount = Interlocked.CompareExchange(ref _threadSafeSessionCharacterCount, 0, 0);
-        var monthlyCharacterCount = Interlocked.CompareExchange(ref _threadSafeMonthlyCharacterCount, 0, 0);
-
-        SessionCharacterCount = sessionCharacterCount;
-        MonthlyCharacterCount = monthlyCharacterCount;
-        FinishedTranslationCount = translationCount;
-
-        if (MonthlyCharacterCount >= MonthlyCharacterLimit && MonthlyCharacterLimit > 0)
+        System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
-            CancelTranslation();
-        }
+            FinishedTranslationCount += entityCount;
+            SessionCharacterCount += charCount;
+            MonthlyCharacterCount += charCount;
+
+            if (MonthlyCharacterLimit > 0 && MonthlyCharacterCount >= MonthlyCharacterLimit)
+                CancelTranslation();
+        });
     }
 
     public void Receive(TextRetrievedMessage message)
@@ -147,20 +127,16 @@ public partial class ProgressWindowViewModel : ObservableObject,
             IsProgressBarIntermediate = false;
             TotalTranslationCount = message.EntityCount;
             ButtonText = "Cancel translation";
-
-            _uiUpdateTimer.Start();
         });
     }
 
-    public void Receive(EntityTranslatedMessage message) => UpdateProgress(message.CharacterCount);
+    public void Receive(EntitiesTranslatedMessage message) => UpdateProgress(message.EntityCount, message.CharacterCount);
 
     public void Receive(TranslationFinishedMessage message)
     {
         System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
         {
             _isTranslationActive = false;
-            _uiUpdateTimer.Stop();
-            OnUiUpdateTimerTick(null, EventArgs.Empty);
 
             if (message.CancelRequested)
             {
@@ -190,13 +166,21 @@ public partial class ProgressWindowViewModel : ObservableObject,
             ButtonSubtext = _wasTranslationCanceled
                 ? "Translation was canceled. Window can be closed now."
                 : "Window can be closed now.";
+
+            var elementSuffix = message.UpdatedInModelCount == 1 ? "element" : "elements";
+            UpdatedElementsText = message.UpdatedFamiliesCount > 0
+                ? $"Updated {message.UpdatedInModelCount} {elementSuffix} in model and {message.UpdatedFamiliesCount} {(message.UpdatedFamiliesCount == 1 ? "family" : "families")}"
+                : $"Updated {message.UpdatedInModelCount} {elementSuffix} in model";
+
+            if (message.NonUpdatedEntitiesCount == 0) return;
+
+            var nameSuffix = message.NonUpdatedEntitiesCount == 1 ? "name was" : "names were";
+            IllegalCharacterWarning = $"{message.NonUpdatedEntitiesCount} element {nameSuffix} translated, but not updated due to forbidden characters.\nSee report for details.";
         });
     }
 
     public void Dispose()
     {
-        _uiUpdateTimer.Stop();
-        _uiUpdateTimer.Tick -= OnUiUpdateTimerTick;
         StrongReferenceMessenger.Default.UnregisterAll(this);
     }
 }

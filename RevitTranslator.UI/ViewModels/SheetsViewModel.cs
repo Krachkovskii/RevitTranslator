@@ -15,6 +15,7 @@ namespace RevitTranslator.UI.ViewModels;
 
 public sealed partial class SheetsViewModel : ObservableObject, IDisposable
 {
+    [ObservableProperty] private bool _isLoading = true;
     [ObservableProperty] private string _searchText = "";
     [ObservableProperty] private string _mainButtonText = "";
     [ObservableProperty] private ObservableCollection<ViewGroupViewModel> _viewGroups = [];
@@ -23,11 +24,21 @@ public sealed partial class SheetsViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private int _elementCount;
 
+    private readonly IRevitViewProvider _viewProvider;
     private CancellationTokenSource? _searchCancellationTokenSource;
 
     public SheetsViewModel(IRevitViewProvider viewProvider)
     {
-        var sheets = viewProvider.GetAllSheets().ToArray();
+        _viewProvider = viewProvider;
+        OnElementCountChanged(0);
+    }
+
+    [RelayCommand]
+    private async Task OnLoadedAsync()
+    {
+        await Task.Yield();
+
+        var sheets = (await _viewProvider.GetAllSheetsAsync()).ToArray();
 
         var sheetGroup = new ViewGroupViewModel
         {
@@ -38,7 +49,7 @@ public sealed partial class SheetsViewModel : ObservableObject, IDisposable
             Name = "All Sheets",
         };
 
-        var sheetCollections = viewProvider.GetAllSheetCollections();
+        var sheetCollections = await _viewProvider.GetAllSheetCollectionsAsync();
 
         if (sheetCollections.Count == 0)
         {
@@ -66,7 +77,7 @@ public sealed partial class SheetsViewModel : ObservableObject, IDisposable
             group.PropertyChanged += OnViewGroupChanged;
         }
 
-        OnElementCountChanged(0);
+        IsLoading = false;
     }
 
     private void OnViewGroupChanged(object? sender, PropertyChangedEventArgs args)
@@ -81,7 +92,7 @@ public sealed partial class SheetsViewModel : ObservableObject, IDisposable
         var suffix = value != 1 ? "s" : "";
         MainButtonText = value > 0
             ? $"Translate {value} element{suffix}"
-            : "Select views to translate";
+            : "Select sheets to translate";
     }
 
     [RelayCommand(CanExecute = nameof(CanTranslate))]

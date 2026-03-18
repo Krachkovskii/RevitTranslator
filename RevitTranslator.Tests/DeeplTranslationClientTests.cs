@@ -104,7 +104,7 @@ public class DeeplTranslationClientTests : IDisposable
         var result = await client.TranslateTextAsync("hello", CancellationToken.None);
 
         Assert.Null(result);
-        Assert.Equal(6, handler.RequestCount);
+        Assert.Equal(7, handler.RequestCount);
     }
 
     [Fact]
@@ -149,6 +149,69 @@ public class DeeplTranslationClientTests : IDisposable
 
         Assert.Null(result);
         Assert.Equal(0, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task TranslateTextsAsync_Returns_AllTranslations_On200()
+    {
+        var handler = new StubHttpMessageHandler();
+        handler.Enqueue(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"translations":[{"detected_source_language":"EN","text":"Bonjour"},{"detected_source_language":"EN","text":"Mur"}]}""",
+                Encoding.UTF8, "application/json")
+        });
+        var client = CreateClient(handler);
+
+        var result = await client.TranslateTextsAsync(["Hello", "Wall"], CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Length);
+        Assert.Equal("Bonjour", result[0]);
+        Assert.Equal("Mur", result[1]);
+        Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task TranslateTextsAsync_ReturnsNull_On5xx()
+    {
+        var handler = new StubHttpMessageHandler();
+        handler.Enqueue(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        var client = CreateClient(handler);
+
+        var result = await client.TranslateTextsAsync(["Hello", "Wall"], CancellationToken.None);
+
+        Assert.Null(result);
+        Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task TranslateTextsAsync_ReturnsNull_WhenTokenCancelled()
+    {
+        var handler = new StubHttpMessageHandler();
+        var client = CreateClient(handler);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var result = await client.TranslateTextsAsync(["Hello"], cts.Token);
+
+        Assert.Null(result);
+        Assert.Equal(0, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task TranslateTextsAsync_SendsCancellationMessage_On403()
+    {
+        var handler = new StubHttpMessageHandler();
+        handler.Enqueue(new HttpResponseMessage((HttpStatusCode) 403));
+        var client = CreateClient(handler);
+
+        var result = await client.TranslateTextsAsync(["Hello"], CancellationToken.None);
+
+        Assert.Null(result);
+        Assert.NotNull(_receivedCancellationMessage);
+        Assert.Contains("Authorisation failed", _receivedCancellationMessage.Message,
+            StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

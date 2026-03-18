@@ -30,6 +30,6 @@ public class MockTranslationPipeline(ProgressWindow progressWindow, DeeplTransla
         await new MockConcurrentTranslationHandler(client).TranslateAsync(words, useMockTranslations);
 
         await Task.Delay(2000);
-        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage());
+        StrongReferenceMessenger.Default.Send(new ModelUpdatedMessage(0, 999, 0));
     }
 }
