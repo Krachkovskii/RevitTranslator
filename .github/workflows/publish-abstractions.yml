@@ -25,8 +25,7 @@ jobs:
           --output nupkg
 
       - name: Push
-        run: >
-          dotnet nuget push nupkg/*.nupkg
-          --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
-          --api-key ${{ secrets.GITHUB_TOKEN }}
-          --skip-duplicate
+        shell: pwsh
+        run: |
+          $pkg = (Get-Item nupkg/*.nupkg).FullName
+          dotnet nuget push $pkg --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
