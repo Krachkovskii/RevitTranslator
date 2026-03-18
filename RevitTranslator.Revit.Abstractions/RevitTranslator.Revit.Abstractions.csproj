@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Library</OutputType>
         <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+        <RepositoryUrl>https://github.com/Krachkovskii/RevitTranslator</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
