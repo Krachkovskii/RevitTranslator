@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using RevitTranslator.Common.Contracts;
+using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Revit.Core.Extensions;
 using RevitTranslator.Revit.Core.Models;
 using TranslationService.Utils;

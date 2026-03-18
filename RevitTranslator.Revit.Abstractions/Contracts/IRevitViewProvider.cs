@@ -1,6 +1,6 @@
-﻿using RevitTranslator.Common.Models.Views;
+using RevitTranslator.Revit.Core.Models;
 
-namespace RevitTranslator.Common.Contracts;
+namespace RevitTranslator.Revit.Core.Contracts;
 
 public interface IRevitViewProvider
 {

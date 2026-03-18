@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using RevitTranslator.Common.Contracts;
+using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Revit.Core.Services;
 using RevitTranslator.Revit.Core.Utils;
 
@@ -15,7 +15,6 @@ public static class CoreDependencyInjectionExtensions
             .AddSingleton<TranslationReportService>()
             .AddSingleton<ITranslationReportService>(sp => sp.GetRequiredService<TranslationReportService>())
             .AddScoped<ConcurrentTranslationService>()
-            .AddScoped<ModelUpdaterService>()
-            .AddScoped<TranslationManager>();
+            .AddScoped<ModelUpdaterService>();
     }
 }

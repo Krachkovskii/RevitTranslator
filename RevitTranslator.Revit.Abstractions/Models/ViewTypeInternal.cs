@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace RevitTranslator.Common.Models.Views;
+namespace RevitTranslator.Revit.Core.Models;
 
 public enum ViewTypeInternal
 {
@@ -12,7 +12,7 @@ public enum ViewTypeInternal
 
     [Description("Floor Plans")]
     FloorPlan = 1,
-    
+
     [Description("Ceiling Plans")]
     CeilingPlan = 2,
 

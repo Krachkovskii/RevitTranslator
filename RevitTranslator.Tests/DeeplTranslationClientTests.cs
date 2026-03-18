@@ -1,8 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Common.Messages;
+using TranslationService.Exceptions;
 using TranslationService.Models;
 using TranslationService.Utils;
 using Xunit;
@@ -23,19 +22,7 @@ public class DeeplTranslationClientTests : IDisposable
     private const string TranslationUrl = "https://api-free.deepl.com/v2/translate";
     private const string UsageUrl = "https://api-free.deepl.com/v2/usage";
 
-    private TokenCancellationRequestedMessage? _receivedCancellationMessage;
-
-    public DeeplTranslationClientTests()
-    {
-        StrongReferenceMessenger.Default.Register<TokenCancellationRequestedMessage>(this,
-            (_, message) => _receivedCancellationMessage = message);
-    }
-
-    public void Dispose()
-    {
-        StrongReferenceMessenger.Default.UnregisterAll(this);
-        _receivedCancellationMessage = null;
-    }
+    public void Dispose() { }
 
     private DeeplTranslationClient CreateClient(StubHttpMessageHandler handler) =>
         new(new HttpClient(handler), TestSettings, TranslationUrl, UsageUrl, TimeSpan.Zero);
@@ -68,7 +55,6 @@ public class DeeplTranslationClientTests : IDisposable
         var result = await client.TranslateTextAsync("hello", CancellationToken.None);
 
         Assert.Null(result);
-        Assert.Null(_receivedCancellationMessage);
         Assert.Equal(1, handler.RequestCount);
     }
 
@@ -108,33 +94,29 @@ public class DeeplTranslationClientTests : IDisposable
     }
 
     [Fact]
-    public async Task TranslateTextAsync_SendsCancellationMessage_On403()
+    public async Task TranslateTextAsync_ThrowsFatalException_On403()
     {
         var handler = new StubHttpMessageHandler();
         handler.Enqueue(new HttpResponseMessage((HttpStatusCode) 403));
         var client = CreateClient(handler);
 
-        var result = await client.TranslateTextAsync("hello", CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<FatalTranslationException>(
+            () => client.TranslateTextAsync("hello", CancellationToken.None));
 
-        Assert.Null(result);
-        Assert.NotNull(_receivedCancellationMessage);
-        Assert.Contains("Authorisation failed", _receivedCancellationMessage.Message,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Authorisation failed", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public async Task TranslateTextAsync_SendsCancellationMessage_On456()
+    public async Task TranslateTextAsync_ThrowsFatalException_On456()
     {
         var handler = new StubHttpMessageHandler();
         handler.Enqueue(new HttpResponseMessage((HttpStatusCode) 456));
         var client = CreateClient(handler);
 
-        var result = await client.TranslateTextAsync("hello", CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<FatalTranslationException>(
+            () => client.TranslateTextAsync("hello", CancellationToken.None));
 
-        Assert.Null(result);
-        Assert.NotNull(_receivedCancellationMessage);
-        Assert.Contains("Quota exceeded", _receivedCancellationMessage.Message,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Quota exceeded", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -200,18 +182,16 @@ public class DeeplTranslationClientTests : IDisposable
     }
 
     [Fact]
-    public async Task TranslateTextsAsync_SendsCancellationMessage_On403()
+    public async Task TranslateTextsAsync_ThrowsFatalException_On403()
     {
         var handler = new StubHttpMessageHandler();
         handler.Enqueue(new HttpResponseMessage((HttpStatusCode) 403));
         var client = CreateClient(handler);
 
-        var result = await client.TranslateTextsAsync(["Hello"], CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<FatalTranslationException>(
+            () => client.TranslateTextsAsync(["Hello"], CancellationToken.None));
 
-        Assert.Null(result);
-        Assert.NotNull(_receivedCancellationMessage);
-        Assert.Contains("Authorisation failed", _receivedCancellationMessage.Message,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Authorisation failed", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

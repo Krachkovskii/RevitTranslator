@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Common.Contracts;
+using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Common.Messages;
 using TranslationService.Models;
 using TranslationService.Utils;

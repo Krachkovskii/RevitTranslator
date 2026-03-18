@@ -3,9 +3,11 @@ using RevitTranslator.Common.Messages;
 using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Revit.Core.ElementTextRetrievers;
 using RevitTranslator.Revit.Core.Models;
+using RevitTranslator.Revit.Core.Services;
 using RevitTranslator.Revit.Core.Utils;
+using TranslationService.Exceptions;
 
-namespace RevitTranslator.Revit.Core.Services;
+namespace RevitTranslator.Services;
 
 public class TranslationManager(
     ITranslationProgressMonitor progressMonitor,
@@ -59,6 +61,11 @@ public class TranslationManager(
 
             progressMonitor.OnTranslationFinished(false);
         }
+        catch (FatalTranslationException)
+        {
+            _cts.Cancel();
+            progressMonitor.OnTranslationFinished(true);
+        }
         catch (OperationCanceledException)
         {
             progressMonitor.OnTranslationFinished(true);
@@ -67,9 +74,9 @@ public class TranslationManager(
 
     private Task<bool> ShouldUpdateModelAsync()
     {
-        if (!_cts.IsCancellationRequested) return Task.FromResult(true);
-
-        return progressMonitor.ShouldUpdateAfterCancellationAsync();
+        return _cts.IsCancellationRequested 
+            ? progressMonitor.ShouldUpdateAfterCancellationAsync() 
+            : Task.FromResult(true);
     }
 
     private Task UpdateRevitModelAsync() =>

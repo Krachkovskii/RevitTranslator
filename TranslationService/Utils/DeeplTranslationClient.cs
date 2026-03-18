@@ -2,8 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text.Json;
-using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Common.Messages;
+using TranslationService.Exceptions;
 using TranslationService.JsonProperties;
 using TranslationService.Models;
 // ReSharper disable once RedundantUsingDirective
@@ -246,13 +245,11 @@ public sealed class DeeplTranslationClient
         }
         catch (OperationCanceledException exception)
         {
-            StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage(exception.Message));
-            return null;
+            throw new FatalTranslationException(exception.Message);
         }
         catch (HttpRequestException ex) when (IsNetworkUnavailable(ex))
         {
-            StrongReferenceMessenger.Default.Send(new TokenCancellationRequestedMessage("Network error occurred. Please check your connection."));
-            return null;
+            throw new FatalTranslationException("Network error occurred. Please check your connection.");
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
