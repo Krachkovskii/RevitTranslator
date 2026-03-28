@@ -13,7 +13,7 @@ namespace RevitTranslator.UI.Demo.ViewModels;
 
 public partial class MockCategoriesWindowViewModel : ObservableValidator, ICategoriesWindowViewModel
 {
-    private Dictionary<CategoryViewModel, int> _elementCountDict = new();
+    private readonly Dictionary<CategoryViewModel, int> _elementCountDict = new();
     
     [ObservableProperty] private string _mainButtonText = "Select elements to translate";
     [ObservableProperty] private string _searchText = string.Empty;

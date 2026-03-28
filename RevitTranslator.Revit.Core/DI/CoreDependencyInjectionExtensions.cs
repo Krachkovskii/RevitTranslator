@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using RevitTranslator.Abstractions;
+using RevitTranslator.Abstractions.Contracts;
 using RevitTranslator.Revit.Core.Contracts;
+using RevitTranslator.Revit.Core.ElementTextRetrievers;
 using RevitTranslator.Revit.Core.Services;
-using RevitTranslator.Revit.Core.Utils;
 
 namespace RevitTranslator.Revit.Core.DI;
 
@@ -14,6 +16,7 @@ public static class CoreDependencyInjectionExtensions
             .AddSingleton<TranslationReportService>()
             .AddSingleton<ITranslationReportService>(sp => sp.GetRequiredService<TranslationReportService>())
             .AddScoped<ConcurrentTranslationService>()
-            .AddScoped<ModelUpdaterService>();
+            .AddScoped<ModelUpdaterService>()
+            .AddScoped<MultiElementTextRetriever>();
     }
 }
