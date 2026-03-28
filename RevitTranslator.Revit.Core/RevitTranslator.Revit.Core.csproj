@@ -14,9 +14,6 @@
         <!-- Revit-version-specific: consumers supply their own matching versions -->
         <PackageReference Include="Nice3point.Revit.Build.Tasks" PrivateAssets="all" />
         <PackageReference Include="Nice3point.Revit.Api.RevitAPI" PrivateAssets="all" />
-        <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" PrivateAssets="all" />
-        <PackageReference Include="Nice3point.Revit.Extensions" PrivateAssets="all" />
-        <PackageReference Include="Nice3point.Revit.Toolkit" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>

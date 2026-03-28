@@ -1,24 +1,8 @@
-using Autodesk.Revit.UI;
 
 namespace RevitTranslator.Revit.Core.Extensions;
 
 public static class ElementRetrievalExtensions
 {
-    /// <summary>
-    /// Gets Revit elements that are currently selected in the UI
-    /// </summary>
-    /// <returns>
-    /// List of Elements
-    /// </returns>
-    public static List<Element> GetSelectedElements(this UIDocument document)
-    {
-        return document.Selection
-            .GetElementIds()
-            .Select(id => id.ToElement())
-            .OfType<Element>()
-            .ToList();
-    }
-
     /// <summary>
     /// Gets all unique tagged elements for all tags in provided list of elements.
     /// </summary>
