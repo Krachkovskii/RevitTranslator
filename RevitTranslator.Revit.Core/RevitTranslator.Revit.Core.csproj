@@ -8,28 +8,28 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-        <PackageReference Include="PolySharp" />
+        <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
+        <PackageReference Include="PolySharp"/>
         <!-- Revit-version-specific: consumers supply their own matching versions -->
-<!--        <PackageReference Include="Nice3point.Revit.Build.Tasks" PrivateAssets="all" />-->
-        <PackageReference Include="Nice3point.Revit.Api.RevitAPI" PrivateAssets="all" />
+        <PackageReference Include="Nice3point.Revit.Build.Tasks" PrivateAssets="all"/>
+        <PackageReference Include="Nice3point.Revit.Api.RevitAPI" PrivateAssets="all"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\RevitTranslator.Revit.Core.Abstractions\RevitTranslator.Revit.Core.Abstractions.csproj" />
+        <ProjectReference Include="..\RevitTranslator.Revit.Core.Abstractions\RevitTranslator.Revit.Core.Abstractions.csproj"/>
     </ItemGroup>
 
     <!-- Local development: build from source -->
     <ItemGroup Condition="'$(PackingRevitCore)' != 'true'">
-        <ProjectReference Include="..\RevitTranslator.Abstractions\RevitTranslator.Abstractions.csproj" />
-        <ProjectReference Include="..\TranslationService\TranslationService.csproj" />
+        <ProjectReference Include="..\RevitTranslator.Abstractions\RevitTranslator.Abstractions.csproj"/>
+        <ProjectReference Include="..\TranslationService\TranslationService.csproj"/>
     </ItemGroup>
 
     <!-- Workaround for publishing: use explicit package versions so nuspec is correct -->
     <ItemGroup Condition="'$(PackingRevitCore)' == 'true'">
-        <PackageReference Include="RevitTranslator.Abstractions" />
-        <PackageReference Include="TranslationService" />
+        <PackageReference Include="RevitTranslator.Abstractions"/>
+        <PackageReference Include="TranslationService"/>
     </ItemGroup>
 
 </Project>
