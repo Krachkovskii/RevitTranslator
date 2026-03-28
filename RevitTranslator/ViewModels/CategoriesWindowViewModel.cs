@@ -2,9 +2,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Timers;
+using RevitTranslator.Abstractions.Models.Categories;
 using RevitTranslator.Common.Extensions;
-using RevitTranslator.Common.Models;
-using RevitTranslator.Common.Models.Categories;
 using RevitTranslator.Revit.Core.Extensions;
 using RevitTranslator.Revit.Core.Utils;
 using RevitTranslator.UI.Contracts;
@@ -55,7 +54,7 @@ public partial class CategoriesWindowViewModel
         var doc = Context.ActiveDocument;
         if (doc == null) return [];
 
-        return CategoryManager.ValidCategories
+        return CategoryManager.GetValidCategories(doc)
             .Select(cat => new
             {
                 category = cat,

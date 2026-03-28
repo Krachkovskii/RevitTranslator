@@ -1,4 +1,4 @@
-namespace RevitTranslator.Revit.Core.Contracts;
+namespace RevitTranslator.Abstractions.Contracts;
 
 public interface ITranslationReportService
 {

@@ -1,7 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Revit.Core.Contracts;
+using RevitTranslator.Abstractions;
+using RevitTranslator.Abstractions.Contracts;
 using RevitTranslator.Common.Messages;
 using TranslationService.Utils;
 

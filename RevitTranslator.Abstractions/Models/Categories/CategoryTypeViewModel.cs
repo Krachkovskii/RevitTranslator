@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace RevitTranslator.Common.Models.Categories;
+namespace RevitTranslator.Abstractions.Models.Categories;
 
 public sealed partial class CategoryTypeViewModel : ObservableObject
 {

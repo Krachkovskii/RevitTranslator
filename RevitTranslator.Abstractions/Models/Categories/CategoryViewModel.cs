@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using JetBrains.Annotations;
 
-namespace RevitTranslator.Common.Models.Categories;
+namespace RevitTranslator.Abstractions.Models.Categories;
 
 [UsedImplicitly]
 public sealed partial class CategoryViewModel : ObservableObject

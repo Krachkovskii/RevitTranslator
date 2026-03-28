@@ -5,8 +5,8 @@ using System.ComponentModel.DataAnnotations;
 using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RevitTranslator.Abstractions.Models.Categories;
 using RevitTranslator.Common.Extensions;
-using RevitTranslator.Common.Models.Categories;
 using RevitTranslator.UI.Contracts;
 
 namespace RevitTranslator.UI.Demo.ViewModels;
