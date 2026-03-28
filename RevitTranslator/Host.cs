@@ -14,6 +14,7 @@ public class Host
             .AddUi()
             .AddRevitUiImpl()
             .AddRevitServices()
+            .AddTranslationServices()
             .AddCoreServices()
             .AddCommonServices()
             .BuildServiceProvider();

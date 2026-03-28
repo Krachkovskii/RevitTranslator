@@ -1,4 +1,5 @@
 using System.Text;
+using RevitTranslator.Abstractions.Contracts;
 using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Revit.Core.Models;
 using TranslationService.Utils;
@@ -10,7 +11,7 @@ namespace RevitTranslator.Revit.Core.Services;
 /// Duplicate texts are grouped so each unique text is translated only once.
 /// </summary>
 public class ConcurrentTranslationService(
-    DeeplTranslationClient translationClient,
+    ITranslationClient translationClient,
     ITranslationProgressMonitor progressMonitor)
 {
     /// <summary>
