@@ -79,7 +79,7 @@ jobs:
           dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
           --name github
           --username ${{ github.actor }}
-          --password ${{ secrets.GITHUB_TOKEN }}
+          --password ${{ secrets.NUGET_TOKEN }}
           --store-password-in-clear-text
 
       - name: Pack ${{ matrix.config }}
