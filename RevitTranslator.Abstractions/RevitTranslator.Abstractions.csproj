@@ -2,6 +2,7 @@
     <PropertyGroup>
         <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
         <OutputType>Library</OutputType>
+        <RepositoryUrl>https://github.com/Krachkovskii/RevitTranslator</RepositoryUrl>
     </PropertyGroup>
     
     <ItemGroup>
