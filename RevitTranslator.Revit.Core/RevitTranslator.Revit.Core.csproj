@@ -21,13 +21,11 @@
              so the nuspec records the correct minimum version (1.x.x) instead of inheriting
              this project's Revit-year-based version (e.g. 2025.x.x). -->
         <ProjectReference Include="..\RevitTranslator.Abstractions\RevitTranslator.Abstractions.csproj">
-            <GlobalPropertiesToRemove>PackageVersion</GlobalPropertiesToRemove>
-            <GlobalPropertiesToRemove>Version</GlobalPropertiesToRemove>
+            <GlobalPropertiesToRemove>PackageVersion;Version</GlobalPropertiesToRemove>
         </ProjectReference>
         <ProjectReference Include="..\RevitTranslator.Revit.Core.Abstractions\RevitTranslator.Revit.Core.Abstractions.csproj" />
         <ProjectReference Include="..\TranslationService\TranslationService.csproj">
-            <GlobalPropertiesToRemove>PackageVersion</GlobalPropertiesToRemove>
-            <GlobalPropertiesToRemove>Version</GlobalPropertiesToRemove>
+            <GlobalPropertiesToRemove>PackageVersion;Version</GlobalPropertiesToRemove>
         </ProjectReference>
     </ItemGroup>
 
