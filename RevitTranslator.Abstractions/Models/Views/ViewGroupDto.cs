@@ -1,4 +1,4 @@
-namespace RevitTranslator.Revit.Core.Models;
+namespace RevitTranslator.Abstractions.Models.Views;
 
 public class ViewGroupDto
 {

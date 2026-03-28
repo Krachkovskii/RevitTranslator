@@ -5,12 +5,14 @@ using System.Text.Json;
 using TranslationService.Exceptions;
 using TranslationService.JsonProperties;
 using TranslationService.Models;
+using RevitTranslator.Abstractions.Contracts;
+
 // ReSharper disable once RedundantUsingDirective
 using System.Net.Http;
 
 namespace TranslationService.Utils;
 
-public sealed class DeeplTranslationClient
+public sealed class DeeplTranslationClient : ITranslationClient
 {
     private readonly HttpClient _httpClient;
     private readonly SemaphoreSlim _semaphore = new(1, 5);

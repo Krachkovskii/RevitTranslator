@@ -29,7 +29,7 @@ public static class TypeAndFamilyUtils
     /// </returns>
     public static Document GetFamilyDocument(Family family)
     {
-        return Context.ActiveDocument!.EditFamily(family);
+        return family.Document.EditFamily(family);
     }
 
     /// <summary>
@@ -41,17 +41,17 @@ public static class TypeAndFamilyUtils
     /// </returns>
     private static ElementType GetElementType(Element element)
     {
-        return (ElementType)Context.ActiveDocument!.GetElement(element.GetTypeId());
+        return (ElementType)element.Document.GetElement(element.GetTypeId());
     }
 
     /// <summary>
     /// Loads modified family document back to host document
     /// </summary>
     /// <param name="familyDoc"></param>
-    public static void LoadFamilyToActiveDocument(this Document familyDoc)
+    public static void LoadFamilyToActiveDocument(this Document familyDoc, Document hostDocument)
     {
         var loadOptions = new FamilyLoadOptions();
-        familyDoc.LoadFamily(Context.ActiveDocument, loadOptions);
+        familyDoc.LoadFamily(hostDocument, loadOptions);
     }
 
     public static HashSet<ElementType> GetUniqueTypes(this IEnumerable<Element> elements)

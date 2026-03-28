@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RevitTranslator.Revit.Abstractions.Contracts;
 using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Services;
 using RevitTranslator.UI.ViewModels;
@@ -6,6 +7,7 @@ using RevitTranslator.UI.Contracts;
 using RevitTranslator.ViewModels;
 using TranslationService.Utils;
 using System.Net.Http;
+using RevitTranslator.Abstractions.Contracts;
 
 namespace RevitTranslator.DI;
 
@@ -21,6 +23,8 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddRevitServices(this IServiceCollection serviceCollection)
     {
         return serviceCollection
+            .AddSingleton<IRevitContextProvider, RevitContextProvider>()
+            .AddSingleton<IRevitHandler, EventHandlers>()
             .AddSingleton<RibbonService>()
             .AddScoped<CategorySelectionService>()
             .AddScoped<SheetSelectionService>()
@@ -30,5 +34,10 @@ public static class DependencyInjectionExtensions
             .AddScoped<ITranslationProgressMonitor, UiTranslationProgressMonitor>()
             .AddScoped<TranslationManager>()
             .AddScoped<ISettingsValidator, UiSettingsValidator>();
+    }
+
+    public static IServiceCollection AddTranslationServices(this IServiceCollection serviceCollection)
+    {
+        return serviceCollection.AddSingleton<ITranslationClient, DeeplTranslationClient>();
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using RevitTranslator.Revit.Core.Contracts;
+using RevitTranslator.Abstractions.Contracts;
 using RevitTranslator.UI.Contracts;
 using RevitTranslator.UI.Demo.Utils;
 using RevitTranslator.UI.Demo.ViewModels;

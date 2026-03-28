@@ -1,3 +1,4 @@
+using RevitTranslator.Revit.Abstractions.Contracts;
 using RevitTranslator.Revit.Core.Extensions;
 using RevitTranslator.Revit.Core.Models;
 using RevitTranslator.Revit.Core.Utils;
@@ -8,7 +9,7 @@ namespace RevitTranslator.Revit.Core.ElementTextRetrievers;
 /// Use this class to retrieve text from a list of elements.
 /// This is the primary class to process elements in a document.
 /// </summary>
-public class MultiElementTextRetriever : BaseElementTextRetriever
+public class MultiElementTextRetriever(IRevitContextProvider contextProvider) : BaseElementTextRetriever
 {
     private BaseElementTextRetriever? _currentRetriever;
     private HashSet<ElementType> _elementTypes = [];
@@ -18,7 +19,7 @@ public class MultiElementTextRetriever : BaseElementTextRetriever
 
     public List<DocumentTranslationEntityGroup> CreateEntities(Element[] elements, bool translateProjectParameters, out int unitCount)
     {
-        _unitGroups.Add(new DocumentTranslationEntityGroup(Context.ActiveDocument!));
+        _unitGroups.Add(new DocumentTranslationEntityGroup(contextProvider.ActiveDocument));
 
         _taggedElements = elements.OfType<IndependentTag>().GetUniqueTaggedElements();
         var instancesTypesFamilies = elements.ToHashSet();
@@ -39,7 +40,7 @@ public class MultiElementTextRetriever : BaseElementTextRetriever
         {
             //TODO: Implement project parameter handling
             // ReSharper disable once UnusedVariable
-            var paramRetriever = new ProjectParameterTextRetriever();
+            var paramRetriever = new ProjectParameterTextRetriever(contextProvider.ActiveDocument);
         }
 
         unitCount = _unitGroups.Sum(group => group.TranslationEntities.Count);

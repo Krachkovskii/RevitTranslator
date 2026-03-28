@@ -5,15 +5,15 @@ using System.ComponentModel.DataAnnotations;
 using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RevitTranslator.Abstractions.Models.Categories;
 using RevitTranslator.Common.Extensions;
-using RevitTranslator.Common.Models.Categories;
 using RevitTranslator.UI.Contracts;
 
 namespace RevitTranslator.UI.Demo.ViewModels;
 
 public partial class MockCategoriesWindowViewModel : ObservableValidator, ICategoriesWindowViewModel
 {
-    private Dictionary<CategoryViewModel, int> _elementCountDict = new();
+    private readonly Dictionary<CategoryViewModel, int> _elementCountDict = new();
     
     [ObservableProperty] private string _mainButtonText = "Select elements to translate";
     [ObservableProperty] private string _searchText = string.Empty;

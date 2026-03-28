@@ -1,3 +1,5 @@
+using RevitTranslator.Abstractions.Models;
+using RevitTranslator.Abstractions.Models.Views;
 using RevitTranslator.Revit.Core.Models;
 
 namespace RevitTranslator.Revit.Core.Extensions;

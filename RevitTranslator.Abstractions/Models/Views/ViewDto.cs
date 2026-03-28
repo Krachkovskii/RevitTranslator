@@ -1,3 +1,3 @@
-namespace RevitTranslator.Revit.Core.Models;
+namespace RevitTranslator.Abstractions.Models.Views;
 
 public record ViewDto(long Id, ViewTypeInternal ViewType, string Name, int ElementCount);

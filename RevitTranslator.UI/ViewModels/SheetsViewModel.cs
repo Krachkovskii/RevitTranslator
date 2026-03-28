@@ -3,9 +3,10 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using RevitTranslator.Abstractions;
+using RevitTranslator.Abstractions.Contracts;
 using RevitTranslator.Common.Extensions;
-using RevitTranslator.Revit.Core.Contracts;
-using RevitTranslator.Revit.Core.Models;
+using RevitTranslator.Abstractions.Models;
 using RevitTranslator.UI.Messages;
 using RevitTranslator.UI.Models;
 #if NETFRAMEWORK

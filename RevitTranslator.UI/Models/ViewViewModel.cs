@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using RevitTranslator.Revit.Core.Models;
+using RevitTranslator.Abstractions.Models;
+using RevitTranslator.Abstractions.Models.Views;
 
 namespace RevitTranslator.UI.Models;
 

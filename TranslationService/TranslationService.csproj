@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+        <TargetFrameworks>net48;net8.0</TargetFrameworks>
         <RepositoryUrl>https://github.com/Krachkovskii/RevitTranslator</RepositoryUrl>
     </PropertyGroup>
 
@@ -14,5 +14,9 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="RevitTranslator.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\RevitTranslator.Abstractions\RevitTranslator.Abstractions.csproj" />
     </ItemGroup>
 </Project>

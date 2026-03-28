@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <Configurations>Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
+        <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26</Configurations>
+        <RepositoryUrl>https://github.com/Krachkovskii/RevitTranslator</RepositoryUrl>
+        <RootNamespace>RevitTranslator.Revit.Abstractions</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="PolySharp"/>
+        <PackageReference Include="Nice3point.Revit.Api.RevitAPI"/>
+    </ItemGroup>
+    
+</Project>

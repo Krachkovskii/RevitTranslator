@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RevitTranslator.Revit.Abstractions\RevitTranslator.Revit.Abstractions.csproj" />
+      <ProjectReference Include="..\RevitTranslator.Revit.Core.Abstractions\RevitTranslator.Revit.Core.Abstractions.csproj" />
       <ProjectReference Include="..\RevitTranslator.Ui.Library\RevitTranslator.Ui.Library.csproj" />
       <ProjectReference Include="..\RevitTranslator.UI\RevitTranslator.UI.csproj" />
     </ItemGroup>

@@ -6,9 +6,12 @@ namespace RevitTranslator.Revit.Core.ElementTextRetrievers;
 
 public class ProjectParameterTextRetriever : BaseElementTextRetriever
 {
-    public ProjectParameterTextRetriever()
+    private readonly Document _document;
+
+    public ProjectParameterTextRetriever(Document document)
     {
-        Process(Context.ActiveDocument!);
+        _document = document;
+        Process(document);
     }
 
     protected override sealed void Process(object Object)
@@ -35,7 +38,7 @@ public class ProjectParameterTextRetriever : BaseElementTextRetriever
 
         var unit = new TranslationEntity
         {
-            Element = Context.ActiveDocument!,
+            Element = _document,
             OriginalText = propertyText,
             TranslationDetails = details
         };

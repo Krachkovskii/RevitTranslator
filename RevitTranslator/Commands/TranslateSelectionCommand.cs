@@ -16,8 +16,13 @@ public class TranslateSelectionCommand : ExternalCommand
     {
         try
         {
+            var document = Document;
             using var scope = Host.ServiceProvider.CreateScope();
-            var selection = UiDocument.GetSelectedElements().ToArray();
+            var selection = UiDocument.Selection
+                .GetElementIds()
+                .Select(id => document.GetElement(id))
+                .Where(element => element is not null)
+                .ToArray();
             if (selection.Length == 0) return;
 
             await scope.ServiceProvider.GetRequiredService<TranslationManager>().ExecuteAsync(selection);

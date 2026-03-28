@@ -1,7 +1,7 @@
 using Bogus;
 using JetBrains.Annotations;
-using RevitTranslator.Revit.Core.Contracts;
-using RevitTranslator.Revit.Core.Models;
+using RevitTranslator.Abstractions.Contracts;
+using RevitTranslator.Abstractions.Models.Views;
 
 namespace RevitTranslator.UI.Demo.Utils;
 

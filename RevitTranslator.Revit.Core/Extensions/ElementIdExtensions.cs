@@ -20,8 +20,8 @@ public static class ElementIdExtensions
 #endif
     }
 
-    public static Element? ToElement(this ElementId elementId)
+    public static Element? ToElement(this ElementId elementId, Document document)
     {
-        return Context.ActiveDocument?.GetElement(elementId);
+        return document.GetElement(elementId);
     }
 }

@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <OutputType>Library</OutputType>
         <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+        <OutputType>Library</OutputType>
         <RepositoryUrl>https://github.com/Krachkovskii/RevitTranslator</RepositoryUrl>
     </PropertyGroup>
-
+    
     <ItemGroup>
-        <PackageReference Include="PolySharp" />
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="JetBrains.Annotations" />
+        <PackageReference Include="PolySharp"/>
     </ItemGroup>
-
 </Project>
