@@ -1,0 +1,88 @@
+# Step 2 of 2 — Run after publish-base.yml.
+# Publishes Revit-version-specific packages. Version format: {revit_year}.{revit_minor}.{patch}
+# Dependency order: publish-revit-core-abstractions must complete before publish-revit-core.
+name: Publish Revit Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      revit_minor:
+        description: 'Revit API minor version (e.g. 0, 3)'
+        required: true
+      patch:
+        description: 'Package patch version (e.g. 1, 2)'
+        required: true
+
+jobs:
+  publish-revit-core-abstractions:
+    name: Publish RevitTranslator.Revit.Core.Abstractions (${{ matrix.config }})
+    runs-on: windows-latest
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - config: R23
+            revit_year: 2023
+          - config: R24
+            revit_year: 2024
+          - config: R25
+            revit_year: 2025
+          - config: R26
+            revit_year: 2026
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Pack ${{ matrix.config }}
+        run: >
+          dotnet pack RevitTranslator.Revit.Core.Abstractions/RevitTranslator.Revit.Core.Abstractions.csproj
+          -c "Release ${{ matrix.config }}"
+          -p:PackageVersion=${{ matrix.revit_year }}.${{ inputs.revit_minor }}.${{ inputs.patch }}
+          --output nupkg
+
+      - name: Push
+        shell: pwsh
+        run: |
+          $pkg = (Get-Item nupkg/*.nupkg).FullName
+          dotnet nuget push $pkg --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate
+
+  publish-revit-core:
+    name: Publish RevitTranslator.Revit.Core (${{ matrix.config }})
+    runs-on: windows-latest
+    permissions:
+      packages: write
+    needs: publish-revit-core-abstractions
+    strategy:
+      matrix:
+        include:
+          - config: R23
+            revit_year: 2023
+          - config: R24
+            revit_year: 2024
+          - config: R25
+            revit_year: 2025
+          - config: R26
+            revit_year: 2026
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Pack ${{ matrix.config }}
+        run: >
+          dotnet pack RevitTranslator.Revit.Core/RevitTranslator.Revit.Core.csproj
+          -c "Release ${{ matrix.config }}"
+          -p:PackageVersion=${{ matrix.revit_year }}.${{ inputs.revit_minor }}.${{ inputs.patch }}
+          --output nupkg
+
+      - name: Push
+        shell: pwsh
+        run: |
+          $pkg = (Get-Item nupkg/*.nupkg).FullName
+          dotnet nuget push $pkg --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate
