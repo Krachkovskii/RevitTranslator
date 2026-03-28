@@ -79,6 +79,7 @@ jobs:
           dotnet pack RevitTranslator.Revit.Core/RevitTranslator.Revit.Core.csproj
           -c "Release ${{ matrix.config }}"
           -p:PackageVersion=${{ matrix.revit_year }}.${{ inputs.revit_minor }}.${{ inputs.patch }}
+          -p:PackingRevitCore=true
           --output nupkg
 
       - name: Push

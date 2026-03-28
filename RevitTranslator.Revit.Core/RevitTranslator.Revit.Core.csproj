@@ -17,16 +17,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- GlobalPropertiesToRemove prevents PackageVersion from propagating during pack,
-             so the nuspec records the correct minimum version (1.x.x) instead of inheriting
-             this project's Revit-year-based version (e.g. 2025.x.x). -->
-        <ProjectReference Include="..\RevitTranslator.Abstractions\RevitTranslator.Abstractions.csproj">
-            <GlobalPropertiesToRemove>PackageVersion;Version</GlobalPropertiesToRemove>
-        </ProjectReference>
         <ProjectReference Include="..\RevitTranslator.Revit.Core.Abstractions\RevitTranslator.Revit.Core.Abstractions.csproj" />
-        <ProjectReference Include="..\TranslationService\TranslationService.csproj">
-            <GlobalPropertiesToRemove>PackageVersion;Version</GlobalPropertiesToRemove>
-        </ProjectReference>
+    </ItemGroup>
+
+    <!-- Local development: build from source -->
+    <ItemGroup Condition="'$(PackingRevitCore)' != 'true'">
+        <ProjectReference Include="..\RevitTranslator.Abstractions\RevitTranslator.Abstractions.csproj" />
+        <ProjectReference Include="..\TranslationService\TranslationService.csproj" />
+    </ItemGroup>
+
+    <!-- Workaround for publishing: use explicit package versions so nuspec is correct -->
+    <ItemGroup Condition="'$(PackingRevitCore)' == 'true'">
+        <PackageReference Include="RevitTranslator.Abstractions" Version="1.*" />
+        <PackageReference Include="TranslationService" Version="1.*" />
     </ItemGroup>
 
 </Project>
