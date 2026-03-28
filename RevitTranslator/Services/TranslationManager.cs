@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.Messaging;
 using RevitTranslator.Common.Messages;
+using RevitTranslator.Revit.Abstractions.Contracts;
 using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Revit.Core.ElementTextRetrievers;
 using RevitTranslator.Revit.Core.Models;
@@ -14,8 +15,9 @@ public class TranslationManager(
     ISettingsValidator settingsValidator,
     ConcurrentTranslationService service,
     ModelUpdaterService modelUpdaterService,
-    EventHandlers handlers,
-    TranslationReportService reportService) : IRecipient<TokenCancellationRequestedMessage>
+    IRevitHandler handler,
+    TranslationReportService reportService,
+    MultiElementTextRetriever multiElementTextRetriever) : IRecipient<TokenCancellationRequestedMessage>
 {
     private readonly CancellationTokenSource _cts = new();
     private List<DocumentTranslationEntityGroup>? _documentEntities;
@@ -44,7 +46,7 @@ public class TranslationManager(
 
     private List<DocumentTranslationEntityGroup> GetTextFromElements()
     {
-        var entities = new MultiElementTextRetriever()
+        var entities = multiElementTextRetriever
             .CreateEntities(_targetElements, false, out var unitCount);
         progressMonitor.OnTextRetrieved(unitCount);
 
@@ -80,7 +82,7 @@ public class TranslationManager(
     }
 
     private Task UpdateRevitModelAsync() =>
-        handlers.AsyncHandler.RaiseAsync(_ => modelUpdaterService.Update(_documentEntities!));
+        handler.RaiseAsync(() => modelUpdaterService.Update(_documentEntities!));
 
     public void Receive(TokenCancellationRequestedMessage message) => _cts.Cancel();
 }

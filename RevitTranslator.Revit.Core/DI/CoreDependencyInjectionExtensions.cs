@@ -10,7 +10,6 @@ public static class CoreDependencyInjectionExtensions
     public static IServiceCollection AddCoreServices(this IServiceCollection serviceCollection)
     {
         return serviceCollection
-            .AddSingleton<EventHandlers>()
             .AddSingleton<IRevitViewProvider, ViewProvider>()
             .AddSingleton<TranslationReportService>()
             .AddSingleton<ITranslationReportService>(sp => sp.GetRequiredService<TranslationReportService>())

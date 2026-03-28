@@ -21,6 +21,8 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddRevitServices(this IServiceCollection serviceCollection)
     {
         return serviceCollection
+            .AddSingleton<IRevitContextProvider, RevitContextProvider>()
+            .AddSingleton<IRevitHandler, EventHandlers>()
             .AddSingleton<RibbonService>()
             .AddScoped<CategorySelectionService>()
             .AddScoped<SheetSelectionService>()
