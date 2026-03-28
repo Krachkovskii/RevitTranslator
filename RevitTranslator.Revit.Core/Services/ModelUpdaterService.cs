@@ -1,3 +1,4 @@
+using RevitTranslator.Revit.Abstractions.Contracts;
 using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Revit.Core.Enums;
 using RevitTranslator.Revit.Core.Extensions;
@@ -6,7 +7,7 @@ using RevitTranslator.Revit.Core.Utils;
 
 namespace RevitTranslator.Revit.Core.Services;
 
-public class ModelUpdaterService(ITranslationProgressMonitor progressMonitor)
+public class ModelUpdaterService(ITranslationProgressMonitor progressMonitor, IRevitContextProvider contextProvider)
 {
     private TranslationEntity _currentEntity = null!;
 
@@ -17,7 +18,7 @@ public class ModelUpdaterService(ITranslationProgressMonitor progressMonitor)
             UpdateDocument(group);
             if (group.Document.IsFamilyDocument)
             {
-                group.Document.LoadFamilyToActiveDocument();
+                group.Document.LoadFamilyToActiveDocument(contextProvider.ActiveDocument);
             }
         }
 

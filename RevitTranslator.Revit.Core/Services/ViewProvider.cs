@@ -1,3 +1,8 @@
+using RevitTranslator.Abstractions;
+using RevitTranslator.Abstractions.Contracts;
+using RevitTranslator.Abstractions.Models;
+using RevitTranslator.Abstractions.Models.Views;
+using RevitTranslator.Revit.Abstractions.Contracts;
 using RevitTranslator.Revit.Core.Contracts;
 using RevitTranslator.Revit.Core.Models;
 using RevitTranslator.Revit.Core.Extensions;
@@ -5,14 +10,12 @@ using RevitTranslator.Revit.Core.Utils;
 
 namespace RevitTranslator.Revit.Core.Services;
 
-public class ViewProvider(EventHandlers revitHandler) : IRevitViewProvider
+public class ViewProvider(IRevitContextProvider contextProvider) : IRevitViewProvider
 {
     public async Task<IReadOnlyCollection<ViewDto>> GetAllIterableViewsAsync()
     {
         ViewDto[] views = [];
 
-        await revitHandler.AsyncHandler.RaiseAsync(uiapp =>
-        {
             var viewTypes = new List<Type>
             {
                 typeof(ViewPlan),
@@ -21,7 +24,7 @@ public class ViewProvider(EventHandlers revitHandler) : IRevitViewProvider
                 typeof(ViewDrafting),
                 typeof(ViewSection)
             };
-            var document = uiapp.ActiveUIDocument.Document;
+            var document = contextProvider.ActiveDocument;
 
             views = new FilteredElementCollector(document)
                 .WherePasses(new ElementMulticlassFilter(viewTypes))
@@ -35,7 +38,6 @@ public class ViewProvider(EventHandlers revitHandler) : IRevitViewProvider
                     new FilteredElementCollector(document, view.Id).GetElementCount()))
                 .Where(view => view.ViewType != ViewTypeInternal.Undefined)
                 .ToArray();
-        });
 
         return views;
     }
@@ -44,17 +46,14 @@ public class ViewProvider(EventHandlers revitHandler) : IRevitViewProvider
     {
         ViewDto[] views = [];
 
-        await revitHandler.AsyncHandler.RaiseAsync((uiapp) =>
-        {
-            var document = uiapp.ActiveUIDocument.Document;
-            views = document.EnumerateInstances<ViewSheet>()
+            var document = contextProvider.ActiveDocument;
+            views = new FilteredElementCollector(document).OfClass(typeof(ViewSheet)).Cast<ViewSheet>()
                 .Select(sheet => new ViewDto(
                     Id: sheet.Id.ToLong(),
                     ViewType: sheet.ViewType.ToInternal(),
                     Name: $"{sheet.SheetNumber} - {sheet.Name}",
                     ElementCount: new FilteredElementCollector(document, sheet.Id).GetElementCount()))
                 .ToArray();
-        });
 
         return views;
     }
@@ -64,17 +63,13 @@ public class ViewProvider(EventHandlers revitHandler) : IRevitViewProvider
         ViewGroupDto[] groups = [];
 
 #if NET8_0_OR_GREATER
-        await revitHandler.AsyncHandler.RaiseAsync(uiapp =>
-        {
-            var document = uiapp.ActiveUIDocument.Document;
+            var document = contextProvider.ActiveDocument;
 
-            groups = document.EnumerateInstances<ViewSheet>()
+            groups = new FilteredElementCollector(document).OfClass(typeof(ViewSheet)).Cast<ViewSheet>()
                 .GroupBy(sheet => sheet.SheetCollectionId)
                 .Select(collection => new ViewGroupDto
                 {
-                    Name = collection.First()
-                               .SheetCollectionId
-                               .ToElement<SheetCollection>(document)?
+                    Name = (document.GetElement(collection.First().SheetCollectionId) as SheetCollection)?
                                .Name
                            ?? "Ungrouped sheets",
                     Views = collection.Select(sheet => new ViewDto(
@@ -85,7 +80,6 @@ public class ViewProvider(EventHandlers revitHandler) : IRevitViewProvider
                         .ToArray()
                 })
                 .ToArray();
-        });
 #else
         await Task.CompletedTask;
 #endif

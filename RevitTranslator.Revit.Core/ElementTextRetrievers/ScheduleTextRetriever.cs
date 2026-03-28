@@ -12,7 +12,7 @@ public class ScheduleTextRetriever : BaseElementTextRetriever
 
     public ScheduleTextRetriever(ScheduleSheetInstance scheduleInstance)
     {
-        var schedule = (ViewSchedule)Context.ActiveDocument!.GetElement(scheduleInstance.ScheduleId);
+        var schedule = (ViewSchedule)scheduleInstance.Document.GetElement(scheduleInstance.ScheduleId);
         Process(schedule);
     }
 

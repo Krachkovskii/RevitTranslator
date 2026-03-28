@@ -13,11 +13,9 @@ public static class CategoryManager
     /// <summary>
     /// Valid Revit categories to be used with this plug-in.
     /// </summary>
-    public static Category[] ValidCategories { get; } = GetValidCategories();
-
-    private static Category[] GetValidCategories()
+    public static Category[] GetValidCategories(Document document)
     {
-        return Context.ActiveDocument!.Settings.Categories
+        return document.Settings.Categories
             .Cast<Category>()
             .Where(category => IsRegularValidCategory(category) || IsSpecialCategory(category))
             .ToArray();

@@ -28,7 +28,7 @@ public class ElementTextRetriever : BaseElementTextRetriever
                 ProcessElementName(schedule);
                 break;
             case ScheduleSheetInstance scheduleInstance:
-                ProcessElementName(Context.ActiveDocument!.GetElement(scheduleInstance.ScheduleId));
+                ProcessElementName(scheduleInstance.Document.GetElement(scheduleInstance.ScheduleId));
                 break;
         }
     }
