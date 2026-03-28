@@ -74,11 +74,20 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Add GitHub Packages NuGet source
+        run: >
+          dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+          --name github
+          --username ${{ github.actor }}
+          --password ${{ secrets.GITHUB_TOKEN }}
+          --store-password-in-clear-text
+
       - name: Pack ${{ matrix.config }}
         run: >
           dotnet pack RevitTranslator.Revit.Core/RevitTranslator.Revit.Core.csproj
           -c "Release ${{ matrix.config }}"
           -p:PackageVersion=${{ matrix.revit_year }}.${{ inputs.revit_minor }}.${{ inputs.patch }}
+          -p:PackingRevitCore=true
           --output nupkg
 
       - name: Push
