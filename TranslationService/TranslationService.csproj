@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>net48;net8.0</TargetFrameworks>
+        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
         <RepositoryUrl>https://github.com/Krachkovskii/RevitTranslator</RepositoryUrl>
     </PropertyGroup>
 
