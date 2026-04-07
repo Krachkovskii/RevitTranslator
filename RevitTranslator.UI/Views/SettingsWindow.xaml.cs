@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
-using RevitTranslator.UI.ViewModels;
 using RevitTranslator.Ui.Library.Appearance;
 using RevitTranslator.Ui.Library.Controls;
+using RevitTranslator.UI.ViewModels;
 
 namespace RevitTranslator.UI.Views;
 
@@ -38,7 +38,7 @@ public partial class SettingsWindow
         }
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object sender, RoutedEventArgs _)
     {
         try
         {
@@ -54,7 +54,7 @@ public partial class SettingsWindow
         }
     }
 
-    private void OnClosing(object sender, CancelEventArgs e)
+    private void OnClosing(object? sender, CancelEventArgs e)
     {
         _viewModel.SaveSettings();
         Closing -= OnClosing;

@@ -8,7 +8,7 @@ namespace TranslationService.Utils;
 /// </summary>
 public static class ApiKeyEncryption
 {
-    private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("RevitTranslator.DeepL.ApiKey.v1");
+    private static readonly byte[] Entropy = "RevitTranslator.DeepL.ApiKey.v1"u8.ToArray();
 
     /// <summary>
     /// Encrypts an API key using Windows DPAPI
@@ -77,7 +77,7 @@ public static class ApiKeyEncryption
 
         try
         {
-            Convert.FromBase64String(value);
+            _ = Convert.FromBase64String(value);
             return true;
         }
         catch
