@@ -1,11 +1,8 @@
-using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using RevitTranslator.Abstractions;
 using RevitTranslator.Abstractions.Contracts;
 using RevitTranslator.Common.Messages;
 using TranslationService.Models;
@@ -95,7 +92,7 @@ public partial class SettingsViewModel : ObservableValidator
         var targetLanguage = SelectedTargetLanguage ?? DeeplSettingsUtils.CurrentSettings?.TargetLanguage;
         if (targetLanguage is null) return;
 
-        var settings = new DeeplSettingsDescriptor
+        var settings = new DeeplSettingsDto
         {
             IsPaidPlan = IsPaidPlan is true,
             DeeplApiKey = sanitizedKey,
@@ -119,14 +116,14 @@ public partial class SettingsViewModel : ObservableValidator
         IsValidatingApiKey = true;
         ApiKeyValidationMessage = "Validating...";
 
-        var tempSettings = new DeeplSettingsDescriptor
+        var tempSettings = new DeeplSettingsDto
         {
             DeeplApiKey = sanitizedKey,
             IsPaidPlan = !ApiKeyValidator.IsFreePlan(sanitizedKey),
             SourceLanguage = IsAutoDetectChecked ? null : SelectedSourceLanguage,
             TargetLanguage = SelectedTargetLanguage ?? DeeplSettingsUtils.CurrentSettings?.TargetLanguage
         };
-        DeeplSettingsUtils.UpdateInMemory(tempSettings);
+        tempSettings.UpdateInMemory();
 
         var isValid = await _translationClient.CanTranslateAsync();
 

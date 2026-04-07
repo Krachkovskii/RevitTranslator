@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using TranslationService.Models;
 using TranslationService.Validation;
 
@@ -11,18 +11,21 @@ public static class DeeplSettingsUtils
 {
     private const string AddinName = "RevitTranslator";
     private static readonly object LockObject = new();
-    private static DeeplSettingsDescriptor? _currentSettings;
+    private static DeeplSettingsDto? _currentSettings;
 
     private static string JsonDirectoryPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Autodesk",
         "ApplicationPlugins",
         AddinName);
-    private static string JsonFilePath => Path.Combine(
-        JsonDirectoryPath,
-        "settings.json");
 
-    public static DeeplSettingsDescriptor? CurrentSettings
+    private static string JsonFilePath => Path.Combine(JsonDirectoryPath, "settings.json");
+
+    public static string TranslationUrl { get; private set; } = string.Empty;
+    public static string UsageUrl { get; private set; } = string.Empty;
+    public static string LanguagesBaseUrl { get; private set; } = string.Empty;
+
+    public static DeeplSettingsDto? CurrentSettings
     {
         get
         {
@@ -41,10 +44,6 @@ public static class DeeplSettingsUtils
         }
     }
 
-    public static string TranslationUrl { get; private set; } = string.Empty;
-    public static string UsageUrl { get; private set; } = string.Empty;
-    public static string LanguagesBaseUrl { get; private set; } = string.Empty;
-
     /// <summary>
     /// Loads the settings from a JSON file.
     /// If file is not created yet, it is created with default settings.
@@ -59,13 +58,13 @@ public static class DeeplSettingsUtils
             {
                 if (!File.Exists(JsonFilePath))
                 {
-                    var newDescriptor = new DeeplSettingsDescriptor();
+                    var newDescriptor = new DeeplSettingsDto();
                     newDescriptor.SaveToJson();
                     return true;
                 }
 
                 var json = File.ReadAllText(JsonFilePath);
-                var descriptor = JsonSerializer.Deserialize<DeeplSettingsDescriptor>(json);
+                var descriptor = JsonSerializer.Deserialize<DeeplSettingsDto>(json);
 
                 if (descriptor is null)
                 {
@@ -108,7 +107,7 @@ public static class DeeplSettingsUtils
         return await client.CanTranslateAsync();
     }
 
-    public static void UpdateInMemory(DeeplSettingsDescriptor descriptor)
+    public static void UpdateInMemory(this DeeplSettingsDto descriptor)
     {
         lock (LockObject)
         {
@@ -117,9 +116,9 @@ public static class DeeplSettingsUtils
         }
     }
 
-    public static void Save(this DeeplSettingsDescriptor descriptor) => descriptor.SaveToJson();
+    public static void Save(this DeeplSettingsDto descriptor) => descriptor.SaveToJson();
 
-    private static void SaveToJson(this DeeplSettingsDescriptor settingsDescriptor)
+    private static void SaveToJson(this DeeplSettingsDto settingsDescriptor)
     {
         lock (LockObject)
         {
@@ -132,7 +131,7 @@ public static class DeeplSettingsUtils
 
                 var sanitizedApiKey = ApiKeyValidator.Sanitize(settingsDescriptor.DeeplApiKey);
 
-                var descriptorToSave = new DeeplSettingsDescriptor
+                var descriptorToSave = new DeeplSettingsDto
                 {
                     IsPaidPlan = settingsDescriptor.IsPaidPlan,
                     DeeplApiKey = ApiKeyEncryption.Encrypt(sanitizedApiKey),
@@ -141,10 +140,7 @@ public static class DeeplSettingsUtils
                     TargetLanguage = settingsDescriptor.TargetLanguage
                 };
 
-                var options = new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                };
+                var options = new JsonSerializerOptions { WriteIndented = true };
                 var json = JsonSerializer.Serialize(descriptorToSave, options);
                 File.WriteAllText(JsonFilePath, json);
 
@@ -158,7 +154,7 @@ public static class DeeplSettingsUtils
         }
     }
 
-    private static void SetDeeplUrls(this DeeplSettingsDescriptor? descriptor)
+    private static void SetDeeplUrls(this DeeplSettingsDto? descriptor)
     {
         if (descriptor is null) return;
 
