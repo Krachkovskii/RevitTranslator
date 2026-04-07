@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace TranslationService.JsonProperties;
+namespace TranslationService.JsonProperties.DeepL;
 
 /// <summary>
 /// Handles response from DeepL API with text translation.

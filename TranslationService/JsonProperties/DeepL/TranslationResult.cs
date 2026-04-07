@@ -1,4 +1,4 @@
-﻿namespace TranslationService.JsonProperties;
+﻿namespace TranslationService.JsonProperties.DeepL;
 
 /// <summary>
 /// Higher-level class for handling response from DeepL API with text translation.

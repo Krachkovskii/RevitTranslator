@@ -1,4 +1,4 @@
-﻿namespace TranslationService.JsonProperties;
+﻿namespace TranslationService.JsonProperties.DeepL;
 
 /// <summary>
 /// Handles DeepL API response for usage limits
