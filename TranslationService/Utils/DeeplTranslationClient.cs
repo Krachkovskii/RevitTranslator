@@ -2,11 +2,11 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text.Json;
+using RevitTranslator.Abstractions.Contracts;
 using TranslationService.Exceptions;
 using TranslationService.JsonProperties;
+using TranslationService.JsonProperties.DeepL;
 using TranslationService.Models;
-using RevitTranslator.Abstractions.Contracts;
-
 // ReSharper disable once RedundantUsingDirective
 using System.Net.Http;
 
@@ -17,11 +17,11 @@ public sealed class DeeplTranslationClient : ITranslationClient
     private readonly HttpClient _httpClient;
     private readonly SemaphoreSlim _semaphore = new(1, 5);
     private readonly TimeSpan _baseRetryDelay;
-    private readonly DeeplSettingsDescriptor? _settingsOverride;
+    private readonly DeeplSettingsDto? _settingsOverride;
     private readonly string? _translationUrlOverride;
     private readonly string? _usageUrlOverride;
 
-    private DeeplSettingsDescriptor? Settings => _settingsOverride ?? DeeplSettingsUtils.CurrentSettings;
+    private DeeplSettingsDto? Settings => _settingsOverride ?? DeeplSettingsUtils.CurrentSettings;
     private string TranslationUrl => _translationUrlOverride ?? DeeplSettingsUtils.TranslationUrl;
     private string UsageUrl => _usageUrlOverride ?? DeeplSettingsUtils.UsageUrl;
 
@@ -36,7 +36,7 @@ public sealed class DeeplTranslationClient : ITranslationClient
 
     internal DeeplTranslationClient(
         HttpClient httpClient,
-        DeeplSettingsDescriptor settings,
+        DeeplSettingsDto settings,
         string translationUrl,
         string usageUrl,
         TimeSpan baseRetryDelay)

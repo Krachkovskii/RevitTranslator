@@ -1,6 +1,6 @@
 namespace TranslationService.Models;
 
-public class DeeplSettingsDescriptor
+public class DeeplSettingsDto
 {
     public bool IsPaidPlan { get; set; }
     public string DeeplApiKey { get; set; } = string.Empty;

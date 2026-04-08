@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using TranslationService.Exceptions;
 using TranslationService.Models;
@@ -11,7 +10,7 @@ namespace RevitTranslator.Tests;
 
 public class DeeplTranslationClientTests : IDisposable
 {
-    private static readonly DeeplSettingsDescriptor TestSettings = new()
+    private static readonly DeeplSettingsDto TestSettings = new()
     {
         DeeplApiKey = "test-api-key",
         IsPaidPlan = false,

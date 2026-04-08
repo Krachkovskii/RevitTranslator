@@ -5,19 +5,14 @@ namespace TranslationService.Validation;
 /// <summary>
 /// Validates DeepL API keys for correct format
 /// </summary>
-public static partial class ApiKeyValidator
+public static class ApiKeyValidator
 {
     // DeepL API keys: 8-4-4-4-12 hex chars (UUID format), optional :fx suffix for free plans
     private const string ApiKeyPattern = @"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(:fx|:FX)?$";
-
-#if NET8_0_OR_GREATER
-    [GeneratedRegex(ApiKeyPattern, RegexOptions.Compiled)]
-    private static partial Regex ApiKeyRegex();
-#else
+    
     // ReSharper disable once InconsistentNaming
     private static readonly Regex _apiKeyRegex = new(ApiKeyPattern, RegexOptions.Compiled);
     private static Regex ApiKeyRegex() => _apiKeyRegex;
-#endif
 
     /// <summary>
     /// Validates and sanitizes an API key
