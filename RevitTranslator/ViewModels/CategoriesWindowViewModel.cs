@@ -1,13 +1,12 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Timers;
+using Nice3point.Revit.Extensions.Runtime;
 using RevitTranslator.Abstractions.Models.Categories;
 using RevitTranslator.Common.Extensions;
 using RevitTranslator.Revit.Core.Extensions;
 using RevitTranslator.Revit.Core.Utils;
 using RevitTranslator.UI.Contracts;
-using Timer = System.Timers.Timer;
 
 namespace RevitTranslator.ViewModels;
 
