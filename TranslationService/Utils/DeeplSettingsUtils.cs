@@ -34,7 +34,8 @@ public static class DeeplSettingsUtils
                 return _currentSettings;
             }
         }
-        private set
+        // ReSharper disable once MemberCanBePrivate.Global
+        set
         {
             lock (LockObject)
             {
