@@ -24,18 +24,25 @@ jobs:
         include:
           - config: R23
             revit_year: 2023
+            dotnet_version: '8.0.x'
           - config: R24
             revit_year: 2024
+            dotnet_version: '8.0.x'
           - config: R25
             revit_year: 2025
+            dotnet_version: '8.0.x'
           - config: R26
             revit_year: 2026
+            dotnet_version: '8.0.x'
+          - config: R27
+            revit_year: 2027
+            dotnet_version: '10.0.x'
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ matrix.dotnet_version }}
 
       - name: Pack ${{ matrix.config }}
         run: >
@@ -61,18 +68,25 @@ jobs:
         include:
           - config: R23
             revit_year: 2023
+            dotnet_version: '8.0.x'
           - config: R24
             revit_year: 2024
+            dotnet_version: '8.0.x'
           - config: R25
             revit_year: 2025
+            dotnet_version: '8.0.x'
           - config: R26
             revit_year: 2026
+            dotnet_version: '8.0.x'
+          - config: R27
+            revit_year: 2027
+            dotnet_version: '10.0.x'
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ matrix.dotnet_version }}
 
       - name: Add GitHub Packages NuGet source
         run: >

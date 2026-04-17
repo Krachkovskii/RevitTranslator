@@ -18,7 +18,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Extract version from tag
         id: version
@@ -56,6 +58,12 @@ jobs:
 
       - name: Build Release R26
         run: dotnet build -c "Release R26" --no-restore -p:Version=${{ steps.version.outputs.VERSION }}
+        
+      - name: Restore R27
+        run: dotnet restore -p:Configuration="Release R27"
+
+      - name: Build Release R27
+        run: dotnet build -c "Release R27" --no-restore -p:Version=${{ steps.version.outputs.VERSION }}
 
       - name: Generate MSI installers
         working-directory: Installer
@@ -72,6 +80,7 @@ jobs:
             Installer/Installer/Revit_Translator_V24.msi
             Installer/Installer/Revit_Translator_V25.msi
             Installer/Installer/Revit_Translator_V26.msi
+            Installer/Installer/Revit_Translator_V27.msi
 
       - name: Generate appcast files
         shell: pwsh
@@ -81,7 +90,7 @@ jobs:
           $baseUrl = "https://github.com/Krachkovskii/RevitTranslator/releases/download/$tag"
           $pubDate = (Get-Date).ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss +0000")
 
-          foreach ($rv in @(23, 24, 25, 26)) {
+          foreach ($rv in @(23, 24, 25, 26, 27)) {
             $msiName = "Revit_Translator_V${rv}.msi"
             $msiPath = "Installer/Installer/$msiName"
             $url = "$baseUrl/$msiName"
@@ -120,6 +129,6 @@ jobs:
           git fetch origin main
           git checkout main
           git pull origin main
-          git add appcast-R23.xml appcast-R24.xml appcast-R25.xml appcast-R26.xml
+          git add appcast-R23.xml appcast-R24.xml appcast-R25.xml appcast-R26.xml appcast-R27.xml
           git commit -m "chore: update appcast for ${{ github.ref_name }}"
           git push origin main
