@@ -33,4 +33,9 @@
         <TargetFramework>net8.0-windows</TargetFramework>
         <GenerateDependencyFile>false</GenerateDependencyFile>
     </PropertyGroup>
+    <PropertyGroup Condition="$(Configuration.Contains('R27'))">
+        <RevitVersion>2027</RevitVersion>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <GenerateDependencyFile>false</GenerateDependencyFile>
+    </PropertyGroup>
 </Project>

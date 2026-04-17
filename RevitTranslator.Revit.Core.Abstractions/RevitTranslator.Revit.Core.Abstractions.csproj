@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <Configurations>Debug R23;Debug R24;Debug R25;Debug R26</Configurations>
-        <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26</Configurations>
+        <Configurations>Debug R23;Debug R24;Debug R25;Debug R26;Debug R27</Configurations>
+        <Configurations>$(Configurations);Release R23;Release R24;Release R25;Release R26;Release R27</Configurations>
         <RepositoryUrl>https://github.com/Krachkovskii/RevitTranslator</RepositoryUrl>
         <RootNamespace>RevitTranslator.Revit.Abstractions</RootNamespace>
     </PropertyGroup>
