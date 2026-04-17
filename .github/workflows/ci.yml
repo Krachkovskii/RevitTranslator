@@ -9,14 +9,24 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        revit_version: [ R23, R24, R25, R26 ]
+        include:
+          - revit_version: R23
+            dotnet_version: '8.0.x'
+          - revit_version: R24
+            dotnet_version: '8.0.x'
+          - revit_version: R25
+            dotnet_version: '8.0.x'
+          - revit_version: R26
+            dotnet_version: '8.0.x'
+          - revit_version: R27
+            dotnet_version: '10.0.x'
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ matrix.dotnet_version }}
 
       - name: Restore
         run: dotnet restore -p:Configuration="Release ${{ matrix.revit_version }}"
@@ -25,4 +35,4 @@ jobs:
         run: dotnet build -c "Release ${{ matrix.revit_version }}" --no-restore
 
       - name: Run tests
-        run: dotnet test RevitTranslator.Tests/RevitTranslator.Tests.csproj --no-restore
+        run: dotnet test RevitTranslator.Tests/RevitTranslator.Tests.csproj -c "Release ${{ matrix.revit_version }}" --no-restore
