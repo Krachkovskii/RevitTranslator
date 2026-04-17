@@ -2,7 +2,7 @@
     <PropertyGroup>
         <UseWPF>true</UseWPF>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <TargetFrameworks>net48;net8.0-windows</TargetFrameworks>
+        <TargetFrameworks>net48;net8.0-windows;net10.0-windows</TargetFrameworks>
         <NoWarn>CS8603;CS8618;CS8629;CS8600;CS0414;CS4014;CS8604;CS8765;CS8602;CS0168</NoWarn>
     </PropertyGroup>
 
